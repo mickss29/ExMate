@@ -4,14 +4,28 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    >
+    android:background="@drawable/bg_exmate_premium">
 
-    <!-- Gradient Background -->
+    <!-- Subtle abstract shapes for premium effect -->
     <View
-        android:id="@+id/bgGradient"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@drawable/auth_gradient"/>
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:background="@drawable/abstract_circle_white"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="50dp"
+        android:alpha="0.05"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <View
+        android:layout_width="180dp"
+        android:layout_height="180dp"
+        android:background="@drawable/abstract_triangle_white"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="50dp"
+        android:alpha="0.05"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
     <!-- Center Card -->
     <LinearLayout
@@ -20,19 +34,22 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="24dp"
-        android:background="@drawable/auth_card_bg"
+        android:background="@drawable/card_midnight"
+        android:elevation="12dp"
+        android:clipToOutline="true"
+        android:outlineProvider="background"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_margin="32dp">
+        android:layout_margin="24dp">
 
         <!-- Top Tabs -->
         <LinearLayout
             android:id="@+id/tabsLayout"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:background="@drawable/toggle_bg"
+            android:background="@drawable/toggle_midnight_bg"
             android:gravity="center"
             android:orientation="horizontal"
             android:padding="4dp">
@@ -45,8 +62,8 @@
                 android:gravity="center"
                 android:text="Login"
                 android:textStyle="bold"
-                android:textColor="@color/black"
-                android:background="@drawable/toggle_selected"/>
+                android:textColor="@color/white"
+                android:background="@drawable/toggle_selected_midnight"/>
 
             <TextView
                 android:id="@+id/tabSignup"
@@ -56,7 +73,7 @@
                 android:gravity="center"
                 android:text="Sign Up"
                 android:textStyle="bold"
-                android:textColor="@color/black"/>
+                android:textColor="@color/white"/>
 
         </LinearLayout>
 
@@ -77,7 +94,9 @@
                     android:id="@+id/etLoginEmail"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="textEmailAddress"/>
+                    android:inputType="textEmailAddress"
+                    android:textColor="@android:color/white"
+                    android:textColorHint="#B0C4DE"/>
 
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -91,7 +110,9 @@
                     android:id="@+id/etLoginPassword"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="textPassword"/>
+                    android:inputType="textPassword"
+                    android:textColor="@android:color/white"
+                    android:textColorHint="#B0C4DE"/>
 
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -101,7 +122,7 @@
                 android:layout_height="wrap_content"
                 android:text="Sign In"
                 android:layout_marginTop="20dp"
-                android:backgroundTint="#3C3CCF"
+                android:backgroundTint="@color/premium_blue_light"
                 android:textColor="@android:color/white"/>
 
         </LinearLayout>
@@ -124,7 +145,9 @@
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etFullName"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:textColor="@android:color/white"
+                    android:textColorHint="#B0C4DE"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -137,7 +160,9 @@
                     android:id="@+id/etSignupEmail"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="textEmailAddress"/>
+                    android:inputType="textEmailAddress"
+                    android:textColor="@android:color/white"
+                    android:textColorHint="#B0C4DE"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -150,7 +175,9 @@
                     android:id="@+id/etSignupPassword"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="textPassword"/>
+                    android:inputType="textPassword"
+                    android:textColor="@android:color/white"
+                    android:textColorHint="#B0C4DE"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <Button
@@ -159,7 +186,7 @@
                 android:layout_height="wrap_content"
                 android:text="Sign Up"
                 android:layout_marginTop="20dp"
-                android:backgroundTint="#3C3CCF"
+                android:backgroundTint="@color/premium_blue_light"
                 android:textColor="@android:color/white"/>
 
         </LinearLayout>

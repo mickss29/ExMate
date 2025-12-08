@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Base Gradient Background -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#0D1B2A"
+                android:endColor="#1B2A47"
+                android:angle="45"/>
+        </shape>
+    </item>
+
+    <!-- Subtle Radial Highlight -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:gradientRadius="600"
+                android:centerX="0.7"
+                android:centerY="0.3"
+                android:startColor="#33475B33"
+                android:endColor="@android:color/transparent"/>
+        </shape>
+    </item>
+
+    <!-- Soft Geometric Overlay -->
+    <item>
+        <bitmap
+            android:src="@drawable/pattern_overlay"
+            android:tileMode="repeat"
+            android:gravity="center"/>
+    </item>
+
+</layer-list>
