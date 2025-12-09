@@ -1,21 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item>
-        <shape>
+        <shape android:shape="rectangle">
             <gradient
-                android:startColor="#0F1C2E"
-                android:endColor="#162E4D"
-                android:angle="135"/>
-        </shape>
-    </item>
-
-    <!-- Soft finance wave overlay -->
-    <item android:top="120dp">
-        <shape>
-            <gradient
-                android:startColor="#223F67"
-                android:endColor="#0F1C2E"
-                android:angle="45"/>
+                android:type="linear"
+                android:angle="270"
+                android:startColor="#0A1A2F"
+                android:centerColor="#102A43"
+                android:endColor="#07121F"/>
         </shape>
     </item>
 

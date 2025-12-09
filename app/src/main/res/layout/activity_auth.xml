@@ -2,57 +2,63 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_exmate_premium">
+    android:background="@drawable/bg_exmate_premium_anim">
 
-    <!-- Subtle abstract shapes for premium effect -->
+    <!-- Floating circle (top-left) -->
     <View
+        android:id="@+id/shapeCircle"
         android:layout_width="200dp"
         android:layout_height="200dp"
         android:background="@drawable/abstract_circle_white"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="40dp"
         android:alpha="0.05"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
 
+    <!-- Floating triangle (bottom-right) -->
     <View
+        android:id="@+id/shapeTriangle"
         android:layout_width="180dp"
         android:layout_height="180dp"
         android:background="@drawable/abstract_triangle_white"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="50dp"
+        android:layout_marginBottom="40dp"
         android:alpha="0.05"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>
 
-    <!-- Center Card -->
+    <!-- Center Premium Card -->
     <LinearLayout
         android:id="@+id/containerCard"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_margin="24dp"
         android:orientation="vertical"
         android:padding="24dp"
         android:background="@drawable/card_midnight"
-        android:elevation="12dp"
+        android:elevation="14dp"
         android:clipToOutline="true"
         android:outlineProvider="background"
+        android:translationY="50dp"
+        android:alpha="1"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_margin="24dp">
+        app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Top Tabs -->
+        <!-- Login / Signup Tabs -->
         <LinearLayout
             android:id="@+id/tabsLayout"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:background="@drawable/toggle_midnight_bg"
-            android:gravity="center"
             android:orientation="horizontal"
-            android:padding="4dp">
+            android:padding="4dp"
+            android:gravity="center"
+            android:background="@drawable/toggle_midnight_bg">
 
             <TextView
                 android:id="@+id/tabLogin"
@@ -74,16 +80,15 @@
                 android:text="Sign Up"
                 android:textStyle="bold"
                 android:textColor="@color/white"/>
-
         </LinearLayout>
 
-        <!-- Login Layout -->
+        <!-- LOGIN FORM -->
         <LinearLayout
             android:id="@+id/layoutLogin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="24dp">
+            android:layout_marginTop="24dp"
+            android:orientation="vertical">
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
@@ -97,14 +102,13 @@
                     android:inputType="textEmailAddress"
                     android:textColor="@android:color/white"
                     android:textColorHint="#B0C4DE"/>
-
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Password"
-                android:layout_marginTop="12dp">
+                android:layout_marginTop="12dp"
+                android:hint="Password">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etLoginPassword"
@@ -113,29 +117,27 @@
                     android:inputType="textPassword"
                     android:textColor="@android:color/white"
                     android:textColorHint="#B0C4DE"/>
-
             </com.google.android.material.textfield.TextInputLayout>
 
             <Button
                 android:id="@+id/btnLogin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Sign In"
                 android:layout_marginTop="20dp"
-                android:backgroundTint="@color/premium_blue_light"
-                android:textColor="@android:color/white"/>
-
+                android:text="Sign In"
+                android:textColor="@android:color/white"
+                android:backgroundTint="@color/premium_blue_light"/>
         </LinearLayout>
 
-        <!-- Signup Layout -->
+        <!-- SIGNUP FORM -->
         <LinearLayout
             android:id="@+id/layoutSignup"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
             android:orientation="vertical"
-            android:alpha="0"
             android:visibility="gone"
-            android:layout_marginTop="24dp">
+            android:alpha="1">
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
@@ -153,8 +155,8 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Email address"
-                android:layout_marginTop="12dp">
+                android:layout_marginTop="12dp"
+                android:hint="Email address">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etSignupEmail"
@@ -168,8 +170,8 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Create password"
-                android:layout_marginTop="12dp">
+                android:layout_marginTop="12dp"
+                android:hint="Create password">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etSignupPassword"
@@ -184,13 +186,11 @@
                 android:id="@+id/btnSignup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Sign Up"
                 android:layout_marginTop="20dp"
-                android:backgroundTint="@color/premium_blue_light"
-                android:textColor="@android:color/white"/>
-
+                android:text="Sign Up"
+                android:textColor="@android:color/white"
+                android:backgroundTint="@color/premium_blue_light"/>
         </LinearLayout>
 
     </LinearLayout>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

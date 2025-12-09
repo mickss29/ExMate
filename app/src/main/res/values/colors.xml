@@ -2,9 +2,9 @@
 <resources>
     <color name="premium_blue">#3C3CCF</color>
     <color name="white">#FFFFFF</color>
-    <color name="premium_blue">#3A4AB0</color>
+
     <color name="premium_blue_light">#5C6FD0</color>
-    <color name="white">#FFFFFF</color>
+
 
     <color name="black">#FF000000</color>
 
