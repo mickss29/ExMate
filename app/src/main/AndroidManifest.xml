@@ -1,19 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+    package="com.example.exmate">
 
     <application
         android:allowBackup="true"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
+        android:label="ExMate"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ExMate">
 
+        <!-- 🔹 AdMob TEST Application ID (REQUIRED to avoid crash) -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3940256099942544~3347511713"/>
+
+        <!-- 🔹 MAIN / DASHBOARD ACTIVITY -->
         <activity
-            android:name="AuthActivity"
+            android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -21,8 +25,14 @@
             </intent-filter>
         </activity>
 
+        <!-- 🔹 AUTH / LOGIN ACTIVITY -->
         <activity
-            android:name=".MainActivity"
+            android:name=".AuthActivity"
+            android:exported="false" />
+
+        <!-- 🔹 LOGIN ACTIVITY -->
+        <activity
+            android:name=".LoginActivity"
             android:exported="false" />
 
     </application>
