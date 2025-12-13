@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/admin_gradient_bg">
+
+    <!-- Premium Toolbar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/adminToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/premiumToolbarColor"
+        android:title="Admin Dashboard"
+        android:titleTextColor="@android:color/white"
+        android:padding="16dp" />
+
+    <!-- Dashboard Content -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- USERS -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardUsers"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="14dp"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="10dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="20dp">
+
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@android:drawable/ic_menu_myplaces"
+                    app:tint="@color/premiumToolbarColor"/>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:text="Manage Users"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="#212121"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+                    <TextView
+                        android:text="View & control app users"
+                        android:textSize="13sp"
+                        android:textColor="#777777"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- EXPENSE -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardExpenses"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="14dp"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="10dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="20dp">
+
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@android:drawable/ic_menu_agenda"
+                    app:tint="@color/premiumToolbarColor"/>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:text="Expense Management"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="#212121"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+                    <TextView
+                        android:text="Monitor control expenses"
+                        android:textSize="13sp"
+                        android:textColor="#777777"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- REPORTS -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardReports"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="10dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="20dp">
+
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@android:drawable/ic_menu_sort_by_size"
+                    app:tint="@color/premiumToolbarColor"/>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:text="Reports  Analytics"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="#212121"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+                    <TextView
+                        android:text="Financial insights  charts"
+                        android:textSize="13sp"
+                        android:textColor="#777777"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
+
+</LinearLayout>
+
+    </LinearLayout>

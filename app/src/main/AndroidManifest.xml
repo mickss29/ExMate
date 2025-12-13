@@ -43,6 +43,11 @@
             android:name=".AddExpenseActivity"
             android:exported="false"/>
 
+        <activity android:name=".ManageUsersActivity" />
+        <activity android:name=".ManageExpensesActivity" />
+        <activity android:name=".ReportsActivity" />
+
+
     </application>
 
 </manifest>

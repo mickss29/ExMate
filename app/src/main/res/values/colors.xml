@@ -10,6 +10,10 @@
     <color name="white">#FFFFFF</color>
     <color name="black">#FF000000</color>
 
+    <color name="premiumBackground">#F0F4FF</color>
+    <color name="premiumToolbarColor">#3949AB</color>
+    <color name="premiumTextColor">#000000</color>
+
     <!-- 📝 Text Colors -->
     <color name="text_primary_dark">#0E1A2B</color>
     <color name="text_hint">#7A8CA5</color>
