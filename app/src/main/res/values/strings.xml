@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">ExMate</string>
+
+    <string-array name="income_categories">
+        <item>Salary</item>
+        <item>Business</item>
+        <item>Freelance</item>
+        <item>Other</item>
+    </string-array>
+
+    <string-array name="expense_categories">
+        <item>Food</item>
+        <item>Travel</item>
+        <item>Shopping</item>
+        <item>Rent</item>
+        <item>Bills</item>
+        <item>Other</item>
+    </string-array>
 </resources>

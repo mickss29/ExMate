@@ -1,11 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <!-- 🔵 Premium Brand Colors -->
     <color name="premium_blue">#3C3CCF</color>
-    <color name="white">#FFFFFF</color>
-
     <color name="premium_blue_light">#5C6FD0</color>
+    <color name="premium_blue_dark">#1E2A8A</color>
 
-
+    <!-- ⚪ Base Colors -->
+    <color name="white">#FFFFFF</color>
     <color name="black">#FF000000</color>
+
+    <!-- 📝 Text Colors -->
+    <color name="text_primary_dark">#0E1A2B</color>
+    <color name="text_hint">#7A8CA5</color>
+
+    <!-- 🧱 UI Backgrounds -->
+    <color name="card_background">#F7F9FC</color>
+    <color name="input_background">#F7F9FC</color>
+
+    <!-- 🔴 Status / Utility -->
+    <color name="error_red">#F44336</color>
+    <color name="success_green">#4CAF50</color>
 
 </resources>

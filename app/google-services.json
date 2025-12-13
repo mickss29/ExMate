@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "314446966494",
+    "project_id": "exmate-users",
+    "storage_bucket": "exmate-users.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:314446966494:android:37c1465ed4b0f34dbc5c4f",
+        "android_client_info": {
+          "package_name": "com.example.exmate"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBYijYEjmSro1RWY6lGRuYY6k9COFYi26M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

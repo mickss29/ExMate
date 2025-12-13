@@ -1,21 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Base application theme -->
     <style name="Theme.ExMate" parent="Theme.MaterialComponents.DayNight.NoActionBar">
 
-        <!-- REQUIRED: prevents blank screen -->
-        <item name="android:windowBackground">@color/black</item>
+        <!-- Primary colors -->
+        <item name="colorPrimary">@color/premium_blue</item>
+        <item name="colorPrimaryVariant">@color/premium_blue_dark</item>
+        <item name="colorOnPrimary">@color/white</item>
 
-        <!-- App colors -->
-        <item name="colorPrimary">#0E1621</item>
-        <item name="colorPrimaryVariant">#1E293B</item>
-        <item name="colorOnPrimary">#FFFFFF</item>
-
-        <item name="colorSecondary">#22C55E</item>
-        <item name="colorOnSecondary">#FFFFFF</item>
+        <!-- Secondary colors -->
+        <item name="colorSecondary">@color/premium_blue_light</item>
+        <item name="colorOnSecondary">@color/white</item>
 
         <!-- Status bar -->
-        <item name="android:statusBarColor">#0E1621</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">false</item>
 
     </style>

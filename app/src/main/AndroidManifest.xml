@@ -1,39 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.exmate">
+    <uses-permission android:name="android.permission.INTERNET"/>
+
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="ExMate"
+        android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ExMate">
 
-        <!-- 🔹 AdMob TEST Application ID (REQUIRED to avoid crash) -->
-        <meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713"/>
-
-        <!-- 🔹 MAIN / DASHBOARD ACTIVITY -->
+        <!-- 🔐 AUTH / LOGIN SCREEN (APP ENTRY POINT) -->
         <activity
-            android:name=".MainActivity"
+            android:name=".AuthActivity"
             android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
 
-        <!-- 🔹 AUTH / LOGIN ACTIVITY -->
+        <!-- 👤 USER DASHBOARD -->
         <activity
-            android:name=".AuthActivity"
-            android:exported="false" />
+            android:name=".UserDashboardActivity"
+            android:exported="false"/>
 
-        <!-- 🔹 LOGIN ACTIVITY -->
+        <!-- 👨‍💼 ADMIN DASHBOARD -->
         <activity
-            android:name=".LoginActivity"
-            android:exported="false" />
+            android:name=".AdminDashboardActivity"
+            android:exported="false"/>
+
+        <!-- ➕ ADD INCOME -->
+        <activity
+            android:name=".AddIncomeActivity"
+            android:exported="false"/>
+
+        <!-- ➖ ADD EXPENSE -->
+        <activity
+            android:name=".AddExpenseActivity"
+            android:exported="false"/>
 
     </application>
 
