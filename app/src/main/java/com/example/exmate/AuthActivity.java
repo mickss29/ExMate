@@ -25,7 +25,7 @@ import java.util.HashMap;
 
 public class AuthActivity extends AppCompatActivity {
 
-    // UI
+    // ================= UI =================
     private LinearLayout layoutLogin, layoutSignup;
     private TextView tabLogin, tabSignup;
     private ConstraintLayout rootLayout;
@@ -36,11 +36,16 @@ public class AuthActivity extends AppCompatActivity {
             etSignupPassword, etSignupConfirmPassword, etSignupPhone;
     private Button btnLogin, btnSignup;
 
-    // Firebase
+    // ================= FIREBASE =================
     private FirebaseAuth auth;
     private DatabaseReference usersRef;
 
-    private boolean isLoginVisible = true;
+    // ================= STATE =================
+    private boolean isLoginVisible = false;
+
+    // ================= ADMIN (TEMP) =================
+    private static final String ADMIN_EMAIL = "admin@exmate.com";
+    private static final String ADMIN_PASSWORD = "admin123";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +75,9 @@ public class AuthActivity extends AppCompatActivity {
         btnLogin = findViewById(R.id.btnLogin);
         btnSignup = findViewById(R.id.btnSignup);
 
+        // DEFAULT SCREEN
         showLogin(false);
+
         animateDarkBlueBackground();
         startFloatingParallax();
 
@@ -107,12 +114,15 @@ public class AuthActivity extends AppCompatActivity {
         }
     }
 
+    // ================= FIXED VOID ERROR HERE =================
     private void animateSwitch(View hide, View show) {
+
         hide.animate()
                 .alpha(0f)
                 .translationX(-40)
                 .setDuration(200)
                 .withEndAction(() -> {
+
                     hide.setVisibility(View.GONE);
                     hide.setAlpha(1f);
                     hide.setTranslationX(0);
@@ -120,18 +130,24 @@ public class AuthActivity extends AppCompatActivity {
                     show.setAlpha(0f);
                     show.setTranslationX(40);
                     show.setVisibility(View.VISIBLE);
+
                     show.animate()
                             .alpha(1f)
                             .translationX(0)
                             .setDuration(250)
                             .setInterpolator(new DecelerateInterpolator())
-                            .start();
-                }).start();
+                            .start(); // ✅ allowed
+                });
     }
 
     private void updateTabs(boolean loginSelected) {
-        tabLogin.setBackground(loginSelected ? getDrawable(R.drawable.toggle_selected_midnight) : null);
-        tabSignup.setBackground(!loginSelected ? getDrawable(R.drawable.toggle_selected_midnight) : null);
+        tabLogin.setBackground(loginSelected
+                ? getDrawable(R.drawable.toggle_selected_midnight)
+                : null);
+
+        tabSignup.setBackground(!loginSelected
+                ? getDrawable(R.drawable.toggle_selected_midnight)
+                : null);
 
         tabLogin.setTextColor(loginSelected ? 0xFFFFFFFF : 0xFFB0C4DE);
         tabSignup.setTextColor(!loginSelected ? 0xFFFFFFFF : 0xFFB0C4DE);
@@ -157,11 +173,8 @@ public class AuthActivity extends AppCompatActivity {
             return;
         }
 
-        // ✅ CLEAR DATA IMMEDIATELY
         clearSignupFields();
-
         btnSignup.setEnabled(false);
-        Toast.makeText(this, "Creating account...", Toast.LENGTH_SHORT).show();
 
         auth.createUserWithEmailAndPassword(email, pass)
                 .addOnCompleteListener(task -> {
@@ -169,26 +182,14 @@ public class AuthActivity extends AppCompatActivity {
                     btnSignup.setEnabled(true);
 
                     if (!task.isSuccessful()) {
-                        Toast.makeText(
-                                this,
+                        Toast.makeText(this,
                                 "Signup failed: " + task.getException().getMessage(),
-                                Toast.LENGTH_LONG
-                        ).show();
+                                Toast.LENGTH_LONG).show();
                         return;
                     }
 
                     FirebaseUser user = auth.getCurrentUser();
-                    if (user == null) {
-                        Toast.makeText(this, "User creation error", Toast.LENGTH_LONG).show();
-                        return;
-                    }
-
-                    // 🔥 SHOW SUCCESS IMMEDIATELY
-                    Toast.makeText(
-                            this,
-                            "🎉 Account created successfully! Please login.",
-                            Toast.LENGTH_LONG
-                    ).show();
+                    if (user == null) return;
 
                     HashMap<String, Object> map = new HashMap<>();
                     map.put("name", name);
@@ -197,10 +198,13 @@ public class AuthActivity extends AppCompatActivity {
                     map.put("role", "user");
                     map.put("createdAt", System.currentTimeMillis());
 
-                    // DB write should NOT block UX
                     usersRef.child(user.getUid()).setValue(map);
-
                     auth.signOut();
+
+                    Toast.makeText(this,
+                            "Account created! Please login.",
+                            Toast.LENGTH_LONG).show();
+
                     showLogin(true);
                 });
     }
@@ -225,6 +229,13 @@ public class AuthActivity extends AppCompatActivity {
             return;
         }
 
+        // ADMIN
+        if (email.equals(ADMIN_EMAIL) && pass.equals(ADMIN_PASSWORD)) {
+            startActivity(new Intent(this, AdminDashboardActivity.class));
+            finish();
+            return;
+        }
+
         btnLogin.setEnabled(false);
 
         auth.signInWithEmailAndPassword(email, pass)
@@ -239,7 +250,6 @@ public class AuthActivity extends AppCompatActivity {
                         return;
                     }
 
-                    Toast.makeText(this, "✅ Login successful", Toast.LENGTH_SHORT).show();
                     startActivity(new Intent(this, UserDashboardActivity.class));
                     finish();
                 });
@@ -248,31 +258,32 @@ public class AuthActivity extends AppCompatActivity {
     // ================= BACKGROUND =================
 
     private void animateDarkBlueBackground() {
+
         GradientDrawable gd = new GradientDrawable(
                 GradientDrawable.Orientation.TL_BR,
                 new int[]{0xFF001633, 0xFF00204D, 0xFF003366}
         );
+
         rootLayout.setBackground(gd);
 
         ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
         animator.setDuration(2500);
         animator.setRepeatCount(ValueAnimator.INFINITE);
         animator.setRepeatMode(ValueAnimator.REVERSE);
-        animator.addUpdateListener(a ->
-                gd.setColors(new int[]{0xFF001633, 0xFF00204D, 0xFF004080})
-        );
         animator.start();
     }
 
     private void startFloatingParallax() {
 
-        ObjectAnimator circle = ObjectAnimator.ofFloat(shapeCircle, "translationY", 0f, 18f);
+        ObjectAnimator circle = ObjectAnimator.ofFloat(
+                shapeCircle, "translationY", 0f, 18f);
         circle.setDuration(6000);
         circle.setRepeatCount(ValueAnimator.INFINITE);
         circle.setRepeatMode(ValueAnimator.REVERSE);
         circle.start();
 
-        ObjectAnimator triangle = ObjectAnimator.ofFloat(shapeTriangle, "translationY", 0f, -14f);
+        ObjectAnimator triangle = ObjectAnimator.ofFloat(
+                shapeTriangle, "translationY", 0f, -14f);
         triangle.setDuration(5000);
         triangle.setRepeatCount(ValueAnimator.INFINITE);
         triangle.setRepeatMode(ValueAnimator.REVERSE);

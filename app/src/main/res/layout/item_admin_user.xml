@@ -5,9 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="12dp"
-    app:cardCornerRadius="14dp"
-    app:cardElevation="6dp"
-    app:cardUseCompatPadding="true">
+    app:cardCornerRadius="16dp"
+    app:cardElevation="6dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -16,23 +15,28 @@
         android:padding="16dp">
 
         <TextView
-            android:id="@+id/txtUserName"
+            android:id="@+id/tvAdminUserName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="User Name"
-            android:textSize="16sp"
             android:textStyle="bold"
-            android:textColor="#212121"/>
+            android:textSize="16sp"/>
 
         <TextView
-            android:id="@+id/txtUserEmail"
+            android:id="@+id/tvAdminUserEmail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="user@email.com"
             android:textSize="14sp"
-            android:textColor="#666666"
+            android:textColor="#666"
             android:layout_marginTop="4dp"/>
 
+        <Button
+            android:id="@+id/btnBlockUser"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="Block"
+            android:layout_marginTop="10dp"/>
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>

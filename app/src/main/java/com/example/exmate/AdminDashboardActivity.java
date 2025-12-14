@@ -9,7 +9,8 @@ import androidx.cardview.widget.CardView;
 
 public class AdminDashboardActivity extends AppCompatActivity {
 
-    private CardView cardUsers, cardExpenses, cardReports;
+    private CardView cardUsers, cardCategories, cardReports;
+    private Toolbar adminToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -17,15 +18,15 @@ public class AdminDashboardActivity extends AppCompatActivity {
         setContentView(R.layout.activity_admin_dashboard);
 
         // Toolbar
-        Toolbar toolbar = findViewById(R.id.adminToolbar);
-        setSupportActionBar(toolbar);
+        adminToolbar = findViewById(R.id.adminToolbar);
+        setSupportActionBar(adminToolbar);
 
-        // Dashboard Cards
+        // Cards
         cardUsers = findViewById(R.id.cardUsers);
-        cardExpenses = findViewById(R.id.cardExpenses);
+        cardCategories = findViewById(R.id.cardCategories);
         cardReports = findViewById(R.id.cardReports);
 
-        // Click → Manage Users
+        // ➜ Manage Users
         cardUsers.setOnClickListener(v -> {
             Intent intent = new Intent(
                     AdminDashboardActivity.this,
@@ -34,16 +35,16 @@ public class AdminDashboardActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // Click → Expense Management
-        cardExpenses.setOnClickListener(v -> {
+        // ➜ Manage Categories
+        cardCategories.setOnClickListener(v -> {
             Intent intent = new Intent(
                     AdminDashboardActivity.this,
-                    ManageExpensesActivity.class
+                    ManageCategoriesActivity.class
             );
             startActivity(intent);
         });
 
-        // Click → Reports & Analytics
+        // ➜ Reports (later)
         cardReports.setOnClickListener(v -> {
             Intent intent = new Intent(
                     AdminDashboardActivity.this,

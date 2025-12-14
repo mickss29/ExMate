@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.exmate">
-    <uses-permission android:name="android.permission.INTERNET"/>
 
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
@@ -12,40 +11,36 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ExMate">
-
+        <activity
+            android:name=".ManageCategoriesActivity"
+            android:exported="false" />
         <!-- 🔐 AUTH / LOGIN SCREEN (APP ENTRY POINT) -->
         <activity
             android:name=".AuthActivity"
             android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
-        </activity>
+                <action android:name="android.intent.action.MAIN" />
 
-        <!-- 👤 USER DASHBOARD -->
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity> <!-- 👤 USER DASHBOARD -->
         <activity
             android:name=".UserDashboardActivity"
-            android:exported="false"/>
-
-        <!-- 👨‍💼 ADMIN DASHBOARD -->
+            android:exported="false" /> <!-- 👨‍💼 ADMIN DASHBOARD -->
         <activity
             android:name=".AdminDashboardActivity"
-            android:exported="false"/>
-
-        <!-- ➕ ADD INCOME -->
+            android:exported="false" /> <!-- ➕ ADD INCOME -->
         <activity
             android:name=".AddIncomeActivity"
-            android:exported="false"/>
-
-        <!-- ➖ ADD EXPENSE -->
+            android:exported="false" /> <!-- ➖ ADD EXPENSE -->
         <activity
             android:name=".AddExpenseActivity"
-            android:exported="false"/>
-
+            android:exported="false" />
         <activity android:name=".ManageUsersActivity" />
         <activity android:name=".ManageExpensesActivity" />
         <activity android:name=".ReportsActivity" />
+        <activity android:name=".ManageUsersActivity" />
+        <activity android:name=".UserDetailsActivity" />
 
 
     </application>

@@ -16,15 +16,14 @@
         android:gravity="center_vertical"
         android:padding="16dp">
 
-        <!-- Category Icon -->
         <ImageView
             android:id="@+id/categoryIcon"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:src="@android:drawable/ic_menu_sort_by_size"
-            app:tint="@color/premiumToolbarColor"/>
+            android:contentDescription="icon"
+            app:tint="@color/premiumToolbarColor" />
 
-        <!-- Category Name -->
         <TextView
             android:id="@+id/categoryName"
             android:layout_width="wrap_content"
@@ -33,7 +32,7 @@
             android:text="Category Name"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:textColor="#212121"/>
+            android:textColor="#212121" />
 
     </LinearLayout>
 
