@@ -1,69 +1,117 @@
 package com.example.exmate;
 
+import android.app.DatePickerDialog;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-
-import java.util.HashMap;
+import java.util.Calendar;
 
 public class AddIncomeActivity extends AppCompatActivity {
 
-    EditText etAmount, etSource;
-    Button btnSave;
-
-    DatabaseReference incomeRef;
-    String userId;
+    private EditText etIncomeAmount, etIncomeDate, etIncomeNote;
+    private Spinner spIncomeSource, spPaymentMode;
+    private Button btnSaveIncome;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_income);
 
-        etAmount = findViewById(R.id.etAmount);
-        etSource = findViewById(R.id.etSource);
-        btnSave = findViewById(R.id.btnSave);
+        etIncomeAmount = findViewById(R.id.etIncomeAmount);
+        etIncomeDate   = findViewById(R.id.etIncomeDate);
+        etIncomeNote   = findViewById(R.id.etIncomeNote);
+        spIncomeSource = findViewById(R.id.spIncomeSource);
+        spPaymentMode  = findViewById(R.id.spPaymentMode);
+        btnSaveIncome  = findViewById(R.id.btnSaveIncome);
 
-        userId = FirebaseAuth.getInstance().getUid();
+        setupSourceSpinner();
+        setupPaymentSpinner();
+        setupDatePicker();
 
-        incomeRef = FirebaseDatabase.getInstance()
-                .getReference("Users")
-                .child(userId)
-                .child("incomes");
+        btnSaveIncome.setOnClickListener(v -> validateAndSave());
+    }
 
-        btnSave.setOnClickListener(v -> {
+    private void setupSourceSpinner() {
+        String[] sources = {
+                "Salary",
+                "Business",
+                "Freelance",
+                "Investment",
+                "Rental Income",
+                "Bonus",
+                "Gift",
+                "Other"
+        };
 
-            String amtStr = etAmount.getText().toString().trim();
-            String source = etSource.getText().toString().trim();
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_spinner_dropdown_item,
+                sources
+        );
+        spIncomeSource.setAdapter(adapter);
+    }
 
-            if (amtStr.isEmpty() || source.isEmpty()) {
-                Toast.makeText(this, "Fill all fields", Toast.LENGTH_SHORT).show();
-                return;
-            }
+    private void setupPaymentSpinner() {
+        String[] modes = {
+                "Cash",
+                "UPI",
+                "Bank Transfer",
+                "Card",
+                "Cheque"
+        };
 
-            int amount = Integer.parseInt(amtStr);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_spinner_dropdown_item,
+                modes
+        );
+        spPaymentMode.setAdapter(adapter);
+    }
 
-            String id = incomeRef.push().getKey();
+    private void setupDatePicker() {
+        etIncomeDate.setOnClickListener(v -> {
+            Calendar calendar = Calendar.getInstance();
 
-            HashMap<String, Object> map = new HashMap<>();
-            map.put("amount", amount);
-            map.put("source", source);
-            map.put("time", System.currentTimeMillis());
+            int year  = calendar.get(Calendar.YEAR);
+            int month = calendar.get(Calendar.MONTH);
+            int day   = calendar.get(Calendar.DAY_OF_MONTH);
 
-            incomeRef.child(id).setValue(map)
-                    .addOnSuccessListener(unused -> {
-                        Toast.makeText(this, "Income Added", Toast.LENGTH_SHORT).show();
-                        finish();
-                    })
-                    .addOnFailureListener(e ->
-                            Toast.makeText(this, "Failed", Toast.LENGTH_SHORT).show()
-                    );
+            DatePickerDialog dialog = new DatePickerDialog(
+                    this,
+                    (view, y, m, d) -> {
+                        String date = d + "/" + (m + 1) + "/" + y;
+                        etIncomeDate.setText(date);
+                    },
+                    year, month, day
+            );
+            dialog.show();
         });
+    }
+
+    private void validateAndSave() {
+        String amount = etIncomeAmount.getText().toString().trim();
+        String date   = etIncomeDate.getText().toString().trim();
+
+        if (amount.isEmpty()) {
+            etIncomeAmount.setError("Enter amount");
+            return;
+        }
+
+        if (date.isEmpty()) {
+            etIncomeDate.setError("Select date");
+            return;
+        }
+
+        // 🔒 Firebase logic will be added later by your partner
+        Toast.makeText(this, "Income saved (UI only)", Toast.LENGTH_SHORT).show();
+
+        finish(); // return to dashboard
     }
 }

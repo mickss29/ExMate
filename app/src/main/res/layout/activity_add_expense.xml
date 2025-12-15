@@ -1,40 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="20dp"
-    android:orientation="vertical"
-    android:background="#0E1A2B">
+    android:background="@color/premiumBackgroundColor"
+    android:padding="20dp">
 
-    <EditText
-        android:id="@+id/etAmount"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Expense Amount"
-        android:inputType="numberDecimal"
-        android:textColor="@android:color/white"
-        android:textColorHint="#8FA3BF"/>
+        android:orientation="vertical">
 
-    <Spinner
-        android:id="@+id/spCategory"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:entries="@array/expense_categories"/>
+        <!-- Expense Amount -->
+        <EditText
+            android:id="@+id/etExpenseAmount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Expense Amount"
+            android:inputType="numberDecimal"
+            android:textColor="@android:color/white"
+            android:textColorHint="@color/premiumHintColor"
+            android:backgroundTint="@color/premiumInputTint"/>
 
-    <EditText
-        android:id="@+id/etNote"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:hint="Note (optional)"
-        android:textColor="@android:color/white"
-        android:textColorHint="#8FA3BF"/>
+        <!-- Category Spinner -->
+        <Spinner
+            android:id="@+id/spExpenseCategory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/spinner_background"/>
 
-    <Button
-        android:id="@+id/btnSaveExpense"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Save Expense"
-        android:layout_marginTop="20dp"/>
-</LinearLayout>
+        <!-- Date Picker -->
+        <EditText
+            android:id="@+id/etExpenseDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Select Date"
+            android:focusable="false"
+            android:clickable="true"
+            android:textColor="@android:color/white"
+            android:textColorHint="@color/premiumHintColor"
+            android:backgroundTint="@color/premiumInputTint"/>
+
+        <!-- Payment Mode -->
+        <Spinner
+            android:id="@+id/spExpensePaymentMode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/spinner_background"/>
+
+        <!-- Expense Type -->
+        <Spinner
+            android:id="@+id/spExpenseType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/spinner_background"/>
+
+        <!-- Merchant / Note -->
+        <EditText
+            android:id="@+id/etExpenseNote"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Note / Merchant (optional)"
+            android:textColor="@android:color/white"
+            android:textColorHint="@color/premiumHintColor"
+            android:backgroundTint="@color/premiumInputTint"/>
+
+        <!-- Save Button -->
+        <Button
+            android:id="@+id/btnSaveExpense"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Save Expense"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            android:backgroundTint="@color/premiumButtonColor"/>
+
+    </LinearLayout>
+</ScrollView>

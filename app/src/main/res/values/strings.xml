@@ -1,6 +1,8 @@
 <resources>
+
     <string name="app_name">ExMate</string>
 
+    <!-- ================= INCOME CATEGORIES ================= -->
     <string-array name="income_categories">
         <item>Salary</item>
         <item>Business</item>
@@ -8,6 +10,7 @@
         <item>Other</item>
     </string-array>
 
+    <!-- ================= EXPENSE CATEGORIES ================= -->
     <string-array name="expense_categories">
         <item>Food</item>
         <item>Travel</item>
@@ -16,4 +19,12 @@
         <item>Bills</item>
         <item>Other</item>
     </string-array>
+
+    <!-- ================= DASHBOARD ACTION SPINNER ================= -->
+    <string-array name="dashboard_add_action">
+        <item>Select Action</item>
+        <item>Add Income</item>
+        <item>Add Expense</item>
+    </string-array>
+
 </resources>

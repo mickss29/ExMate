@@ -28,5 +28,15 @@
 
     <color name="premium_red">#E53935</color>
 
+    <color name="premiumPopupBackground">#132238</color>
+    <color name="premiumButtonColor">#1E88E5</color>
+    <color name="premiumHintColor">#8FA3BF</color>
+
+    <color name="premiumBackgroundColor">#0E1A2B</color>
+
+
+    <color name="premiumInputTint">#4FC3F7</color>
+
+
 
 </resources>

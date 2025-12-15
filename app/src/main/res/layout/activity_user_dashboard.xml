@@ -1,30 +1,192 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="20dp">
+    android:background="@drawable/bg_dashboard_gradient">
 
-    <TextView
-        android:text="Dashboard"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
-    <TextView
-        android:id="@+id/tvBalance"
-        android:text="₹ 0"
-        android:textSize="32sp"
-        android:textStyle="bold"
-        android:layout_marginTop="16dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
-    <Button
-        android:id="@+id/btnAddIncome"
-        android:text="Add Income"
+    <!-- ================= TOP STATUS BAR (CURVED BLACK BAR) ================= -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/statusBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"/>
-</LinearLayout>
+        android:layout_margin="16dp"
+        app:cardCornerRadius="22dp"
+        app:cardElevation="8dp"
+        app:cardBackgroundColor="#0B0F14">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_info"
+                android:tint="@android:color/white"/>
+
+            <TextView
+                android:id="@+id/tvStatusMessage"
+                android:layout_marginStart="12dp"
+                android:text="No activity yet. Start adding income or expense."
+                android:textColor="@android:color/white"
+                android:textSize="14sp"
+                android:maxLines="1"
+                android:ellipsize="end"/>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- ================= MAIN CONTENT ================= -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="96dp"
+        android:paddingBottom="220dp"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- ================= SUMMARY CARDS ================= -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="24dp">
+
+                <!-- TOTAL INCOME -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:padding="18dp"
+                    android:orientation="vertical"
+                    android:background="@drawable/bg_glass_card">
+
+                    <TextView
+                        android:text="Total Income"
+                        android:textSize="12sp"
+                        android:textColor="#9AFFB3"/>
+
+                    <TextView
+                        android:id="@+id/tvTotalIncome"
+                        android:text="₹0"
+                        android:textSize="24sp"
+                        android:textStyle="bold"
+                        android:textColor="@android:color/white"/>
+                </LinearLayout>
+
+                <!-- TOTAL EXPENSE -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:padding="18dp"
+                    android:orientation="vertical"
+                    android:background="@drawable/bg_glass_card">
+
+                    <TextView
+                        android:text="Total Expense"
+                        android:textSize="12sp"
+                        android:textColor="#FF9A9A"/>
+
+                    <TextView
+                        android:id="@+id/tvTotalExpense"
+                        android:text="₹0"
+                        android:textSize="24sp"
+                        android:textStyle="bold"
+                        android:textColor="@android:color/white"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- ================= RECENT HISTORY TITLE ================= -->
+            <TextView
+                android:text="Recent History"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"/>
+
+            <!-- ================= RECENT HISTORY LIST ================= -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvRecentHistory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"/>
+
+            <!-- ================= EMPTY STATE ================= -->
+            <LinearLayout
+                android:id="@+id/layoutEmpty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="40dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_empty_wallet"
+                    android:tint="#6C8DBF"/>
+
+                <TextView
+                    android:text="No activity yet"
+                    android:textColor="@android:color/white"
+                    android:textStyle="bold"
+                    android:textSize="15sp"
+                    android:layout_marginTop="12dp"/>
+
+                <TextView
+                    android:text="Add income or expense to get started"
+                    android:textColor="#9FB3C8"
+                    android:textSize="12sp"
+                    android:layout_marginTop="4dp"/>
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- ================= ACTION SPINNER (GLASS, SMALL) ================= -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="88dp"
+        android:padding="10dp"
+        android:background="@drawable/bg_glass_card"
+        android:elevation="10dp">
+
+        <Spinner
+            android:id="@+id/spAddAction"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:entries="@array/dashboard_add_action"
+            android:background="@drawable/bg_glass_card"
+            android:popupBackground="#1A1A1A"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"/>
+    </LinearLayout>
+
+    <!-- ================= BOTTOM NAV BAR (RECTANGLE) ================= -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNav"
+        android:layout_width="match_parent"
+        android:layout_height="72dp"
+        android:layout_gravity="bottom"
+        android:background="#0B0F14"
+        app:itemIconTint="@color/bottom_nav_selector"
+        app:itemTextColor="@color/bottom_nav_selector"
+        app:labelVisibilityMode="labeled"
+        app:menu="@menu/menu_bottom_nav"/>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

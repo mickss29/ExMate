@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.exmate">
 
+    <!-- Internet permission for Firebase -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -11,38 +12,54 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ExMate">
-        <activity
-            android:name=".ManageCategoriesActivity"
-            android:exported="false" />
-        <!-- 🔐 AUTH / LOGIN SCREEN (APP ENTRY POINT) -->
+
+        <!-- 🔐 AUTH / LOGIN (ENTRY POINT) -->
         <activity
             android:name=".AuthActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity> <!-- 👤 USER DASHBOARD -->
+        </activity>
+
+        <!-- 👤 USER SIDE -->
         <activity
             android:name=".UserDashboardActivity"
-            android:exported="false" /> <!-- 👨‍💼 ADMIN DASHBOARD -->
-        <activity
-            android:name=".AdminDashboardActivity"
-            android:exported="false" /> <!-- ➕ ADD INCOME -->
+            android:exported="false" />
+
         <activity
             android:name=".AddIncomeActivity"
-            android:exported="false" /> <!-- ➖ ADD EXPENSE -->
+            android:exported="false" />
+
         <activity
             android:name=".AddExpenseActivity"
             android:exported="false" />
-        <activity android:name=".ManageUsersActivity" />
-        <activity android:name=".ManageExpensesActivity" />
-        <activity android:name=".ReportsActivity" />
-        <activity android:name=".ManageUsersActivity" />
-        <activity android:name=".UserDetailsActivity" />
 
+        <activity
+            android:name=".UserDetailsActivity"
+            android:exported="false" />
 
+        <!-- 👨‍💼 ADMIN SIDE -->
+        <activity
+            android:name=".AdminDashboardActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ManageUsersActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ManageExpensesActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ManageCategoriesActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ReportsActivity"
+            android:exported="false" />
 
     </application>
 

@@ -1,6 +1,8 @@
 package com.example.exmate;
 
+import android.app.DatePickerDialog;
 import android.os.Bundle;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -8,64 +10,136 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-
-import java.util.HashMap;
+import java.util.Calendar;
 
 public class AddExpenseActivity extends AppCompatActivity {
 
-    private EditText etAmount, etNote;
-    private Spinner spCategory;
-    private Button btnSave;
-
-    private DatabaseReference usersRef;
-    private String uid;
+    private EditText etExpenseAmount, etExpenseDate, etExpenseNote;
+    private Spinner spExpenseCategory, spExpensePaymentMode, spExpenseType;
+    private Button btnSaveExpense;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_expense);
 
-        etAmount = findViewById(R.id.etAmount);
-        etNote = findViewById(R.id.etNote);
-        spCategory = findViewById(R.id.spCategory);
-        btnSave = findViewById(R.id.btnSaveExpense);
+        etExpenseAmount = findViewById(R.id.etExpenseAmount);
+        etExpenseDate   = findViewById(R.id.etExpenseDate);
+        etExpenseNote   = findViewById(R.id.etExpenseNote);
 
-        uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        usersRef = FirebaseDatabase.getInstance().getReference("users");
+        spExpenseCategory    = findViewById(R.id.spExpenseCategory);
+        spExpensePaymentMode = findViewById(R.id.spExpensePaymentMode);
+        spExpenseType        = findViewById(R.id.spExpenseType);
 
-        btnSave.setOnClickListener(v -> saveExpense());
+        btnSaveExpense = findViewById(R.id.btnSaveExpense);
+
+        setupCategorySpinner();
+        setupPaymentModeSpinner();
+        setupExpenseTypeSpinner();
+        setupDatePicker();
+
+        btnSaveExpense.setOnClickListener(v -> validateAndSave());
     }
 
-    private void saveExpense() {
+    private void setupCategorySpinner() {
+        String[] categories = {
+                "Food",
+                "Transport",
+                "Shopping",
+                "Bills",
+                "Entertainment",
+                "Health",
+                "Education",
+                "Other"
+        };
 
-        String amountStr = etAmount.getText().toString().trim();
-        String category = spCategory.getSelectedItem().toString();
-        String note = etNote.getText().toString().trim();
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_spinner_dropdown_item,
+                categories
+        );
+        spExpenseCategory.setAdapter(adapter);
+    }
 
-        if (amountStr.isEmpty()) {
-            Toast.makeText(this, "Enter amount", Toast.LENGTH_SHORT).show();
+    private void setupPaymentModeSpinner() {
+        String[] modes = {
+                "Cash",
+                "UPI",
+                "Bank Transfer",
+                "Card",
+                "Wallet"
+        };
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_spinner_dropdown_item,
+                modes
+        );
+        spExpensePaymentMode.setAdapter(adapter);
+    }
+
+    private void setupExpenseTypeSpinner() {
+        String[] types = {
+                "Personal",
+                "Business"
+        };
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_spinner_dropdown_item,
+                types
+        );
+        spExpenseType.setAdapter(adapter);
+    }
+
+    private void setupDatePicker() {
+        etExpenseDate.setOnClickListener(v -> {
+            Calendar calendar = Calendar.getInstance();
+
+            int year  = calendar.get(Calendar.YEAR);
+            int month = calendar.get(Calendar.MONTH);
+            int day   = calendar.get(Calendar.DAY_OF_MONTH);
+
+            DatePickerDialog dialog = new DatePickerDialog(
+                    this,
+                    (view, y, m, d) -> {
+                        String date = d + "/" + (m + 1) + "/" + y;
+                        etExpenseDate.setText(date);
+                    },
+                    year, month, day
+            );
+            dialog.show();
+        });
+    }
+
+    private void validateAndSave() {
+        String amount = etExpenseAmount.getText().toString().trim();
+        String date   = etExpenseDate.getText().toString().trim();
+
+        if (amount.isEmpty()) {
+            etExpenseAmount.setError("Enter amount");
             return;
         }
 
-        double amount = Double.parseDouble(amountStr);
+        try {
+            double value = Double.parseDouble(amount);
+            if (value <= 0) {
+                etExpenseAmount.setError("Amount must be greater than 0");
+                return;
+            }
+        } catch (NumberFormatException e) {
+            etExpenseAmount.setError("Invalid amount");
+            return;
+        }
 
-        String id = usersRef.child(uid).child("expenses").push().getKey();
+        if (date.isEmpty()) {
+            etExpenseDate.setError("Select date");
+            return;
+        }
 
-        HashMap<String, Object> map = new HashMap<>();
-        map.put("amount", amount);
-        map.put("category", category);
-        map.put("note", note);
-        map.put("date", System.currentTimeMillis());
+        // 🔒 Firebase logic will be added later
+        Toast.makeText(this, "Expense saved (UI only)", Toast.LENGTH_SHORT).show();
 
-        usersRef.child(uid).child("expenses").child(id).setValue(map)
-                .addOnSuccessListener(unused -> {
-                    Toast.makeText(this, "Expense added", Toast.LENGTH_SHORT).show();
-                    finish();
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show());
+        finish(); // back to dashboard
     }
 }
