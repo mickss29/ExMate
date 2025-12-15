@@ -39,7 +39,7 @@ public class UserDashboardActivity extends AppCompatActivity {
     private String userId;
 
     // Data
-    private List<TransactionModel> transactionList;
+    private List<TransactionModel> transactionList = new ArrayList<>();
     private RecentTransactionAdapter adapter;
 
     @Override
@@ -48,11 +48,10 @@ public class UserDashboardActivity extends AppCompatActivity {
         setContentView(R.layout.activity_user_dashboard);
 
         initViews();
+        setupRecentHistory();     // adapter first
         setupBottomNav();
         setupAddActionSpinner();
-        setupRecentHistory();
         setupFirebase();
-        loadDashboardData();
     }
 
     // ================= INIT =================
@@ -86,10 +85,13 @@ public class UserDashboardActivity extends AppCompatActivity {
     private void loadDashboardData() {
 
         transactionList.clear();
+        adapter.notifyDataSetChanged();
 
         loadIncome();
         loadExpense();
     }
+
+    // ================= INCOME =================
 
     private void loadIncome() {
 
@@ -102,28 +104,38 @@ public class UserDashboardActivity extends AppCompatActivity {
 
                         for (DataSnapshot snap : snapshot.getChildren()) {
 
-                            double amount = snap.child("amount").getValue(Double.class);
-                            long time = snap.child("time").getValue(Long.class);
+                            Object amountObj = snap.child("amount").getValue();
+                            Object timeObj   = snap.child("time").getValue();
+
+                            if (amountObj == null || timeObj == null) continue;
+
+                            double amount;
+                            long time;
+
+                            try {
+                                amount = Double.parseDouble(amountObj.toString());
+                                time = Long.parseLong(timeObj.toString());
+                            } catch (Exception e) {
+                                continue;
+                            }
 
                             totalIncome += amount;
 
                             transactionList.add(
-                                    new TransactionModel(
-                                            "Income",
-                                            amount,
-                                            time
-                                    )
+                                    new TransactionModel("Income", amount, time)
                             );
                         }
 
                         tvTotalIncome.setText("₹" + totalIncome);
-                        updateUI();
+                        finalizeList();
                     }
 
                     @Override
                     public void onCancelled(DatabaseError error) {}
                 });
     }
+
+    // ================= EXPENSE =================
 
     private void loadExpense() {
 
@@ -136,33 +148,46 @@ public class UserDashboardActivity extends AppCompatActivity {
 
                         for (DataSnapshot snap : snapshot.getChildren()) {
 
-                            double amount = snap.child("amount").getValue(Double.class);
-                            long time = snap.child("time").getValue(Long.class);
+                            Object amountObj = snap.child("amount").getValue();
+                            Object timeObj   = snap.child("time").getValue();
+
+                            if (amountObj == null || timeObj == null) continue;
+
+                            double amount;
+                            long time;
+
+                            try {
+                                amount = Double.parseDouble(amountObj.toString());
+                                time = Long.parseLong(timeObj.toString());
+                            } catch (Exception e) {
+                                continue;
+                            }
 
                             totalExpense += amount;
 
                             transactionList.add(
-                                    new TransactionModel(
-                                            "Expense",
-                                            amount,
-                                            time
-                                    )
+                                    new TransactionModel("Expense", amount, time)
                             );
                         }
 
                         tvTotalExpense.setText("₹" + totalExpense);
-
-                        // Latest first
-                        Collections.sort(transactionList,
-                                (a, b) -> Long.compare(b.getTime(), a.getTime()));
-
-                        adapter.notifyDataSetChanged();
-                        updateUI();
+                        finalizeList();
                     }
 
                     @Override
                     public void onCancelled(DatabaseError error) {}
                 });
+    }
+
+    // ================= FINALIZE =================
+
+    private void finalizeList() {
+
+        Collections.sort(transactionList,
+                (a, b) -> Long.compare(b.getTime(), a.getTime()));
+
+        adapter.notifyDataSetChanged();
+        updateUI();
     }
 
     // ================= BOTTOM NAV =================
@@ -196,7 +221,7 @@ public class UserDashboardActivity extends AppCompatActivity {
         });
     }
 
-    // ================= ADD ACTION SPINNER =================
+    // ================= ADD ACTION =================
 
     private void setupAddActionSpinner() {
 
@@ -239,7 +264,6 @@ public class UserDashboardActivity extends AppCompatActivity {
     // ================= RECENT HISTORY =================
 
     private void setupRecentHistory() {
-        transactionList = new ArrayList<>();
         adapter = new RecentTransactionAdapter(transactionList);
         rvRecentHistory.setLayoutManager(new LinearLayoutManager(this));
         rvRecentHistory.setAdapter(adapter);
@@ -263,6 +287,6 @@ public class UserDashboardActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        loadDashboardData(); // refresh after add income/expense
+        loadDashboardData();
     }
 }

@@ -10,13 +10,23 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AddExpenseActivity extends AppCompatActivity {
 
     private EditText etExpenseAmount, etExpenseDate, etExpenseNote;
     private Spinner spExpenseCategory, spExpensePaymentMode, spExpenseType;
     private Button btnSaveExpense;
+
+    // Firebase
+    private DatabaseReference expenseRef;
+    private String userId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,20 +47,34 @@ public class AddExpenseActivity extends AppCompatActivity {
         setupPaymentModeSpinner();
         setupExpenseTypeSpinner();
         setupDatePicker();
+        setupFirebase();
 
         btnSaveExpense.setOnClickListener(v -> validateAndSave());
     }
 
+    // ================= FIREBASE =================
+
+    private void setupFirebase() {
+        userId = FirebaseAuth.getInstance().getUid();
+
+        if (userId == null) {
+            Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
+        expenseRef = FirebaseDatabase.getInstance()
+                .getReference("users")
+                .child(userId)
+                .child("expenses");
+    }
+
+    // ================= SPINNERS =================
+
     private void setupCategorySpinner() {
         String[] categories = {
-                "Food",
-                "Transport",
-                "Shopping",
-                "Bills",
-                "Entertainment",
-                "Health",
-                "Education",
-                "Other"
+                "Food", "Transport", "Shopping", "Bills",
+                "Entertainment", "Health", "Education", "Other"
         };
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
@@ -63,11 +87,7 @@ public class AddExpenseActivity extends AppCompatActivity {
 
     private void setupPaymentModeSpinner() {
         String[] modes = {
-                "Cash",
-                "UPI",
-                "Bank Transfer",
-                "Card",
-                "Wallet"
+                "Cash", "UPI", "Bank Transfer", "Card", "Wallet"
         };
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
@@ -79,10 +99,7 @@ public class AddExpenseActivity extends AppCompatActivity {
     }
 
     private void setupExpenseTypeSpinner() {
-        String[] types = {
-                "Personal",
-                "Business"
-        };
+        String[] types = { "Personal", "Business" };
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 this,
@@ -92,38 +109,40 @@ public class AddExpenseActivity extends AppCompatActivity {
         spExpenseType.setAdapter(adapter);
     }
 
+    // ================= DATE PICKER =================
+
     private void setupDatePicker() {
         etExpenseDate.setOnClickListener(v -> {
             Calendar calendar = Calendar.getInstance();
 
-            int year  = calendar.get(Calendar.YEAR);
-            int month = calendar.get(Calendar.MONTH);
-            int day   = calendar.get(Calendar.DAY_OF_MONTH);
-
             DatePickerDialog dialog = new DatePickerDialog(
                     this,
-                    (view, y, m, d) -> {
-                        String date = d + "/" + (m + 1) + "/" + y;
-                        etExpenseDate.setText(date);
-                    },
-                    year, month, day
+                    (view, y, m, d) ->
+                            etExpenseDate.setText(d + "/" + (m + 1) + "/" + y),
+                    calendar.get(Calendar.YEAR),
+                    calendar.get(Calendar.MONTH),
+                    calendar.get(Calendar.DAY_OF_MONTH)
             );
             dialog.show();
         });
     }
 
-    private void validateAndSave() {
-        String amount = etExpenseAmount.getText().toString().trim();
-        String date   = etExpenseDate.getText().toString().trim();
+    // ================= SAVE =================
 
-        if (amount.isEmpty()) {
+    private void validateAndSave() {
+
+        String amountStr = etExpenseAmount.getText().toString().trim();
+        String date = etExpenseDate.getText().toString().trim();
+
+        if (amountStr.isEmpty()) {
             etExpenseAmount.setError("Enter amount");
             return;
         }
 
+        double amount;
         try {
-            double value = Double.parseDouble(amount);
-            if (value <= 0) {
+            amount = Double.parseDouble(amountStr);
+            if (amount <= 0) {
                 etExpenseAmount.setError("Amount must be greater than 0");
                 return;
             }
@@ -137,9 +156,22 @@ public class AddExpenseActivity extends AppCompatActivity {
             return;
         }
 
-        // 🔒 Firebase logic will be added later
-        Toast.makeText(this, "Expense saved (UI only)", Toast.LENGTH_SHORT).show();
+        // Firebase data
+        Map<String, Object> data = new HashMap<>();
+        data.put("amount", amount);
+        data.put("time", System.currentTimeMillis());
+        data.put("category", spExpenseCategory.getSelectedItem().toString());
+        data.put("paymentMode", spExpensePaymentMode.getSelectedItem().toString());
+        data.put("type", spExpenseType.getSelectedItem().toString());
+        data.put("note", etExpenseNote.getText().toString().trim());
 
-        finish(); // back to dashboard
+        expenseRef.push().setValue(data)
+                .addOnSuccessListener(unused -> {
+                    Toast.makeText(this, "Expense added", Toast.LENGTH_SHORT).show();
+                    finish();
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                );
     }
 }
