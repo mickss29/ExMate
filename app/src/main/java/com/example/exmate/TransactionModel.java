@@ -2,37 +2,32 @@ package com.example.exmate;
 
 public class TransactionModel {
 
-    private String title;
-    private String category;
-    private String date;
-    private String amount;
-    private boolean isIncome;
+    private String type;   // "Income" or "Expense"
+    private double amount;
+    private long time;     // timestamp
 
-    public TransactionModel(String title, String category, String date, String amount, boolean isIncome) {
-        this.title = title;
-        this.category = category;
-        this.date = date;
+    // 🔹 Empty constructor (REQUIRED for Firebase)
+    public TransactionModel() {
+    }
+
+    // 🔹 Constructor used in Dashboard
+    public TransactionModel(String type, double amount, long time) {
+        this.type = type;
         this.amount = amount;
-        this.isIncome = isIncome;
+        this.time = time;
     }
 
-    public String getTitle() {
-        return title;
+    // ================= GETTERS =================
+
+    public String getType() {
+        return type;
     }
 
-    public String getCategory() {
-        return category;
-    }
-
-    public String getDate() {
-        return date;
-    }
-
-    public String getAmount() {
+    public double getAmount() {
         return amount;
     }
 
-    public boolean isIncome() {
-        return isIncome;
+    public long getTime() {
+        return time;
     }
 }

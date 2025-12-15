@@ -8,7 +8,10 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class RecentTransactionAdapter
         extends RecyclerView.Adapter<RecentTransactionAdapter.ViewHolder> {
@@ -22,19 +25,30 @@ public class RecentTransactionAdapter
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_user_transection, parent, false);
+
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+
         TransactionModel model = list.get(position);
 
-        holder.txtTitle.setText(model.getTitle());
-        holder.txtCategory.setText(model.getCategory());
-        holder.txtDate.setText(model.getDate());
-        holder.txtAmount.setText(model.getAmount());
+        // 🔹 Type (Income / Expense)
+        holder.txtTitle.setText(model.getType());
+
+        // 🔹 Category not used anymore
+        holder.txtCategory.setText("-");
+
+        // 🔹 Format date from timestamp
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
+        holder.txtDate.setText(sdf.format(new Date(model.getTime())));
+
+        // 🔹 Amount with ₹ sign
+        holder.txtAmount.setText("₹" + model.getAmount());
     }
 
     @Override
@@ -48,6 +62,7 @@ public class RecentTransactionAdapter
 
         ViewHolder(View itemView) {
             super(itemView);
+
             txtTitle = itemView.findViewById(R.id.txtTitle);
             txtCategory = itemView.findViewById(R.id.txtCategory);
             txtDate = itemView.findViewById(R.id.txtDate);
