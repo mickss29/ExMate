@@ -27,6 +27,9 @@
         <activity
             android:name=".UserDashboardActivity"
             android:exported="false" />
+        <activity
+            android:name=".UserReportsActivity"
+            android:exported="false" />
 
         <activity
             android:name=".AddIncomeActivity"

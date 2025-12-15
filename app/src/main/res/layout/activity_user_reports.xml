@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="#0E1A2B">
+
+    <!-- TITLE -->
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Reports"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"/>
+
+    <!-- SUMMARY ROW -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="16dp"
+        android:weightSum="3">
+
+        <!-- INCOME -->
+        <TextView
+            android:id="@+id/tvIncome"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="₹0"
+            android:textColor="#4CAF50"
+            android:textSize="18sp"
+            android:textStyle="bold"/>
+
+        <!-- EXPENSE -->
+        <TextView
+            android:id="@+id/tvExpense"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="₹0"
+            android:textColor="#F44336"
+            android:textSize="18sp"
+            android:textStyle="bold"/>
+
+        <!-- SAVINGS -->
+        <TextView
+            android:id="@+id/tvSavings"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="₹0"
+            android:textColor="#03A9F4"
+            android:textSize="18sp"
+            android:textStyle="bold"/>
+    </LinearLayout>
+
+    <!-- FILTER BUTTONS -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnDaily"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="Daily"/>
+
+        <Button
+            android:id="@+id/btnWeekly"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="Weekly"/>
+
+        <Button
+            android:id="@+id/btnMonthly"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="Monthly"/>
+    </LinearLayout>
+
+    <!-- CATEGORY TITLE -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Category Wise Expense"
+        android:textColor="@android:color/white"
+        android:textStyle="bold"
+        android:textSize="18sp"
+        android:layout_marginTop="16dp"/>
+
+    <!-- EMPTY STATE -->
+    <TextView
+        android:id="@+id/tvEmpty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No data found"
+        android:textColor="#AAAAAA"
+        android:visibility="gone"
+        android:layout_marginTop="12dp"/>
+
+    <!-- CATEGORY LIST -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvCategory"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="8dp"/>
+
+</LinearLayout>
