@@ -26,4 +26,7 @@
     <color name="error_red">#F44336</color>
     <color name="success_green">#4CAF50</color>
 
+    <color name="premium_red">#E53935</color>
+
+
 </resources>

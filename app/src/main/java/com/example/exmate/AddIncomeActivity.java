@@ -3,7 +3,6 @@ package com.example.exmate;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,12 +15,11 @@ import java.util.HashMap;
 
 public class AddIncomeActivity extends AppCompatActivity {
 
-    private EditText etAmount, etNote;
-    private Spinner spCategory;
-    private Button btnSave;
+    EditText etAmount, etSource;
+    Button btnSave;
 
-    private DatabaseReference usersRef;
-    private String uid;
+    DatabaseReference incomeRef;
+    String userId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,43 +27,43 @@ public class AddIncomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_add_income);
 
         etAmount = findViewById(R.id.etAmount);
-        etNote = findViewById(R.id.etNote);
-        spCategory = findViewById(R.id.spCategory);
-        btnSave = findViewById(R.id.btnSaveIncome);
+        etSource = findViewById(R.id.etSource);
+        btnSave = findViewById(R.id.btnSave);
 
-        uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        usersRef = FirebaseDatabase.getInstance().getReference("users");
+        userId = FirebaseAuth.getInstance().getUid();
 
-        btnSave.setOnClickListener(v -> saveIncome());
-    }
+        incomeRef = FirebaseDatabase.getInstance()
+                .getReference("Users")
+                .child(userId)
+                .child("incomes");
 
-    private void saveIncome() {
+        btnSave.setOnClickListener(v -> {
 
-        String amountStr = etAmount.getText().toString().trim();
-        String category = spCategory.getSelectedItem().toString();
-        String note = etNote.getText().toString().trim();
+            String amtStr = etAmount.getText().toString().trim();
+            String source = etSource.getText().toString().trim();
 
-        if (amountStr.isEmpty()) {
-            Toast.makeText(this, "Enter amount", Toast.LENGTH_SHORT).show();
-            return;
-        }
+            if (amtStr.isEmpty() || source.isEmpty()) {
+                Toast.makeText(this, "Fill all fields", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-        double amount = Double.parseDouble(amountStr);
+            int amount = Integer.parseInt(amtStr);
 
-        String id = usersRef.child(uid).child("income").push().getKey();
+            String id = incomeRef.push().getKey();
 
-        HashMap<String, Object> map = new HashMap<>();
-        map.put("amount", amount);
-        map.put("category", category);
-        map.put("note", note);
-        map.put("date", System.currentTimeMillis());
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("amount", amount);
+            map.put("source", source);
+            map.put("time", System.currentTimeMillis());
 
-        usersRef.child(uid).child("income").child(id).setValue(map)
-                .addOnSuccessListener(unused -> {
-                    Toast.makeText(this, "Income added", Toast.LENGTH_SHORT).show();
-                    finish();
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show());
+            incomeRef.child(id).setValue(map)
+                    .addOnSuccessListener(unused -> {
+                        Toast.makeText(this, "Income Added", Toast.LENGTH_SHORT).show();
+                        finish();
+                    })
+                    .addOnFailureListener(e ->
+                            Toast.makeText(this, "Failed", Toast.LENGTH_SHORT).show()
+                    );
+        });
     }
 }

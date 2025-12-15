@@ -2,39 +2,27 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="20dp"
     android:orientation="vertical"
-    android:background="#0E1A2B">
+    android:padding="20dp">
 
     <EditText
         android:id="@+id/etAmount"
+        android:hint="Amount"
+        android:inputType="number"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Income Amount"
-        android:inputType="numberDecimal"
-        android:textColor="@android:color/white"
-        android:textColorHint="#8FA3BF"/>
-
-    <Spinner
-        android:id="@+id/spCategory"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:entries="@array/income_categories"/>
+        android:layout_height="wrap_content"/>
 
     <EditText
-        android:id="@+id/etNote"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:id="@+id/etSource"
+        android:hint="Source"
         android:layout_marginTop="12dp"
-        android:hint="Note (optional)"
-        android:textColor="@android:color/white"
-        android:textColorHint="#8FA3BF"/>
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 
     <Button
-        android:id="@+id/btnSaveIncome"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:id="@+id/btnSave"
         android:text="Save Income"
-        android:layout_marginTop="20dp"/>
+        android:layout_marginTop="20dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 </LinearLayout>

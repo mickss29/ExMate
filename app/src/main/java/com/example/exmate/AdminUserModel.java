@@ -2,14 +2,25 @@ package com.example.exmate;
 
 public class AdminUserModel {
 
+    private String uid;
     private String name;
     private String email;
+    private String phone;
     private boolean blocked;
 
-    public AdminUserModel(String name, String email, boolean blocked) {
+    // REQUIRED empty constructor for Firebase
+    public AdminUserModel() {}
+
+    public AdminUserModel(String uid, String name, String email, String phone, boolean blocked) {
+        this.uid = uid;
         this.name = name;
         this.email = email;
+        this.phone = phone;
         this.blocked = blocked;
+    }
+
+    public String getUid() {
+        return uid;
     }
 
     public String getName() {
@@ -18,6 +29,10 @@ public class AdminUserModel {
 
     public String getEmail() {
         return email;
+    }
+
+    public String getPhone() {
+        return phone;
     }
 
     public boolean isBlocked() {

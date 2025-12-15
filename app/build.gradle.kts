@@ -1,14 +1,11 @@
 plugins {
     alias(libs.plugins.android.application)
-    id("com.google.gms.google-services")
+    id("com.google.gms.google-services")   // ✅ REQUIRED
 }
 
 android {
     namespace = "com.example.exmate"
-
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36   // ❌ FIXED (your syntax was wrong)
 
     defaultConfig {
         applicationId = "com.example.exmate"
@@ -37,26 +34,24 @@ android {
 }
 
 dependencies {
-
+    implementation("com.airbnb.android:lottie:6.4.0")
     // AndroidX
     implementation(libs.appcompat)
-    implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+    implementation(libs.recyclerview)
     implementation(libs.cardview)
     implementation(libs.viewpager2)
-    implementation(libs.legacy.support.v4)
-    implementation(libs.recyclerview)
     implementation(libs.fragment)
+    implementation(libs.legacy.support.v4)
 
-    // Ads (keep only ONE)
+    // Material (KEEP ONLY ONE)
+    implementation("com.google.android.material:material:1.12.0")
 
-
-    // 🔥 FIREBASE (IMPORTANT)
+    // 🔥 FIREBASE (CORRECT)
     implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-database")
-    implementation("com.google.android.material:material:1.12.0")
 
     // Testing
     testImplementation(libs.junit)

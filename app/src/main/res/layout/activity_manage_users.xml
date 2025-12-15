@@ -16,10 +16,11 @@
         android:background="@color/premiumToolbarColor"
         android:padding="16dp"/>
 
-    <!-- RecyclerView -->
+    <!-- RecyclerView (ID FIXED ✅) -->
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/usersRecyclerView"
+        android:id="@+id/recyclerUsers"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="12dp"/>
+        android:padding="12dp"
+        android:clipToPadding="false"/>
 </LinearLayout>
