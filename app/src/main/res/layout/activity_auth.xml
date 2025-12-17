@@ -126,6 +126,17 @@
                     android:padding="14dp"/>
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- Forgot Password -->
+            <TextView
+                android:id="@+id/tvForgotPassword"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginTop="8dp"
+                android:text="Forgot Password?"
+                android:textSize="13sp"
+                android:textColor="#8AB4F8"/>
+
             <Button
                 android:id="@+id/btnLogin"
                 android:layout_width="match_parent"
@@ -135,6 +146,36 @@
                 android:textStyle="bold"
                 android:textColor="@android:color/white"
                 android:backgroundTint="@color/premium_blue_light"/>
+
+            <!-- ✅ SWIPE HINT LOGIN -->
+            <LinearLayout
+                android:id="@+id/swipeHintLogin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="14dp"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                >
+
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="→"
+                    android:textSize="18sp"
+                    android:textColor="#8AB4F8"
+                    android:layout_marginEnd="6dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Swipe right to create account"
+                    android:textSize="13sp"
+                    android:textColor="#B0C4DE"/>
+            </LinearLayout>
         </LinearLayout>
 
         <!-- ================= SIGNUP ================= -->
@@ -245,6 +286,35 @@
                 android:textStyle="bold"
                 android:textColor="@android:color/white"
                 android:backgroundTint="@color/premium_blue_light"/>
+
+            <!-- ✅ SWIPE HINT SIGNUP -->
+            <LinearLayout
+                android:id="@+id/swipeHintSignup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="14dp"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                >
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Swipe left to login"
+                    android:textSize="13sp"
+                    android:textColor="#B0C4DE"
+                    android:layout_marginEnd="6dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="←"
+                    android:textSize="18sp"
+                    android:textColor="#8AB4F8"/>
+            </LinearLayout>
         </LinearLayout>
 
     </LinearLayout>

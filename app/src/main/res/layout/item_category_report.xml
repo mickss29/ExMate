@@ -1,24 +1,42 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="56dp"
+    android:layout_height="60dp"
     android:layout_marginBottom="8dp"
     android:padding="12dp"
     android:background="@drawable/bg_round_dark"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:gravity="center_vertical">
 
+    <!-- Category Name -->
     <TextView
         android:id="@+id/txtCategory"
         android:layout_width="0dp"
         android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:text="Food / Salary"
         android:textColor="@android:color/white"
         android:textSize="16sp"
-        android:layout_height="wrap_content"/>
+        android:textStyle="bold"/>
 
+    <!-- Income / Expense Tag -->
+    <TextView
+        android:id="@+id/txtType"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:text="EXPENSE"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        android:layout_marginEnd="10dp"/>
+
+    <!-- Amount -->
     <TextView
         android:id="@+id/txtAmount"
-        android:textColor="#FF6B6B"
-        android:textStyle="bold"
-        android:textSize="16sp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_width="wrap_content"/>
+        android:text="₹500"
+        android:textSize="16sp"
+        android:textStyle="bold"/>
 </LinearLayout>
