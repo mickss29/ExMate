@@ -106,7 +106,42 @@ public class AuthActivity extends AppCompatActivity {
         tvForgotPassword.setOnClickListener(v -> showForgotPasswordDialog());
     }
 
-    // ================= AUTH LOGIC (ONLY UPDATED PART) =================
+    // ================= AUTO LOGIN ROLE (ONLY ADDITION) =================
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        FirebaseUser currentUser = auth.getCurrentUser();
+        if (currentUser == null) return;
+
+        if (!currentUser.isEmailVerified()) {
+            auth.signOut();
+            return;
+        }
+
+        usersRef.child(currentUser.getUid()).child("role")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot snapshot) {
+                        String role = snapshot.getValue(String.class);
+
+                        if ("admin".equals(role)) {
+                            startActivity(new Intent(AuthActivity.this,
+                                    AdminDashboardActivity.class));
+                        } else {
+                            startActivity(new Intent(AuthActivity.this,
+                                    UserDashboardActivity.class));
+                        }
+                        finish();
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError error) { }
+                });
+    }
+
+    // ================= AUTH LOGIC =================
 
     private void registerUser() {
 
@@ -154,7 +189,7 @@ public class AuthActivity extends AppCompatActivity {
                     map.put("name", name);
                     map.put("email", email);
                     map.put("phone", phone);
-                    map.put("role", "user"); // ✅ ONLY ADDITION
+                    map.put("role", "user");
 
                     usersRef.child(uid).setValue(map).addOnCompleteListener(dbTask -> {
                         loader.dismiss();
@@ -205,7 +240,6 @@ public class AuthActivity extends AppCompatActivity {
                         return;
                     }
 
-                    // ✅ ONLY ADDITION: ROLE CHECK
                     usersRef.child(user.getUid()).child("role")
                             .addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
