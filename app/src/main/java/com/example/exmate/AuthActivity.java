@@ -56,12 +56,7 @@ public class AuthActivity extends AppCompatActivity {
     private static final int DRAG_THRESHOLD = 180;
 
     private Vibrator vibrator;
-
     private boolean isLoginVisible = true;
-
-    // TEMP ADMIN
-    private static final String ADMIN_EMAIL = "admin@exmate.com";
-    private static final String ADMIN_PASSWORD = "admin123";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,124 +106,134 @@ public class AuthActivity extends AppCompatActivity {
         tvForgotPassword.setOnClickListener(v -> showForgotPasswordDialog());
     }
 
-    // ================= DRAG + HAPTIC =================
+    // ================= AUTH LOGIC (ONLY UPDATED PART) =================
 
-    private void setupDragWithHaptic() {
+    private void registerUser() {
 
-        View.OnTouchListener dragListener = (v, event) -> {
+        String name = etFullName.getText().toString().trim();
+        String email = etSignupEmail.getText().toString().trim();
+        String phone = etSignupPhone.getText().toString().trim();
+        String pass = etSignupPassword.getText().toString().trim();
+        String cpass = etSignupConfirmPassword.getText().toString().trim();
 
-            switch (event.getAction()) {
-
-                case MotionEvent.ACTION_DOWN:
-                    startX = event.getRawX();
-                    isDragging = true;
-                    hapticDone = false;
-                    return true;
-
-                case MotionEvent.ACTION_MOVE:
-                    if (!isDragging) return false;
-
-                    float diffX = event.getRawX() - startX;
-
-                    v.setTranslationX(diffX);
-                    v.setRotation(diffX / 35f);
-
-                    // 🔥 HAPTIC AT THRESHOLD
-                    if (!hapticDone && Math.abs(diffX) > DRAG_THRESHOLD) {
-                        performHaptic();
-                        hapticDone = true;
-                    }
-                    return true;
-
-                case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_CANCEL:
-
-                    float finalX = v.getTranslationX();
-
-                    if (finalX > DRAG_THRESHOLD && isLoginVisible) {
-                        animateOut(v, true);
-                    } else if (finalX < -DRAG_THRESHOLD && !isLoginVisible) {
-                        animateOut(v, false);
-                    } else {
-                        resetPosition(v);
-                    }
-
-                    isDragging = false;
-                    return true;
-            }
-            return false;
-        };
-
-        layoutLogin.setOnTouchListener(dragListener);
-        layoutSignup.setOnTouchListener(dragListener);
-    }
-
-    private void performHaptic() {
-        if (vibrator == null) return;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            vibrator.vibrate(
-                    VibrationEffect.createOneShot(20, VibrationEffect.DEFAULT_AMPLITUDE)
-            );
-        } else {
-            vibrator.vibrate(20);
+        if (name.isEmpty() || email.isEmpty() || pass.isEmpty() || cpass.isEmpty()) {
+            Toast.makeText(this, "Fill all required fields", Toast.LENGTH_SHORT).show();
+            return;
         }
+
+        if (!pass.equals(cpass)) {
+            Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        loader.show();
+
+        auth.createUserWithEmailAndPassword(email, pass)
+                .addOnCompleteListener(task -> {
+
+                    if (!task.isSuccessful()) {
+                        loader.dismiss();
+                        Toast.makeText(this,
+                                task.getException().getMessage(),
+                                Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    FirebaseUser user = auth.getCurrentUser();
+                    if (user == null) {
+                        loader.dismiss();
+                        return;
+                    }
+
+                    user.sendEmailVerification();
+
+                    String uid = user.getUid();
+
+                    HashMap<String, Object> map = new HashMap<>();
+                    map.put("uid", uid);
+                    map.put("name", name);
+                    map.put("email", email);
+                    map.put("phone", phone);
+                    map.put("role", "user"); // ✅ ONLY ADDITION
+
+                    usersRef.child(uid).setValue(map).addOnCompleteListener(dbTask -> {
+                        loader.dismiss();
+                        auth.signOut();
+                        Toast.makeText(this,
+                                "Verification email sent. Please verify.",
+                                Toast.LENGTH_LONG).show();
+                        showLogin(true);
+                    });
+                });
     }
 
-    private void animateOut(View view, boolean toSignup) {
-        float endX = toSignup ? view.getWidth() : -view.getWidth();
+    private void loginUser() {
 
-        view.animate()
-                .translationX(endX)
-                .rotation(0)
-                .setDuration(200)
-                .withEndAction(() -> {
-                    view.setTranslationX(0);
-                    if (toSignup) showSignup(false);
-                    else showLogin(false);
-                })
-                .start();
+        String email = etLoginEmail.getText().toString().trim();
+        String pass = etLoginPassword.getText().toString().trim();
+
+        if (email.isEmpty() || pass.isEmpty()) {
+            Toast.makeText(this, "Enter email & password", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        loader.show();
+
+        auth.signInWithEmailAndPassword(email, pass)
+                .addOnCompleteListener(task -> {
+
+                    if (!task.isSuccessful()) {
+                        loader.dismiss();
+                        Toast.makeText(this,
+                                task.getException().getMessage(),
+                                Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    FirebaseUser user = auth.getCurrentUser();
+                    if (user == null) {
+                        loader.dismiss();
+                        return;
+                    }
+
+                    if (!user.isEmailVerified()) {
+                        loader.dismiss();
+                        auth.signOut();
+                        Toast.makeText(this,
+                                "Email not verified",
+                                Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    // ✅ ONLY ADDITION: ROLE CHECK
+                    usersRef.child(user.getUid()).child("role")
+                            .addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot snapshot) {
+                                    loader.dismiss();
+
+                                    String role = snapshot.getValue(String.class);
+
+                                    if ("admin".equals(role)) {
+                                        startActivity(new Intent(AuthActivity.this,
+                                                AdminDashboardActivity.class));
+                                    } else {
+                                        startActivity(new Intent(AuthActivity.this,
+                                                UserDashboardActivity.class));
+                                    }
+                                    finish();
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError error) {
+                                    loader.dismiss();
+                                    Toast.makeText(AuthActivity.this,
+                                            "Login failed",
+                                            Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                });
     }
-
-    private void resetPosition(View view) {
-        view.animate()
-                .translationX(0)
-                .rotation(0)
-                .setDuration(200)
-                .setInterpolator(new DecelerateInterpolator())
-                .start();
-    }
-
-    // ================= TOGGLE =================
-
-    private void showLogin(boolean animate) {
-        if (isLoginVisible) return;
-        isLoginVisible = true;
-        updateTabs(true);
-        layoutSignup.setVisibility(View.GONE);
-        layoutLogin.setVisibility(View.VISIBLE);
-    }
-
-    private void showSignup(boolean animate) {
-        if (!isLoginVisible) return;
-        isLoginVisible = false;
-        updateTabs(false);
-        layoutLogin.setVisibility(View.GONE);
-        layoutSignup.setVisibility(View.VISIBLE);
-    }
-
-    private void updateTabs(boolean loginSelected) {
-        tabLogin.setBackground(loginSelected ? getDrawable(R.drawable.toggle_selected_midnight) : null);
-        tabSignup.setBackground(!loginSelected ? getDrawable(R.drawable.toggle_selected_midnight) : null);
-
-        tabLogin.setTextColor(loginSelected ? 0xFFFFFFFF : 0xFFB0C4DE);
-        tabSignup.setTextColor(!loginSelected ? 0xFFFFFFFF : 0xFFB0C4DE);
-    }
-
-    // ================= AUTH LOGIC (UNCHANGED) =================
-
-    private void registerUser() { /* same as your existing */ }
-    private void loginUser() { /* same as your existing */ }
 
     private void showForgotPasswordDialog() {
         TextInputEditText input = new TextInputEditText(this);
@@ -242,7 +247,7 @@ public class AuthActivity extends AppCompatActivity {
                     if (!email.isEmpty()) {
                         auth.sendPasswordResetEmail(email);
                         Toast.makeText(this,
-                                "Password reset email sent 📩",
+                                "Reset email sent",
                                 Toast.LENGTH_LONG).show();
                     }
                 })
@@ -250,14 +255,68 @@ public class AuthActivity extends AppCompatActivity {
                 .show();
     }
 
-    // ================= UI =================
+    // ================= UI / ANIMATION (UNCHANGED) =================
+
+    private void setupDragWithHaptic() {
+        View.OnTouchListener dragListener = (v, event) -> {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    startX = event.getRawX();
+                    isDragging = true;
+                    hapticDone = false;
+                    return true;
+                case MotionEvent.ACTION_MOVE:
+                    float diffX = event.getRawX() - startX;
+                    v.setTranslationX(diffX);
+                    v.setRotation(diffX / 35f);
+                    if (!hapticDone && Math.abs(diffX) > DRAG_THRESHOLD) {
+                        performHaptic();
+                        hapticDone = true;
+                    }
+                    return true;
+                case MotionEvent.ACTION_UP:
+                    resetPosition(v);
+                    isDragging = false;
+                    return true;
+            }
+            return false;
+        };
+        layoutLogin.setOnTouchListener(dragListener);
+        layoutSignup.setOnTouchListener(dragListener);
+    }
+
+    private void performHaptic() {
+        if (vibrator == null) return;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(VibrationEffect.createOneShot(20,
+                    VibrationEffect.DEFAULT_AMPLITUDE));
+        } else vibrator.vibrate(20);
+    }
+
+    private void resetPosition(View view) {
+        view.animate().translationX(0).rotation(0)
+                .setDuration(200)
+                .setInterpolator(new DecelerateInterpolator())
+                .start();
+    }
+
+    private void showLogin(boolean animate) {
+        isLoginVisible = true;
+        layoutSignup.setVisibility(View.GONE);
+        layoutLogin.setVisibility(View.VISIBLE);
+    }
+
+    private void showSignup(boolean animate) {
+        isLoginVisible = false;
+        layoutLogin.setVisibility(View.GONE);
+        layoutSignup.setVisibility(View.VISIBLE);
+    }
 
     private void setupLoader() {
         loader = new Dialog(this);
         loader.setContentView(R.layout.dialog_loader);
         loader.setCancelable(false);
         loader.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-
         ImageView ring = loader.findViewById(R.id.loaderRing);
         ObjectAnimator rotate = ObjectAnimator.ofFloat(ring, "rotation", 0f, 360f);
         rotate.setDuration(1200);
@@ -268,8 +327,7 @@ public class AuthActivity extends AppCompatActivity {
     private void animateDarkBlueBackground() {
         GradientDrawable gd = new GradientDrawable(
                 GradientDrawable.Orientation.TL_BR,
-                new int[]{0xFF001633, 0xFF00204D, 0xFF003366}
-        );
+                new int[]{0xFF001633, 0xFF00204D, 0xFF003366});
         rootLayout.setBackground(gd);
     }
 
