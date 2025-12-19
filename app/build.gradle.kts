@@ -44,6 +44,7 @@ dependencies {
     implementation(libs.viewpager2)
     implementation(libs.fragment)
     implementation(libs.legacy.support.v4)
+    implementation("com.google.android.material:material:1.11.0")
 
     // Material (KEEP ONLY ONE)
     implementation("com.google.android.material:material:1.12.0")

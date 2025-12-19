@@ -5,13 +5,17 @@
     <!-- Internet permission for Firebase -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.VIBRATE"/>
+
     <!-- For Android 13+ -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
 
     <!-- For Android 12 and below -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
-
+    <!-- For PDF export (Android 9 and below only) -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28"/>
 
     <application
         android:allowBackup="true"
@@ -35,6 +39,7 @@
         <activity
             android:name=".UserDashboardActivity"
             android:exported="false" />
+
         <activity
             android:name=".UserReportsActivity"
             android:exported="false" />
@@ -75,9 +80,21 @@
         <activity
             android:name=".UserProfile"
             android:exported="false" />
+
         <activity
             android:name=".EditProfileActivity"
             android:exported="false" />
+
+        <!-- 📂 FILE PROVIDER (PDF / CSV EXPORT) -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths"/>
+        </provider>
 
     </application>
 

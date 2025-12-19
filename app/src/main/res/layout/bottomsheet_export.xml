@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:background="#0D1B2A">
+
+    <!-- Title -->
+    <TextView
+        android:text="Export Report"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- PDF OPTION -->
+    <LinearLayout
+        android:id="@+id/optionPdf"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="14dp"
+        android:gravity="center_vertical"
+        android:background="@drawable/bg_export_option"
+        android:layout_marginBottom="12dp">
+
+        <TextView
+            android:text="📄"
+            android:textSize="20sp"
+            android:layout_marginEnd="12dp"/>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:text="Export as PDF"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:text="Printable &amp; shareable"
+                android:textColor="#90A4AE"
+                android:textSize="12sp"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- CSV OPTION -->
+    <LinearLayout
+        android:id="@+id/optionCsv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="14dp"
+        android:gravity="center_vertical"
+        android:background="@drawable/bg_export_option"
+        android:layout_marginBottom="20dp">
+
+        <TextView
+            android:text="📊"
+            android:textSize="20sp"
+            android:layout_marginEnd="12dp"/>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:text="Export as CSV"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:text="Excel compatible"
+                android:textColor="#90A4AE"
+                android:textSize="12sp"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- CANCEL -->
+    <TextView
+        android:id="@+id/btnCancel"
+        android:text="Cancel"
+        android:textColor="#90A4AE"
+        android:textSize="14sp"
+        android:gravity="center"
+        android:padding="12dp"/>
+</LinearLayout>

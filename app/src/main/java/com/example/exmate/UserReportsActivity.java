@@ -1,39 +1,60 @@
 package com.example.exmate;
 
+import android.content.Intent;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.pdf.PdfDocument;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.button.MaterialButton;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.*;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
-import java.util.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 public class UserReportsActivity extends AppCompatActivity {
 
     // UI
-    private TextView tvIncome, tvExpense, tvSavings, tvEmpty;
-    private MaterialButton btnDaily, btnWeekly, btnMonthly;
-    private RecyclerView rvCategory;
+    private RecyclerView recyclerReports;
+    private TextView tvEmpty;
 
     // Firebase
     private DatabaseReference userRef;
 
-    // Data
-    private CategoryReportAdapter adapter;
-    private final List<CategoryReportModel> categoryList = new ArrayList<>();
+    // Adapter & Data
+    private TransactionAdapter adapter;
+    private final List<TransactionListItem> transactionList = new ArrayList<>();
 
-    private double currentIncome = 0;
-    private double currentExpense = 0;
-
-    private static final int DAILY = 1;
-    private static final int WEEKLY = 2;
-    private static final int MONTHLY = 3;
+    // Date formatters
+    private final SimpleDateFormat dateKeyFormat =
+            new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
+    private final SimpleDateFormat dateHeaderFormat =
+            new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
+    private final SimpleDateFormat timeFormat =
+            new SimpleDateFormat("hh:mm a", Locale.getDefault());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,36 +64,23 @@ public class UserReportsActivity extends AppCompatActivity {
         initViews();
         setupRecycler();
         setupFirebase();
-        setupButtons();
+        attachSwipe();
+        setupExport();
 
-        loadReport(DAILY); // default
+        loadTransactions();
     }
 
     // ================= INIT =================
 
     private void initViews() {
-
-        tvIncome = findViewById(R.id.tvIncome);
-        tvExpense = findViewById(R.id.tvExpense);
-        tvSavings = findViewById(R.id.tvSavings); // ⭐ FIXED
+        recyclerReports = findViewById(R.id.recyclerReports);
         tvEmpty = findViewById(R.id.tvEmpty);
-
-        btnDaily = findViewById(R.id.btnDaily);
-        btnWeekly = findViewById(R.id.btnWeekly);
-        btnMonthly = findViewById(R.id.btnMonthly);
-
-        rvCategory = findViewById(R.id.rvCategory);
-
-        // DEFAULT VALUES (CRASH FIX)
-        if (tvIncome != null) tvIncome.setText("₹0");
-        if (tvExpense != null) tvExpense.setText("₹0");
-        if (tvSavings != null) tvSavings.setText("₹0");
     }
 
     private void setupRecycler() {
-        adapter = new CategoryReportAdapter(categoryList);
-        rvCategory.setLayoutManager(new LinearLayoutManager(this));
-        rvCategory.setAdapter(adapter);
+        adapter = new TransactionAdapter(transactionList);
+        recyclerReports.setLayoutManager(new LinearLayoutManager(this));
+        recyclerReports.setAdapter(adapter);
     }
 
     private void setupFirebase() {
@@ -87,131 +95,380 @@ public class UserReportsActivity extends AppCompatActivity {
                 .child(uid);
     }
 
-    private void setupButtons() {
-        btnDaily.setOnClickListener(v -> loadReport(DAILY));
-        btnWeekly.setOnClickListener(v -> loadReport(WEEKLY));
-        btnMonthly.setOnClickListener(v -> loadReport(MONTHLY));
-    }
+    // ================= LOAD DATA =================
 
-    // ================= CORE =================
-
-    private void loadReport(int type) {
-        long start = getStartTime(type);
-        long end = System.currentTimeMillis();
-
-        loadIncome(start, end);
-        loadExpense(start, end);
-    }
-
-    private void loadIncome(long start, long end) {
-
-        userRef.child("incomes")
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot snapshot) {
-
-                        double total = 0;
-
-                        for (DataSnapshot snap : snapshot.getChildren()) {
-                            Long time = snap.child("time").getValue(Long.class);
-                            Double amount = snap.child("amount").getValue(Double.class);
-
-                            if (time == null || amount == null) continue;
-                            if (time < start || time > end) continue;
-
-                            total += amount;
-                        }
-
-                        currentIncome = total;
-                        if (tvIncome != null) tvIncome.setText(format(total));
-                        updateSavings();
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError error) {}
-                });
-    }
-
-    private void loadExpense(long start, long end) {
-
-        categoryList.clear();
+    private void loadTransactions() {
 
         userRef.child("expenses")
+                .orderByChild("time")
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot snapshot) {
 
-                        double total = 0;
-                        Map<String, Double> map = new HashMap<>();
+                        transactionList.clear();
+
+                        if (!snapshot.exists()) {
+                            showEmpty(true);
+                            return;
+                        }
+
+                        Map<String, List<DataSnapshot>> grouped =
+                                new LinkedHashMap<>();
 
                         for (DataSnapshot snap : snapshot.getChildren()) {
 
                             Long time = snap.child("time").getValue(Long.class);
-                            Double amount = snap.child("amount").getValue(Double.class);
-                            String category = snap.child("category").getValue(String.class);
+                            if (time == null) continue;
 
-                            if (time == null || amount == null) continue;
-                            if (time < start || time > end) continue;
+                            String dateKey =
+                                    dateKeyFormat.format(new Date(time));
 
-                            total += amount;
-
-                            if (category == null) category = "Other";
-                            map.put(category, map.getOrDefault(category, 0.0) + amount);
+                            if (!grouped.containsKey(dateKey)) {
+                                grouped.put(dateKey, new ArrayList<>());
+                            }
+                            grouped.get(dateKey).add(snap);
                         }
 
-                        currentExpense = total;
-                        if (tvExpense != null) tvExpense.setText(format(total));
+                        for (String dateKey : grouped.keySet()) {
 
-                        for (String key : map.keySet()) {
-                            categoryList.add(new CategoryReportModel(key, map.get(key)));
+                            long millis = parseDateKey(dateKey);
+                            String headerTitle = getDateTitle(millis);
+
+                            TransactionListItem header =
+                                    new TransactionListItem(
+                                            TransactionListItem.TYPE_DATE);
+                            header.setDateTitle(headerTitle);
+                            transactionList.add(header);
+
+                            for (DataSnapshot snap : grouped.get(dateKey)) {
+
+                                String category =
+                                        snap.child("category")
+                                                .getValue(String.class);
+                                String note =
+                                        snap.child("note")
+                                                .getValue(String.class);
+                                Double amount =
+                                        snap.child("amount")
+                                                .getValue(Double.class);
+                                Long time =
+                                        snap.child("time")
+                                                .getValue(Long.class);
+                                String mode =
+                                        snap.child("paymentMode")
+                                                .getValue(String.class);
+
+                                if (category == null) category = "Other";
+                                if (note == null) note = "";
+                                if (mode == null) mode = "Cash";
+                                if (amount == null || time == null) continue;
+
+                                String meta =
+                                        dateHeaderFormat.format(new Date(time))
+                                                + " • "
+                                                + timeFormat.format(new Date(time))
+                                                + " • "
+                                                + mode;
+
+                                TransactionListItem item =
+                                        new TransactionListItem(
+                                                TransactionListItem.TYPE_TRANSACTION);
+
+                                item.setTransaction(
+                                        category,
+                                        note,
+                                        "- ₹" + amount.intValue(),
+                                        meta,
+                                        amount >= 1000
+                                );
+
+                                transactionList.add(item);
+                            }
                         }
 
                         adapter.notifyDataSetChanged();
-                        updateSavings();
-                        updateEmpty();
+                        showEmpty(transactionList.isEmpty());
                     }
 
                     @Override
-                    public void onCancelled(DatabaseError error) {}
+                    public void onCancelled(DatabaseError error) {
+                        showEmpty(true);
+                    }
                 });
     }
 
-    private void updateSavings() {
-        if (tvSavings == null) return;
+    // ================= SWIPE =================
 
-        double savings = currentIncome - currentExpense;
-        tvSavings.setText(format(savings));
+    private void attachSwipe() {
+
+        ItemTouchHelper.SimpleCallback callback =
+                new ItemTouchHelper.SimpleCallback(
+                        0,
+                        ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+
+                    @Override
+                    public boolean onMove(
+                            RecyclerView recyclerView,
+                            RecyclerView.ViewHolder viewHolder,
+                            RecyclerView.ViewHolder target) {
+                        return false;
+                    }
+
+                    @Override
+                    public int getSwipeDirs(
+                            RecyclerView recyclerView,
+                            RecyclerView.ViewHolder viewHolder) {
+
+                        int pos = viewHolder.getAdapterPosition();
+                        if (transactionList.get(pos).getType()
+                                == TransactionListItem.TYPE_DATE) {
+                            return 0;
+                        }
+                        return super.getSwipeDirs(recyclerView, viewHolder);
+                    }
+
+                    @Override
+                    public void onSwiped(
+                            RecyclerView.ViewHolder viewHolder,
+                            int direction) {
+
+                        int pos = viewHolder.getAdapterPosition();
+
+                        if (direction == ItemTouchHelper.LEFT) {
+                            adapter.notifyItemChanged(pos);
+                            Toast.makeText(
+                                    UserReportsActivity.this,
+                                    "Edit coming soon",
+                                    Toast.LENGTH_SHORT
+                            ).show();
+                        } else {
+                            transactionList.remove(pos);
+                            adapter.notifyItemRemoved(pos);
+                            showEmpty(transactionList.isEmpty());
+                        }
+                    }
+                };
+
+        new ItemTouchHelper(callback)
+                .attachToRecyclerView(recyclerReports);
     }
 
-    // ================= UTIL =================
+    // ================= EXPORT =================
 
-    private long getStartTime(int type) {
-        Calendar cal = Calendar.getInstance();
+    private void setupExport() {
+        findViewById(R.id.fabExport)
+                .setOnClickListener(v -> showExportSheet());
+    }
 
-        if (type == DAILY) {
-            cal.set(Calendar.HOUR_OF_DAY, 0);
-            cal.set(Calendar.MINUTE, 0);
-            cal.set(Calendar.SECOND, 0);
-        } else if (type == WEEKLY) {
-            cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
-        } else if (type == MONTHLY) {
-            cal.set(Calendar.DAY_OF_MONTH, 1);
+    private void showExportSheet() {
+
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
+        View view = getLayoutInflater()
+                .inflate(R.layout.bottomsheet_export, null);
+        dialog.setContentView(view);
+
+        view.findViewById(R.id.optionPdf)
+                .setOnClickListener(v -> {
+                    dialog.dismiss();
+                    exportPdf();
+                });
+
+        view.findViewById(R.id.optionCsv)
+                .setOnClickListener(v -> {
+                    dialog.dismiss();
+                    exportCsv();
+                });
+
+        view.findViewById(R.id.btnCancel)
+                .setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
+    }
+
+    // ================= PDF =================
+
+    private void exportPdf() {
+
+        PdfDocument pdf = new PdfDocument();
+        Paint paint = new Paint();
+        Paint titlePaint = new Paint();
+
+        PdfDocument.PageInfo pageInfo =
+                new PdfDocument.PageInfo.Builder(595, 842, 1).create();
+        PdfDocument.Page page = pdf.startPage(pageInfo);
+        Canvas canvas = page.getCanvas();
+
+        titlePaint.setTextSize(18f);
+        titlePaint.setFakeBoldText(true);
+        canvas.drawText("ExMate - Expense Report", 40, 50, titlePaint);
+
+        paint.setTextSize(10f);
+        canvas.drawText(
+                "Generated: " +
+                        new SimpleDateFormat(
+                                "dd MMM yyyy",
+                                Locale.getDefault()
+                        ).format(new Date()),
+                40,
+                70,
+                paint
+        );
+
+        int y = 110;
+        paint.setFakeBoldText(true);
+        canvas.drawText("Category", 40, y, paint);
+        canvas.drawText("Note", 160, y, paint);
+        canvas.drawText("Amount", 400, y, paint);
+        paint.setFakeBoldText(false);
+        y += 20;
+
+        for (TransactionListItem item : transactionList) {
+
+            if (item.getType() == TransactionListItem.TYPE_DATE)
+                continue;
+
+            canvas.drawText(item.getCategory(), 40, y, paint);
+            canvas.drawText(item.getNote(), 160, y, paint);
+            canvas.drawText(item.getAmount(), 400, y, paint);
+
+            y += 18;
+            if (y > 800) {
+                pdf.finishPage(page);
+                page = pdf.startPage(pageInfo);
+                canvas = page.getCanvas();
+                y = 40;
+            }
         }
 
-        return cal.getTimeInMillis();
+        pdf.finishPage(page);
+        saveAndSharePdf(pdf);
     }
 
-    private String format(double value) {
-        return "₹" + String.format(Locale.getDefault(), "%,.0f", value);
-    }
+    private void saveAndSharePdf(PdfDocument pdf) {
+        try {
+            File file = new File(
+                    getExternalFilesDir(null),
+                    "ExMate_Report_" + System.currentTimeMillis() + ".pdf"
+            );
+            FileOutputStream fos = new FileOutputStream(file);
+            pdf.writeTo(fos);
+            pdf.close();
+            fos.close();
 
-    private void updateEmpty() {
-        if (categoryList.isEmpty()) {
-            tvEmpty.setVisibility(View.VISIBLE);
-            rvCategory.setVisibility(View.GONE);
-        } else {
-            tvEmpty.setVisibility(View.GONE);
-            rvCategory.setVisibility(View.VISIBLE);
+            shareFile(file, "application/pdf");
+
+        } catch (Exception e) {
+            Toast.makeText(this,
+                    "PDF export failed",
+                    Toast.LENGTH_SHORT).show();
         }
+    }
+
+    // ================= CSV =================
+
+    private void exportCsv() {
+
+        StringBuilder csv = new StringBuilder();
+        csv.append("Date,Time,Category,Note,Payment Mode,Amount\n");
+
+        for (TransactionListItem item : transactionList) {
+
+            if (item.getType() == TransactionListItem.TYPE_DATE)
+                continue;
+
+            String[] meta = item.getMeta().split(" • ");
+
+            csv.append(escape(meta, 0)).append(",");
+            csv.append(escape(meta, 1)).append(",");
+            csv.append(escape(item.getCategory())).append(",");
+            csv.append(escape(item.getNote())).append(",");
+            csv.append(escape(meta, 2)).append(",");
+            csv.append(escape(item.getAmount())).append("\n");
+        }
+
+        try {
+            File file = new File(
+                    getExternalFilesDir(null),
+                    "ExMate_Report_" + System.currentTimeMillis() + ".csv"
+            );
+            FileOutputStream fos = new FileOutputStream(file);
+            fos.write(csv.toString().getBytes());
+            fos.close();
+
+            shareFile(file, "text/csv");
+
+        } catch (Exception e) {
+            Toast.makeText(this,
+                    "CSV export failed",
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private String escape(String[] arr, int i) {
+        if (arr.length <= i) return "\"\"";
+        return "\"" + arr[i].replace("\"", "\"\"") + "\"";
+    }
+
+    private String escape(String val) {
+        if (val == null) return "\"\"";
+        return "\"" + val.replace("\"", "\"\"") + "\"";
+    }
+
+    // ================= SHARE =================
+
+    private void shareFile(File file, String type) {
+
+        Uri uri = FileProvider.getUriForFile(
+                this,
+                getPackageName() + ".provider",
+                file
+        );
+
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType(type);
+        intent.putExtra(Intent.EXTRA_STREAM, uri);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+        startActivity(
+                Intent.createChooser(
+                        intent,
+                        "Share Report"
+                )
+        );
+    }
+
+    // ================= HELPERS =================
+
+    private void showEmpty(boolean show) {
+        tvEmpty.setVisibility(show ? View.VISIBLE : View.GONE);
+        recyclerReports.setVisibility(show ? View.GONE : View.VISIBLE);
+    }
+
+    private long parseDateKey(String key) {
+        try {
+            return dateKeyFormat.parse(key).getTime();
+        } catch (Exception e) {
+            return System.currentTimeMillis();
+        }
+    }
+
+    private String getDateTitle(long millis) {
+
+        Calendar today = Calendar.getInstance();
+        Calendar date = Calendar.getInstance();
+        date.setTimeInMillis(millis);
+
+        if (isSameDay(today, date)) return "Today";
+
+        today.add(Calendar.DAY_OF_YEAR, -1);
+        if (isSameDay(today, date)) return "Yesterday";
+
+        return dateHeaderFormat.format(new Date(millis));
+    }
+
+    private boolean isSameDay(Calendar a, Calendar b) {
+        return a.get(Calendar.YEAR) == b.get(Calendar.YEAR)
+                && a.get(Calendar.DAY_OF_YEAR)
+                == b.get(Calendar.DAY_OF_YEAR);
     }
 }
