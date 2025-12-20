@@ -160,11 +160,12 @@ public class AdminUserFullFinanceReportActivity extends AppCompatActivity {
 
     private void exportCSV() {
         try {
-            File file = new File(
-                    Environment.getExternalStoragePublicDirectory(
-                            Environment.DIRECTORY_DOWNLOADS),
-                    "User_Finance_Report.csv"
-            );
+            File dir = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
+            if (dir != null && !dir.exists()) dir.mkdirs();
+
+            File file = new File(dir, "User_Finance_Report.csv");
+
+
 
             FileWriter w = new FileWriter(file);
             w.append("Type,Title,Mode,Date,Amount\n");
@@ -361,11 +362,11 @@ public class AdminUserFullFinanceReportActivity extends AppCompatActivity {
             drawPageFooter(c, p, pageNo);
             pdf.finishPage(page);
 
-            File file = new File(
-                    Environment.getExternalStoragePublicDirectory(
-                            Environment.DIRECTORY_DOWNLOADS),
-                    "User_Finance_Report.pdf"
-            );
+            File dir = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
+            if (dir != null && !dir.exists()) dir.mkdirs();
+
+            File file = new File(dir, "User_Finance_Report.pdf");
+
 
             pdf.writeTo(new FileOutputStream(file));
             pdf.close();
@@ -387,15 +388,25 @@ public class AdminUserFullFinanceReportActivity extends AppCompatActivity {
                     file
             );
 
-            Intent i = new Intent(Intent.ACTION_VIEW);
-            i.setDataAndType(uri, type);
-            i.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            startActivity(i);
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(uri, type);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+            if (intent.resolveActivity(getPackageManager()) != null) {
+                startActivity(intent);
+            } else {
+                Toast.makeText(this,
+                        "No app installed to open this file",
+                        Toast.LENGTH_LONG).show();
+            }
 
         } catch (Exception e) {
-            toast("No app found to open file");
+            Toast.makeText(this,
+                    "Open failed: " + e.getMessage(),
+                    Toast.LENGTH_LONG).show();
         }
     }
+
 
     private String safe(String v) {
         return v == null || v.trim().isEmpty() ? "-" : v;
