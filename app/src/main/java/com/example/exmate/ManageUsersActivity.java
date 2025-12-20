@@ -33,9 +33,11 @@ import com.google.firebase.database.ValueEventListener;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class ManageUsersActivity extends AppCompatActivity {
 
@@ -75,7 +77,6 @@ public class ManageUsersActivity extends AppCompatActivity {
         return value == null || value.trim().isEmpty() ? "-" : value;
     }
 
-    // ================= TRIM LONG TEXT =================
     private String trim(String text, int max) {
         if (text == null) return "-";
         return text.length() > max ? text.substring(0, max - 3) + "..." : text;
@@ -83,7 +84,6 @@ public class ManageUsersActivity extends AppCompatActivity {
 
     // ================= LOAD USERS =================
     private void loadUsersFromFirebase() {
-
         usersRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -91,7 +91,6 @@ public class ManageUsersActivity extends AppCompatActivity {
                 userList.clear();
 
                 for (DataSnapshot userSnap : snapshot.getChildren()) {
-
                     String uid = userSnap.getKey();
                     String name = userSnap.child("name").getValue(String.class);
                     String email = userSnap.child("email").getValue(String.class);
@@ -100,50 +99,41 @@ public class ManageUsersActivity extends AppCompatActivity {
 
                     if (blocked == null) blocked = false;
 
-                    userList.add(
-                            new AdminUserModel(
-                                    uid,
-                                    safe(name),
-                                    safe(email),
-                                    safe(phone),
-                                    blocked
-                            )
-                    );
+                    userList.add(new AdminUserModel(
+                            uid,
+                            safe(name),
+                            safe(email),
+                            safe(phone),
+                            blocked
+                    ));
                 }
-
                 adapter.notifyDataSetChanged();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(
-                        ManageUsersActivity.this,
+                Toast.makeText(ManageUsersActivity.this,
                         "Failed to load users: " + error.getMessage(),
-                        Toast.LENGTH_LONG
-                ).show();
+                        Toast.LENGTH_LONG).show();
             }
         });
     }
 
-    // ================= BOTTOM SHEET =================
+    // ================= EXPORT OPTIONS =================
     private void showExportBottomSheet() {
-
         BottomSheetDialog dialog = new BottomSheetDialog(this);
-        View view = getLayoutInflater()
-                .inflate(R.layout.bottom_sheet_export, null);
+        View view = getLayoutInflater().inflate(R.layout.bottom_sheet_export, null);
         dialog.setContentView(view);
 
-        view.findViewById(R.id.btnExportPDF)
-                .setOnClickListener(v -> {
-                    exportProfessionalPDF();
-                    dialog.dismiss();
-                });
+        view.findViewById(R.id.btnExportPDF).setOnClickListener(v -> {
+            exportProfessionalPDF();
+            dialog.dismiss();
+        });
 
-        view.findViewById(R.id.btnExportCSV)
-                .setOnClickListener(v -> {
-                    exportCSV();
-                    dialog.dismiss();
-                });
+        view.findViewById(R.id.btnExportCSV).setOnClickListener(v -> {
+            exportCSV();
+            dialog.dismiss();
+        });
 
         dialog.show();
     }
@@ -151,8 +141,8 @@ public class ManageUsersActivity extends AppCompatActivity {
     // ================= CSV EXPORT (AUTO OPEN) =================
     private void exportCSV() {
         try {
-            File dir = Environment.getExternalStoragePublicDirectory(
-                    Environment.DIRECTORY_DOWNLOADS);
+            File dir = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
+            if (dir != null && !dir.exists()) dir.mkdirs();
 
             File file = new File(dir, "ExMate_Users.csv");
             FileWriter writer = new FileWriter(file);
@@ -174,15 +164,12 @@ public class ManageUsersActivity extends AppCompatActivity {
             openFile(file, "text/csv");
 
         } catch (Exception e) {
-            Toast.makeText(this,
-                    "CSV error: " + e.getMessage(),
-                    Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "CSV error: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
-    // ================= PDF EXPORT (AUTO OPEN) =================
+    // ================= PDF EXPORT (AUTO OPEN + SIGNATURE) =================
     private void exportProfessionalPDF() {
-
         try {
             PdfDocument pdf = new PdfDocument();
 
@@ -198,9 +185,7 @@ public class ManageUsersActivity extends AppCompatActivity {
             int totalUsers = userList.size();
             int blockedUsers = 0;
 
-            for (AdminUserModel u : userList) {
-                if (u.isBlocked()) blockedUsers++;
-            }
+            for (AdminUserModel u : userList) if (u.isBlocked()) blockedUsers++;
 
             PdfDocument.Page page = pdf.startPage(pageInfo);
             Canvas canvas = page.getCanvas();
@@ -212,9 +197,11 @@ public class ManageUsersActivity extends AppCompatActivity {
 
             y += 28;
             textPaint.setTextSize(11);
-            String date = android.text.format.DateFormat
-                    .format("dd MMM yyyy", new Date()).toString();
-            canvas.drawText("Generated on: " + date, 40, y, textPaint);
+            String generatedAt = new SimpleDateFormat(
+                    "dd MMM yyyy, hh:mm a", Locale.getDefault()
+            ).format(new Date());
+
+            canvas.drawText("Generated on: " + generatedAt, 40, y, textPaint);
 
             y += 25;
             headerPaint.setFakeBoldText(true);
@@ -254,35 +241,31 @@ public class ManageUsersActivity extends AppCompatActivity {
                 canvas.drawText(trim(user.getEmail(), 26), 150, y, textPaint);
                 canvas.drawText(trim(user.getPhone(), 14), 320, y, textPaint);
                 canvas.drawText(user.isBlocked() ? "Blocked" : "Active", 460, y, textPaint);
-
                 y += 18;
             }
 
-            y += 25;
+            // ===== DIGITAL SIGNATURE =====
+            y += 30;
             canvas.drawLine(40, y, 300, y, textPaint);
-            y += 15;
-            canvas.drawText("Digitally generated & approved by", 40, y, textPaint);
+            y += 16;
+            canvas.drawText("Digitally signed by ExMate Admin", 40, y, textPaint);
             y += 14;
-            canvas.drawText("ExMate Admin Panel", 40, y, headerPaint);
+            canvas.drawText("Signed on: " + generatedAt, 40, y, textPaint);
 
             drawFooter(canvas, footerPaint, pageNumber);
             pdf.finishPage(page);
 
-            File file = new File(
-                    Environment.getExternalStoragePublicDirectory(
-                            Environment.DIRECTORY_DOWNLOADS),
-                    "ExMate_Users_Report.pdf"
-            );
+            File dir = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
+            if (dir != null && !dir.exists()) dir.mkdirs();
 
+            File file = new File(dir, "ExMate_Users_Report.pdf");
             pdf.writeTo(new FileOutputStream(file));
             pdf.close();
 
             openFile(file, "application/pdf");
 
         } catch (Exception e) {
-            Toast.makeText(this,
-                    "PDF error: " + e.getMessage(),
-                    Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "PDF error: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -294,7 +277,7 @@ public class ManageUsersActivity extends AppCompatActivity {
         canvas.drawText("Page " + pageNumber, 480, 828, paint);
     }
 
-    // ================= OPEN FILE =================
+    // ================= OPEN FILE SAFELY =================
     private void openFile(File file, String mimeType) {
         try {
             Uri uri = FileProvider.getUriForFile(
@@ -307,11 +290,11 @@ public class ManageUsersActivity extends AppCompatActivity {
             intent.setDataAndType(uri, mimeType);
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-            startActivity(intent);
+            startActivity(Intent.createChooser(intent, "Open file"));
 
         } catch (Exception e) {
             Toast.makeText(this,
-                    "No app found to open file",
+                    "No app found to open this file",
                     Toast.LENGTH_LONG).show();
         }
     }
