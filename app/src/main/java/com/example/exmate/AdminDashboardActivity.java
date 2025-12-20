@@ -28,29 +28,26 @@ public class AdminDashboardActivity extends AppCompatActivity {
 
         // ➜ Manage Users
         cardUsers.setOnClickListener(v -> {
-            Intent intent = new Intent(
+            startActivity(new Intent(
                     AdminDashboardActivity.this,
                     ManageUsersActivity.class
-            );
-            startActivity(intent);
+            ));
         });
 
-        // ➜ Manage Categories
+        // ➜ Expense Management (IMPORTANT FIX 🔥)
         cardCategories.setOnClickListener(v -> {
-            Intent intent = new Intent(
+            startActivity(new Intent(
                     AdminDashboardActivity.this,
-                    ManageCategoriesActivity.class
-            );
-            startActivity(intent);
+                    AdminUserFinanceReportActivity.class
+            ));
         });
 
-        // ➜ Reports (later)
+        // ➜ Reports & Analytics (future / optional)
         cardReports.setOnClickListener(v -> {
-            Intent intent = new Intent(
+            startActivity(new Intent(
                     AdminDashboardActivity.this,
                     ReportsActivity.class
-            );
-            startActivity(intent);
+            ));
         });
     }
 }

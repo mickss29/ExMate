@@ -88,6 +88,16 @@
             android:exported="false" />
         <activity android:name=".StatisticsActivity"
             android:exported="false" />
+        <activity
+            android:name=".AdminUserFinanceReportActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AdminUserSelectActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AdminUserFullFinanceReportActivity"
+            android:exported="false" />
+
 
 
 
