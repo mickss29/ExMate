@@ -22,15 +22,19 @@
             android:text="Reports"
             android:textSize="22sp"
             android:textStyle="bold"
-            android:textColor="#FFFFFF"/>
+            android:textColor="#FFFFFF"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
 
         <TextView
             android:text="Detailed transaction history"
             android:textSize="13sp"
-            android:textColor="#B0BEC5"/>
+            android:textColor="#B0BEC5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
     </LinearLayout>
 
-    <!-- 🧩 FILTER CHIPS (SAFE FIX) -->
+    <!-- 🧩 FILTER CHIPS -->
     <com.google.android.material.chip.ChipGroup
         android:id="@+id/chipGroupFilters"
         android:layout_width="0dp"
@@ -43,16 +47,22 @@
         app:layout_constraintEnd_toEndOf="parent">
 
         <com.google.android.material.chip.Chip
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="📅 Sep 2025"
             android:textColor="#FFFFFF"
             android:background="@drawable/bg_chip_unselected"/>
 
         <com.google.android.material.chip.Chip
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="🍔 Food"
             android:textColor="#FFFFFF"
             android:background="@drawable/bg_chip_unselected"/>
 
         <com.google.android.material.chip.Chip
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="💳 UPI"
             android:textColor="#FFFFFF"
             android:background="@drawable/bg_chip_unselected"/>
@@ -103,7 +113,9 @@
             <TextView
                 android:text="Date Range"
                 android:textColor="#B0BEC5"
-                android:textSize="12sp"/>
+                android:textSize="12sp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
 
             <TextView
                 android:id="@+id/txtDateRange"
@@ -111,7 +123,9 @@
                 android:textColor="#FFFFFF"
                 android:padding="10dp"
                 android:background="@drawable/bg_input_dark_rounded"
-                android:layout_marginBottom="10dp"/>
+                android:layout_marginBottom="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
 
             <Spinner
                 android:id="@+id/spinnerCategory"
@@ -176,10 +190,7 @@
         app:cardBackgroundColor="#132238"
         app:layout_constraintBottom_toTopOf="@id/bottomNavigation"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <!-- unchanged content -->
-    </androidx.cardview.widget.CardView>
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <!-- ⬇️ BOTTOM NAVIGATION -->
     <com.google.android.material.bottomnavigation.BottomNavigationView

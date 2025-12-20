@@ -11,6 +11,8 @@
 
     <!-- For Android 12 and below -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_DOCUMENTS" />
+
 
     <!-- For PDF export (Android 9 and below only) -->
     <uses-permission
@@ -84,6 +86,10 @@
         <activity
             android:name=".EditProfileActivity"
             android:exported="false" />
+        <activity android:name=".StatisticsActivity"
+            android:exported="false" />
+
+
 
         <!-- 📂 FILE PROVIDER (PDF / CSV EXPORT) -->
         <provider
@@ -94,7 +100,11 @@
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths"/>
+
+
         </provider>
+
+
 
     </application>
 

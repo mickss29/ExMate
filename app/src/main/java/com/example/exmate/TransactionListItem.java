@@ -18,6 +18,9 @@ public class TransactionListItem {
     private String meta;
     private boolean highSpend;
 
+    // 🔥 IMPORTANT: REAL TRANSACTION TIME
+    private long timeMillis;
+
     // ---------- CONSTRUCTOR ----------
     public TransactionListItem(int type) {
         this.type = type;
@@ -52,6 +55,11 @@ public class TransactionListItem {
         return highSpend;
     }
 
+    // 🔥 NEW GETTER
+    public long getTimeMillis() {
+        return timeMillis;
+    }
+
     // ---------- SETTERS ----------
     public void setDateTitle(String dateTitle) {
         this.dateTitle = dateTitle;
@@ -69,5 +77,10 @@ public class TransactionListItem {
         this.amount = amount;
         this.meta = meta;
         this.highSpend = highSpend;
+    }
+
+    // 🔥 NEW SETTER
+    public void setTimeMillis(long timeMillis) {
+        this.timeMillis = timeMillis;
     }
 }
