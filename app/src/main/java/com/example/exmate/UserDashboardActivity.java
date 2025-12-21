@@ -3,9 +3,6 @@ package com.example.exmate;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -14,6 +11,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.card.MaterialCardView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -27,19 +26,18 @@ import java.util.List;
 
 public class UserDashboardActivity extends AppCompatActivity {
 
-    // UI
+    // UI (ONLY IDs THAT EXIST IN XML)
     private BottomNavigationView bottomNav;
-    private Spinner spAddAction;
-    private RecyclerView rvRecentHistory;
-    private View layoutEmpty;
-    private TextView tvStatusMessage, tvTotalIncome, tvTotalExpense;
+    private RecyclerView rvRecent;
+    private TextView tvIncome, tvExpense;
+    private MaterialCardView cardAddIncome, cardAddExpense;
 
     // Firebase
     private DatabaseReference userRef;
     private String userId;
 
     // Data
-    private List<TransactionModel> transactionList = new ArrayList<>();
+    private final List<TransactionModel> transactionList = new ArrayList<>();
     private RecentTransactionAdapter adapter;
 
     @Override
@@ -48,9 +46,9 @@ public class UserDashboardActivity extends AppCompatActivity {
         setContentView(R.layout.activity_user_dashboard);
 
         initViews();
-        setupRecentHistory();     // adapter first
+        setupRecentList();
+        setupCardClicks();
         setupBottomNav();
-        setupAddActionSpinner();
         setupFirebase();
     }
 
@@ -58,12 +56,13 @@ public class UserDashboardActivity extends AppCompatActivity {
 
     private void initViews() {
         bottomNav = findViewById(R.id.bottomNav);
-        spAddAction = findViewById(R.id.spAddAction);
-        rvRecentHistory = findViewById(R.id.rvRecentHistory);
-        layoutEmpty = findViewById(R.id.layoutEmpty);
-        tvStatusMessage = findViewById(R.id.tvStatusMessage);
-        tvTotalIncome = findViewById(R.id.tvTotalIncome);
-        tvTotalExpense = findViewById(R.id.tvTotalExpense);
+        rvRecent = findViewById(R.id.rvRecent);
+
+        tvIncome = findViewById(R.id.tvIncome);
+        tvExpense = findViewById(R.id.tvExpense);
+
+        cardAddIncome = findViewById(R.id.cardAddIncome);
+        cardAddExpense = findViewById(R.id.cardAddExpense);
     }
 
     // ================= FIREBASE =================
@@ -82,8 +81,9 @@ public class UserDashboardActivity extends AppCompatActivity {
                 .child(userId);
     }
 
-    private void loadDashboardData() {
+    // ================= LOAD DATA =================
 
+    private void loadDashboardData() {
         transactionList.clear();
         adapter.notifyDataSetChanged();
 
@@ -91,10 +91,7 @@ public class UserDashboardActivity extends AppCompatActivity {
         loadExpense();
     }
 
-    // ================= INCOME =================
-
     private void loadIncome() {
-
         userRef.child("incomes")
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -103,30 +100,18 @@ public class UserDashboardActivity extends AppCompatActivity {
                         double totalIncome = 0;
 
                         for (DataSnapshot snap : snapshot.getChildren()) {
+                            Double amount = snap.child("amount").getValue(Double.class);
+                            Long time = snap.child("time").getValue(Long.class);
 
-                            Object amountObj = snap.child("amount").getValue();
-                            Object timeObj   = snap.child("time").getValue();
-
-                            if (amountObj == null || timeObj == null) continue;
-
-                            double amount;
-                            long time;
-
-                            try {
-                                amount = Double.parseDouble(amountObj.toString());
-                                time = Long.parseLong(timeObj.toString());
-                            } catch (Exception e) {
-                                continue;
-                            }
+                            if (amount == null || time == null) continue;
 
                             totalIncome += amount;
-
                             transactionList.add(
                                     new TransactionModel("Income", amount, time)
                             );
                         }
 
-                        tvTotalIncome.setText("₹" + totalIncome);
+                        tvIncome.setText("Income  ₹" + totalIncome);
                         finalizeList();
                     }
 
@@ -135,10 +120,7 @@ public class UserDashboardActivity extends AppCompatActivity {
                 });
     }
 
-    // ================= EXPENSE =================
-
     private void loadExpense() {
-
         userRef.child("expenses")
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -147,30 +129,18 @@ public class UserDashboardActivity extends AppCompatActivity {
                         double totalExpense = 0;
 
                         for (DataSnapshot snap : snapshot.getChildren()) {
+                            Double amount = snap.child("amount").getValue(Double.class);
+                            Long time = snap.child("time").getValue(Long.class);
 
-                            Object amountObj = snap.child("amount").getValue();
-                            Object timeObj   = snap.child("time").getValue();
-
-                            if (amountObj == null || timeObj == null) continue;
-
-                            double amount;
-                            long time;
-
-                            try {
-                                amount = Double.parseDouble(amountObj.toString());
-                                time = Long.parseLong(timeObj.toString());
-                            } catch (Exception e) {
-                                continue;
-                            }
+                            if (amount == null || time == null) continue;
 
                             totalExpense += amount;
-
                             transactionList.add(
                                     new TransactionModel("Expense", amount, time)
                             );
                         }
 
-                        tvTotalExpense.setText("₹" + totalExpense);
+                        tvExpense.setText("Expenses  ₹" + totalExpense);
                         finalizeList();
                     }
 
@@ -179,15 +149,58 @@ public class UserDashboardActivity extends AppCompatActivity {
                 });
     }
 
-    // ================= FINALIZE =================
-
     private void finalizeList() {
-
-        Collections.sort(transactionList,
-                (a, b) -> Long.compare(b.getTime(), a.getTime()));
-
+        Collections.sort(
+                transactionList,
+                (a, b) -> Long.compare(b.getTime(), a.getTime())
+        );
         adapter.notifyDataSetChanged();
-        updateUI();
+    }
+
+    // ================= RECENT LIST =================
+
+    private void setupRecentList() {
+        adapter = new RecentTransactionAdapter(transactionList);
+        rvRecent.setLayoutManager(new LinearLayoutManager(this));
+        rvRecent.setAdapter(adapter);
+    }
+
+    // ================= CARD CLICKS =================
+
+    private void setupCardClicks() {
+
+        cardAddIncome.setOnClickListener(v ->
+                startActivity(new Intent(this, AddIncomeActivity.class))
+        );
+
+        cardAddExpense.setOnClickListener(v ->
+                startActivity(new Intent(this, AddExpenseActivity.class))
+        );
+    }
+
+    // ================= CENTER + BOTTOM SHEET =================
+
+    private void showAddTransactionSheet() {
+
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
+        View view = getLayoutInflater()
+                .inflate(R.layout.bottomsheet_add_button, null);
+
+        dialog.setContentView(view);
+
+        view.findViewById(R.id.optionAddIncome)
+                .setOnClickListener(v -> {
+                    dialog.dismiss();
+                    startActivity(new Intent(this, AddIncomeActivity.class));
+                });
+
+        view.findViewById(R.id.optionAddExpense)
+                .setOnClickListener(v -> {
+                    dialog.dismiss();
+                    startActivity(new Intent(this, AddExpenseActivity.class));
+                });
+
+        dialog.show();
     }
 
     // ================= BOTTOM NAV =================
@@ -201,6 +214,12 @@ public class UserDashboardActivity extends AppCompatActivity {
             int id = item.getItemId();
 
             if (id == R.id.nav_dashboard) return true;
+
+            // ⭐ CENTER + BUTTON
+            if (id == R.id.nav_add) {
+                showAddTransactionSheet();
+                return false; // DO NOT switch tab
+            }
 
             if (id == R.id.nav_reports) {
                 startActivity(new Intent(this, UserReportsActivity.class));
@@ -219,69 +238,6 @@ public class UserDashboardActivity extends AppCompatActivity {
 
             return false;
         });
-    }
-
-    // ================= ADD ACTION =================
-
-    private void setupAddActionSpinner() {
-
-        ArrayAdapter<CharSequence> spinnerAdapter =
-                ArrayAdapter.createFromResource(
-                        this,
-                        R.array.dashboard_add_action,
-                        android.R.layout.simple_spinner_item
-                );
-
-        spinnerAdapter.setDropDownViewResource(
-                android.R.layout.simple_spinner_dropdown_item
-        );
-
-        spAddAction.setAdapter(spinnerAdapter);
-
-        spAddAction.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-
-                if (position == 0) return;
-
-                if (position == 1) {
-                    startActivity(new Intent(UserDashboardActivity.this, AddIncomeActivity.class));
-                }
-
-                if (position == 2) {
-                    startActivity(new Intent(UserDashboardActivity.this, AddExpenseActivity.class));
-                }
-
-                spAddAction.setSelection(0);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {}
-        });
-    }
-
-    // ================= RECENT HISTORY =================
-
-    private void setupRecentHistory() {
-        adapter = new RecentTransactionAdapter(transactionList);
-        rvRecentHistory.setLayoutManager(new LinearLayoutManager(this));
-        rvRecentHistory.setAdapter(adapter);
-    }
-
-    // ================= UI =================
-
-    private void updateUI() {
-
-        if (transactionList.isEmpty()) {
-            layoutEmpty.setVisibility(View.VISIBLE);
-            rvRecentHistory.setVisibility(View.GONE);
-            tvStatusMessage.setText("No activity yet. Start adding income or expense.");
-        } else {
-            layoutEmpty.setVisibility(View.GONE);
-            rvRecentHistory.setVisibility(View.VISIBLE);
-            tvStatusMessage.setText("Here’s your recent activity");
-        }
     }
 
     @Override

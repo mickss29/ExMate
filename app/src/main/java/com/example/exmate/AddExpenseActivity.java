@@ -28,6 +28,9 @@ public class AddExpenseActivity extends AppCompatActivity {
     private DatabaseReference expenseRef;
     private String userId;
 
+    // ✅ Store selected date properly
+    private long selectedDateMillis = -1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -117,12 +120,21 @@ public class AddExpenseActivity extends AppCompatActivity {
 
             DatePickerDialog dialog = new DatePickerDialog(
                     this,
-                    (view, y, m, d) ->
-                            etExpenseDate.setText(d + "/" + (m + 1) + "/" + y),
+                    (view, y, m, d) -> {
+                        Calendar selectedCal = Calendar.getInstance();
+                        selectedCal.set(y, m, d, 0, 0, 0);
+                        selectedCal.set(Calendar.MILLISECOND, 0);
+
+                        // ✅ save selected date
+                        selectedDateMillis = selectedCal.getTimeInMillis();
+
+                        etExpenseDate.setText(d + "/" + (m + 1) + "/" + y);
+                    },
                     calendar.get(Calendar.YEAR),
                     calendar.get(Calendar.MONTH),
                     calendar.get(Calendar.DAY_OF_MONTH)
             );
+
             dialog.show();
         });
     }
@@ -132,7 +144,6 @@ public class AddExpenseActivity extends AppCompatActivity {
     private void validateAndSave() {
 
         String amountStr = etExpenseAmount.getText().toString().trim();
-        String date = etExpenseDate.getText().toString().trim();
 
         if (amountStr.isEmpty()) {
             etExpenseAmount.setError("Enter amount");
@@ -151,7 +162,7 @@ public class AddExpenseActivity extends AppCompatActivity {
             return;
         }
 
-        if (date.isEmpty()) {
+        if (selectedDateMillis == -1) {
             etExpenseDate.setError("Select date");
             return;
         }
@@ -159,7 +170,7 @@ public class AddExpenseActivity extends AppCompatActivity {
         // Firebase data
         Map<String, Object> data = new HashMap<>();
         data.put("amount", amount);
-        data.put("time", System.currentTimeMillis());
+        data.put("time", selectedDateMillis); // ✅ correct date saved
         data.put("category", spExpenseCategory.getSelectedItem().toString());
         data.put("paymentMode", spExpensePaymentMode.getSelectedItem().toString());
         data.put("type", spExpenseType.getSelectedItem().toString());

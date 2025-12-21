@@ -27,6 +27,9 @@ public class AddIncomeActivity extends AppCompatActivity {
     private DatabaseReference incomeRef;
     private String userId;
 
+    // ✅ Store selected date correctly
+    private long selectedDateMillis = -1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,8 +45,14 @@ public class AddIncomeActivity extends AppCompatActivity {
         setupSourceSpinner();
         setupPaymentSpinner();
         setupDatePicker();
+        setupFirebase();
 
-        // 🔐 Firebase init
+        btnSaveIncome.setOnClickListener(v -> validateAndSave());
+    }
+
+    // ================= FIREBASE =================
+
+    private void setupFirebase() {
         userId = FirebaseAuth.getInstance().getUid();
 
         if (userId == null) {
@@ -56,9 +65,9 @@ public class AddIncomeActivity extends AppCompatActivity {
                 .getReference("users")
                 .child(userId)
                 .child("incomes");
-
-        btnSaveIncome.setOnClickListener(v -> validateAndSave());
     }
+
+    // ================= SPINNERS =================
 
     private void setupSourceSpinner() {
         String[] sources = {
@@ -97,61 +106,69 @@ public class AddIncomeActivity extends AppCompatActivity {
         spPaymentMode.setAdapter(adapter);
     }
 
+    // ================= DATE PICKER =================
+
     private void setupDatePicker() {
         etIncomeDate.setOnClickListener(v -> {
             Calendar calendar = Calendar.getInstance();
 
-            int year  = calendar.get(Calendar.YEAR);
-            int month = calendar.get(Calendar.MONTH);
-            int day   = calendar.get(Calendar.DAY_OF_MONTH);
-
             DatePickerDialog dialog = new DatePickerDialog(
                     this,
                     (view, y, m, d) -> {
-                        String date = d + "/" + (m + 1) + "/" + y;
-                        etIncomeDate.setText(date);
+                        Calendar selectedCal = Calendar.getInstance();
+                        selectedCal.set(y, m, d, 0, 0, 0);
+                        selectedCal.set(Calendar.MILLISECOND, 0);
+
+                        // ✅ save selected date
+                        selectedDateMillis = selectedCal.getTimeInMillis();
+
+                        etIncomeDate.setText(d + "/" + (m + 1) + "/" + y);
                     },
-                    year, month, day
+                    calendar.get(Calendar.YEAR),
+                    calendar.get(Calendar.MONTH),
+                    calendar.get(Calendar.DAY_OF_MONTH)
             );
+
             dialog.show();
         });
     }
 
+    // ================= SAVE =================
+
     private void validateAndSave() {
 
         String amountStr = etIncomeAmount.getText().toString().trim();
-        String date      = etIncomeDate.getText().toString().trim();
-        String source    = spIncomeSource.getSelectedItem().toString();
-        String payment   = spPaymentMode.getSelectedItem().toString();
-        String note      = etIncomeNote.getText().toString().trim();
 
         if (amountStr.isEmpty()) {
             etIncomeAmount.setError("Enter amount");
             return;
         }
 
-        if (date.isEmpty()) {
-            etIncomeDate.setError("Select date");
+        double amount;
+        try {
+            amount = Double.parseDouble(amountStr);
+            if (amount <= 0) {
+                etIncomeAmount.setError("Amount must be greater than 0");
+                return;
+            }
+        } catch (NumberFormatException e) {
+            etIncomeAmount.setError("Invalid amount");
             return;
         }
 
-        double amount = Double.parseDouble(amountStr);
-
-        String incomeId = incomeRef.push().getKey();
-        if (incomeId == null) {
-            Toast.makeText(this, "Something went wrong", Toast.LENGTH_SHORT).show();
+        if (selectedDateMillis == -1) {
+            etIncomeDate.setError("Select date");
             return;
         }
 
         Map<String, Object> incomeMap = new HashMap<>();
         incomeMap.put("amount", amount);
-        incomeMap.put("date", date);
-        incomeMap.put("source", source);
-        incomeMap.put("paymentMode", payment);
-        incomeMap.put("note", note);
-        incomeMap.put("time", System.currentTimeMillis());
+        incomeMap.put("time", selectedDateMillis); // ✅ correct date saved
+        incomeMap.put("source", spIncomeSource.getSelectedItem().toString());
+        incomeMap.put("paymentMode", spPaymentMode.getSelectedItem().toString());
+        incomeMap.put("note", etIncomeNote.getText().toString().trim());
 
-        incomeRef.child(incomeId).setValue(incomeMap)
+        incomeRef.push().setValue(incomeMap)
                 .addOnSuccessListener(unused -> {
                     Toast.makeText(this, "Income added successfully", Toast.LENGTH_SHORT).show();
                     finish();

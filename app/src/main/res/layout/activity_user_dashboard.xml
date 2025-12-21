@@ -6,49 +6,17 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_dashboard_gradient">
 
-    <!-- ================= TOP STATUS BAR ================= -->
-    <androidx.cardview.widget.CardView
-        android:id="@+id/statusBar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        app:cardCornerRadius="22dp"
-        app:cardElevation="8dp"
-        app:cardBackgroundColor="#0B0F14">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_info"
-                app:tint="@android:color/white" />
-
-            <TextView
-                android:id="@+id/tvStatusMessage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:text="No activity yet. Start adding income or expense."
-                android:textColor="@android:color/white"
-                android:textSize="14sp"
-                android:maxLines="1"
-                android:ellipsize="end" />
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
-
     <!-- ================= MAIN CONTENT ================= -->
+
+    <!-- ================= BOTTOM NAV ================= -->
     <ScrollView
+        android:id="@+id/scrollView2"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="96dp"
-        android:paddingBottom="220dp"
-        android:fillViewport="true">
+        android:fillViewport="true"
+        android:paddingBottom="90dp"
+        app:layout_anchor="@+id/scrollView2"
+        app:layout_anchorGravity="center">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -56,153 +24,208 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- ================= SUMMARY CARDS ================= -->
+            <!-- TOP PILL -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:backgroundTint="#0F172A"
+                app:cardCornerRadius="26dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:padding="12dp"
+                    android:text="Empowering Your Financial Journey"
+                    android:textColor="@android:color/white"
+                    android:textStyle="bold" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- USER ROW -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="24dp">
-
-                <!-- TOTAL INCOME -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="8dp"
-                    android:padding="18dp"
-                    android:orientation="vertical"
-                    android:background="@drawable/bg_glass_card">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Total Income"
-                        android:textSize="12sp"
-                        android:textColor="#9AFFB3" />
-
-                    <TextView
-                        android:id="@+id/tvTotalIncome"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="₹0"
-                        android:textSize="24sp"
-                        android:textStyle="bold"
-                        android:textColor="@android:color/white" />
-                </LinearLayout>
-
-                <!-- TOTAL EXPENSE -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    android:padding="18dp"
-                    android:orientation="vertical"
-                    android:background="@drawable/bg_glass_card">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Total Expense"
-                        android:textSize="12sp"
-                        android:textColor="#FF9A9A" />
-
-                    <TextView
-                        android:id="@+id/tvTotalExpense"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="₹0"
-                        android:textSize="24sp"
-                        android:textStyle="bold"
-                        android:textColor="@android:color/white" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <!-- ================= RECENT HISTORY TITLE ================= -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Recent History"
-                android:textColor="@android:color/white"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp" />
-
-            <!-- ================= RECENT HISTORY LIST ================= -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvRecentHistory"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false" />
-
-            <!-- ================= EMPTY STATE ================= -->
-            <LinearLayout
-                android:id="@+id/layoutEmpty"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:padding="40dp"
-                android:visibility="gone">
+                android:layout_marginTop="16dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_empty_wallet"
-                    app:tint="#6C8DBF" />
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:background="@drawable/bg_circle"
+                    android:padding="8dp"
+                    android:src="@drawable/ic_user" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="No activity yet"
+                    android:layout_marginStart="12dp"
+                    android:text="Hi, Edith"
                     android:textColor="@android:color/white"
-                    android:textStyle="bold"
-                    android:textSize="15sp"
-                    android:layout_marginTop="12dp" />
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- BALANCE CARD -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:backgroundTint="#1E293B"
+                app:cardCornerRadius="28dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <!-- MONTH ROW -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:src="@drawable/ic_calender"
+                            android:tint="@android:color/white" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="This Month"
+                            android:textColor="@android:color/white"
+                            android:textStyle="bold" />
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:layout_weight="1" />
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:src="@drawable/ic_arrow_right"
+                            android:tint="@android:color/white" />
+                    </LinearLayout>
+
+                    <!-- INCOME / EXPENSE -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/cardAddIncome"
+                            android:layout_width="0dp"
+                            android:layout_height="56dp"
+                            android:layout_marginEnd="8dp"
+                            android:layout_weight="1"
+                            android:backgroundTint="#0F766E"
+                            android:clickable="true"
+                            android:foreground="?attr/selectableItemBackground"
+                            app:cardCornerRadius="28dp">
+
+                            <TextView
+                                android:id="@+id/tvIncome"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:gravity="center_vertical"
+                                android:paddingStart="16dp"
+                                android:text="Income ₹0"
+                                android:textColor="@android:color/white"
+                                android:textStyle="bold" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/cardAddExpense"
+                            android:layout_width="0dp"
+                            android:layout_height="56dp"
+                            android:layout_marginStart="8dp"
+                            android:layout_weight="1"
+                            android:backgroundTint="#7F1D1D"
+                            android:clickable="true"
+                            android:foreground="?attr/selectableItemBackground"
+                            app:cardCornerRadius="28dp">
+
+                            <TextView
+                                android:id="@+id/tvExpense"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:gravity="center_vertical"
+                                android:paddingStart="16dp"
+                                android:text="Expense ₹0"
+                                android:textColor="@android:color/white"
+                                android:textStyle="bold" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+
+            <!-- ================= RECENT TRANSACTIONS HEADER ================= -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="26dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Add income or expense to get started"
-                    android:textColor="#9FB3C8"
-                    android:textSize="12sp"
-                    android:layout_marginTop="4dp" />
+                    android:text="Recent Transactions"
+                    android:textColor="@android:color/white"
+                    android:textSize="17sp"
+                    android:textStyle="bold" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/btnViewAll"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="View all"
+                    android:textColor="#60A5FA"
+                    android:textSize="13sp" />
             </LinearLayout>
+
+            <!-- ================= RECENT TRANSACTIONS CARD ================= -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:backgroundTint="#0F172A"
+                app:cardCornerRadius="22dp"
+                app:cardElevation="2dp">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvRecent"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    android:paddingVertical="4dp" />
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
     </ScrollView>
 
-    <!-- ================= ACTION SPINNER ================= -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_gravity="bottom"
-        android:layout_marginBottom="88dp"
-        android:padding="10dp"
-        android:background="@drawable/bg_glass_card"
-        android:elevation="10dp">
-
-        <Spinner
-            android:id="@+id/spAddAction"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:entries="@array/dashboard_add_action"
-            android:background="@drawable/bg_glass_card"
-            android:popupBackground="#1A1A1A"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp" />
-    </LinearLayout>
-
-    <!-- ================= BOTTOM NAV ================= -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNav"
         android:layout_width="match_parent"
         android:layout_height="72dp"
         android:layout_gravity="bottom"
-        android:background="#0B0F14"
+        android:background="#0B1220"
+        app:menu="@menu/menu_bottom_nav"
         app:itemIconTint="@color/bottom_nav_selector"
-        app:itemTextColor="@color/bottom_nav_selector"
-        app:labelVisibilityMode="labeled"
-        app:menu="@menu/menu_bottom_nav" />
-
+        app:itemTextColor="@color/bottom_nav_selector"/>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

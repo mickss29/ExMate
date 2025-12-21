@@ -2,22 +2,20 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.exmate">
 
-    <!-- Internet permission for Firebase -->
+    <!-- ================= REQUIRED PERMISSIONS ================= -->
+
+    <!-- Internet (Firebase) -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.VIBRATE"/>
 
-    <!-- For Android 13+ -->
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <!-- Vibration (UI feedback) -->
+    <uses-permission android:name="android.permission.VIBRATE" />
 
-    <!-- For Android 12 and below -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.READ_MEDIA_DOCUMENTS" />
-
-
-    <!-- For PDF export (Android 9 and below only) -->
+    <!-- Legacy storage (ONLY for Android 9 and below) -->
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="28"/>
+        android:maxSdkVersion="28" />
+
+    <!-- ========================================================= -->
 
     <application
         android:allowBackup="true"
@@ -27,7 +25,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ExMate">
 
-        <!-- 🔐 AUTH / LOGIN (ENTRY POINT) -->
+        <!-- 🔐 AUTH / LOGIN (APP ENTRY POINT) -->
         <activity
             android:name=".AuthActivity"
             android:exported="true">
@@ -58,6 +56,18 @@
             android:name=".UserDetailsActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".UserProfile"
+            android:exported="false" />
+
+        <activity
+            android:name=".EditProfileActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".StatisticsActivity"
+            android:exported="false" />
+
         <!-- 👨‍💼 ADMIN SIDE -->
         <activity
             android:name=".AdminDashboardActivity"
@@ -80,28 +90,18 @@
             android:exported="false" />
 
         <activity
-            android:name=".UserProfile"
+            android:name=".AdminUserFinanceReportActivity"
             android:exported="false" />
 
         <activity
-            android:name=".EditProfileActivity"
-            android:exported="false" />
-        <activity android:name=".StatisticsActivity"
-            android:exported="false" />
-        <activity
-            android:name=".AdminUserFinanceReportActivity"
-            android:exported="false" />
-        <activity
             android:name=".AdminUserSelectActivity"
             android:exported="false" />
+
         <activity
             android:name=".AdminUserFullFinanceReportActivity"
             android:exported="false" />
 
-
-
-
-        <!-- 📂 FILE PROVIDER (PDF / CSV EXPORT) -->
+        <!-- 📂 FILE PROVIDER (PDF / CSV EXPORT – REQUIRED) -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
@@ -111,10 +111,6 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
-
-
-
-
 
     </application>
 
