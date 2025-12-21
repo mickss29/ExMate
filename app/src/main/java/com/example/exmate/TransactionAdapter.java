@@ -72,7 +72,23 @@ public class TransactionAdapter
             vh.txtAmount.setText(item.getAmount());
             vh.txtMeta.setText(item.getMeta());
 
-            // Badge visibility
+            // ================= AMOUNT COLOR LOGIC =================
+            // Expense -> Red | Income -> Green
+            if (item.getAmount() != null && item.getAmount().startsWith("-")) {
+                // Expense
+                vh.txtAmount.setTextColor(
+                        vh.itemView.getContext()
+                                .getColor(android.R.color.holo_red_dark)
+                );
+            } else {
+                // Income
+                vh.txtAmount.setTextColor(
+                        vh.itemView.getContext()
+                                .getColor(android.R.color.holo_green_dark)
+                );
+            }
+
+            // Badge visibility (unchanged)
             if (item.isHighSpend()) {
                 vh.txtBadge.setVisibility(View.VISIBLE);
             } else {

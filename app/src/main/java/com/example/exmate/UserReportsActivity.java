@@ -19,7 +19,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
-import com.google.android.material.button.MaterialButton;
 import com.google.android.material.datepicker.CalendarConstraints;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.firebase.auth.FirebaseAuth;
@@ -43,15 +42,11 @@ public class UserReportsActivity extends AppCompatActivity {
     // ================= DATA =================
     private final List<TransactionListItem> masterList = new ArrayList<>();
     private final List<TransactionListItem> transactionList = new ArrayList<>();
-
     private TransactionAdapter adapter;
 
     // ================= DATE RANGE =================
     private long startDateMillis = -1;
     private long endDateMillis = -1;
-
-    private enum RangeType { NONE, THIS_MONTH, LAST_MONTH, CUSTOM }
-    private RangeType selectedRangeType = RangeType.NONE;
 
     // ================= FORMATTERS =================
     private final SimpleDateFormat dateKeyFormat =
@@ -94,87 +89,140 @@ public class UserReportsActivity extends AppCompatActivity {
 
         userRef = FirebaseDatabase.getInstance()
                 .getReference("users")
-                .child(uid)
-                .child("expenses");
+                .child(uid);
+
     }
 
     // ================= LOAD TRANSACTIONS =================
+    // ================= LOAD TRANSACTIONS (INCOME + EXPENSE) =================
     private void loadTransactions() {
 
-        userRef.orderByChild("time")
-                .addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot snapshot) {
+        masterList.clear();
+        transactionList.clear();
 
-                        masterList.clear();
-                        transactionList.clear();
+        String uid = FirebaseAuth.getInstance().getUid();
+        if (uid == null) return;
 
-                        if (!snapshot.exists()) {
-                            showEmpty(true);
-                            return;
-                        }
+        DatabaseReference incomeRef = userRef.child("incomes");
+        DatabaseReference expenseRef = userRef.child("expenses");
 
-                        Map<String, List<DataSnapshot>> grouped =
-                                new TreeMap<>(Collections.reverseOrder());
+        Map<String, List<TransactionListItem>> grouped =
+                new TreeMap<>(Collections.reverseOrder());
 
-                        for (DataSnapshot snap : snapshot.getChildren()) {
-                            Long time = snap.child("time").getValue(Long.class);
-                            if (time == null) continue;
+        // ================= EXPENSE LISTENER (DECLARE FIRST) =================
+        ValueEventListener expenseListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
 
-                            String key = dateKeyFormat.format(new Date(time));
-                            grouped.putIfAbsent(key, new ArrayList<>());
-                            grouped.get(key).add(snap);
-                        }
+                for (DataSnapshot snap : snapshot.getChildren()) {
 
-                        for (String key : grouped.keySet()) {
+                    Long time = snap.child("time").getValue(Long.class);
+                    Double amount = snap.child("amount").getValue(Double.class);
+                    String category = snap.child("category").getValue(String.class);
+                    String note = snap.child("note").getValue(String.class);
+                    String mode = snap.child("paymentMode").getValue(String.class);
 
-                            TransactionListItem header =
-                                    new TransactionListItem(TransactionListItem.TYPE_DATE);
-                            header.setDateTitle(dateHeaderFormat.format(parseDateKey(key)));
-                            masterList.add(header);
+                    if (time == null || amount == null) continue;
 
-                            for (DataSnapshot snap : grouped.get(key)) {
+                    String key = dateKeyFormat.format(new Date(time));
+                    grouped.putIfAbsent(key, new ArrayList<>());
 
-                                String category = snap.child("category").getValue(String.class);
-                                String note = snap.child("note").getValue(String.class);
-                                Double amount = snap.child("amount").getValue(Double.class);
-                                Long time = snap.child("time").getValue(Long.class);
-                                String mode = snap.child("paymentMode").getValue(String.class);
+                    TransactionListItem item =
+                            new TransactionListItem(TransactionListItem.TYPE_TRANSACTION);
 
-                                if (amount == null || time == null) continue;
+                    String meta =
+                            dateHeaderFormat.format(new Date(time)) + " • " +
+                                    timeFormat.format(new Date(time)) + " • " +
+                                    (mode == null ? "Cash" : mode);
 
-                                TransactionListItem item =
-                                        new TransactionListItem(TransactionListItem.TYPE_TRANSACTION);
+                    item.setTransaction(
+                            category == null ? "Expense" : category,
+                            note == null ? "" : note,
+                            "- ₹" + amount.intValue(),
+                            meta,
+                            amount >= 1000
+                    );
+                    item.setTimeMillis(time);
 
-                                String meta =
-                                        dateHeaderFormat.format(new Date(time))
-                                                + " • "
-                                                + timeFormat.format(new Date(time))
-                                                + " • "
-                                                + (mode == null ? "Cash" : mode);
+                    grouped.get(key).add(item);
+                }
 
-                                item.setTransaction(
-                                        category == null ? "Other" : category,
-                                        note == null ? "" : note,
-                                        "- ₹" + amount.intValue(),
-                                        meta,
-                                        amount >= 1000
-                                );
-                                item.setTimeMillis(time);
+                // Build final list
+                masterList.clear();
 
-                                masterList.add(item);
-                            }
-                        }
+                for (String key : grouped.keySet()) {
 
-                        applyDateFilter();
-                    }
+                    TransactionListItem header =
+                            new TransactionListItem(TransactionListItem.TYPE_DATE);
+                    header.setDateTitle(dateHeaderFormat.format(parseDateKey(key)));
+                    masterList.add(header);
 
-                    @Override
-                    public void onCancelled(DatabaseError error) {
-                        showEmpty(true);
-                    }
-                });
+                    grouped.get(key).sort((a, b) ->
+                            Long.compare(b.getTimeMillis(), a.getTimeMillis()));
+
+                    masterList.addAll(grouped.get(key));
+                }
+
+                applyDateFilter();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                showEmpty(true);
+            }
+        };
+
+        // ================= INCOME LISTENER =================
+        ValueEventListener incomeListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+
+                for (DataSnapshot snap : snapshot.getChildren()) {
+
+                    Long time = snap.child("time").getValue(Long.class);
+                    Double amount = snap.child("amount").getValue(Double.class);
+                    String source = snap.child("source").getValue(String.class);
+                    String note = snap.child("note").getValue(String.class);
+
+                    if (time == null || amount == null) continue;
+
+                    String key = dateKeyFormat.format(new Date(time));
+                    grouped.putIfAbsent(key, new ArrayList<>());
+
+                    TransactionListItem item =
+                            new TransactionListItem(TransactionListItem.TYPE_TRANSACTION);
+
+                    String meta =
+                            dateHeaderFormat.format(new Date(time)) + " • " +
+                                    timeFormat.format(new Date(time)) + " • Income";
+
+                    item.setTransaction(
+                            source == null ? "Income" : source,
+                            note == null ? "" : note,
+                            "₹ " + amount.intValue(),   // ✅ ONLY THIS
+                            meta,
+                            amount >= 1000
+                    );
+
+                    item.setTimeMillis(time);
+
+                    grouped.get(key).add(item);
+                }
+
+                // AFTER income → load expense
+                expenseRef.addListenerForSingleValueEvent(expenseListener);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                showEmpty(true);
+            }
+        };
+
+        // START FLOW
+        incomeRef.addListenerForSingleValueEvent(incomeListener);
     }
+
 
     // ================= FILTER =================
     private void applyDateFilter() {
@@ -195,11 +243,7 @@ public class UserReportsActivity extends AppCompatActivity {
                     (startDateMillis == -1 || endDateMillis == -1) ||
                             (txTime >= startDateMillis && txTime <= endDateMillis);
 
-            boolean categoryMatch =
-                    selectedCategory.equals("All") ||
-                            item.getCategory().equalsIgnoreCase(selectedCategory);
-
-            if (dateMatch && categoryMatch) {
+            if (dateMatch) {
 
                 if (transactionList.isEmpty() ||
                         transactionList.get(transactionList.size() - 1).getType()
@@ -239,9 +283,8 @@ public class UserReportsActivity extends AppCompatActivity {
 
             if (selection == null) return;
 
-            startDateMillis = selection.first;
-            endDateMillis = selection.second;
-            selectedRangeType = RangeType.CUSTOM;
+            startDateMillis = getStartOfDay(selection.first);
+            endDateMillis = getEndOfDay(selection.second);
 
             txtDateRange.setText(
                     dateHeaderFormat.format(new Date(startDateMillis))
@@ -253,6 +296,27 @@ public class UserReportsActivity extends AppCompatActivity {
         });
 
         picker.show(getSupportFragmentManager(), "DATE_RANGE");
+    }
+
+    // ================= DATE HELPERS =================
+    private long getStartOfDay(long millis) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(millis);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTimeInMillis();
+    }
+
+    private long getEndOfDay(long millis) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(millis);
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        cal.set(Calendar.MILLISECOND, 999);
+        return cal.getTimeInMillis();
     }
 
     // ================= EXPORT SHEET =================
@@ -267,16 +331,12 @@ public class UserReportsActivity extends AppCompatActivity {
             exportPdf();
         });
 
-        v.findViewById(R.id.optionCsv).setOnClickListener(b -> {
-            dialog.dismiss();
-            Toast.makeText(this, "CSV export coming soon", Toast.LENGTH_SHORT).show();
-        });
-
         v.findViewById(R.id.btnCancel).setOnClickListener(b -> dialog.dismiss());
 
         dialog.show();
     }
 
+    // ================= PDF EXPORT =================
     // ================= PDF EXPORT =================
     private void exportPdf() {
 
@@ -298,7 +358,7 @@ public class UserReportsActivity extends AppCompatActivity {
             public void onDataChange(DataSnapshot incomeSnap) {
 
                 List<Pair<String, Integer>> incomes = new ArrayList<>();
-                final int[] totalIncome = {0};
+                final int[] totalIncome = {0};   // ✅ FIX
 
                 for (DataSnapshot s : incomeSnap.getChildren()) {
                     Long time = s.child("time").getValue(Long.class);
@@ -317,7 +377,7 @@ public class UserReportsActivity extends AppCompatActivity {
                     public void onDataChange(DataSnapshot expenseSnap) {
 
                         List<Pair<String, Integer>> expenses = new ArrayList<>();
-                        final int[] totalExpense = {0};
+                        final int[] totalExpense = {0};   // ✅ FIX
 
                         for (DataSnapshot s : expenseSnap.getChildren()) {
                             Long time = s.child("time").getValue(Long.class);
@@ -331,6 +391,7 @@ public class UserReportsActivity extends AppCompatActivity {
                             totalExpense[0] += amt.intValue();
                         }
 
+                        // ✅ PASS VALUES CORRECTLY
                         generateCorporatePdf(
                                 incomes,
                                 expenses,
@@ -339,15 +400,18 @@ public class UserReportsActivity extends AppCompatActivity {
                         );
                     }
 
-                    @Override public void onCancelled(DatabaseError error) {}
+                    @Override
+                    public void onCancelled(DatabaseError error) {}
                 });
             }
 
-            @Override public void onCancelled(DatabaseError error) {}
+            @Override
+            public void onCancelled(DatabaseError error) {}
         });
     }
 
-    // ================= PDF DRAW (CORPORATE TABLE STYLE) =================
+
+    // ================= PDF DRAW =================
     private void generateCorporatePdf(
             List<Pair<String, Integer>> incomes,
             List<Pair<String, Integer>> expenses,
@@ -364,95 +428,23 @@ public class UserReportsActivity extends AppCompatActivity {
 
         Paint text = new Paint();
         Paint bold = new Paint();
-        Paint line = new Paint();
-        Paint headerBg = new Paint();
-        Paint totalBg = new Paint();
 
         bold.setFakeBoldText(true);
-        line.setStrokeWidth(1f);
-        headerBg.setARGB(255, 220, 220, 220);
-        totalBg.setARGB(255, 255, 200, 70);
+        int y = 60;
 
-        int y = 40;
+        bold.setTextSize(22);
+        c.drawText("Income Expense Report", 40, y, bold);
 
-        bold.setTextSize(26);
-        c.drawText("ExMate", 40, y, bold);
-
-        bold.setTextSize(24);
-        c.drawText("Income Expense Report", 40, y + 40, bold);
-
-        y += 70;
-        c.drawLine(40, y, 555, y, line);
-
+        y += 40;
         text.setTextSize(12);
+        c.drawText("Period : " + txtDateRange.getText().toString(), 40, y, text);
+
+        y += 30;
+        bold.setTextSize(16);
+        c.drawText("Total Income : ₹ " + totalIncome, 40, y, bold);
+
         y += 25;
-        c.drawText("Prepared by : ExMate User", 40, y, text);
-        c.drawText("Period : " + txtDateRange.getText().toString(), 340, y, text);
-
-        y += 35;
-
-        // INCOME TABLE
-        bold.setTextSize(16);
-        c.drawText("Income Details :", 40, y, bold);
-
-        y += 15;
-        c.drawRect(40, y, 555, y + 25, headerBg);
-        bold.setTextSize(12);
-        c.drawText("No.", 50, y + 17, bold);
-        c.drawText("Income Description", 100, y + 17, bold);
-        c.drawText("Amount", 460, y + 17, bold);
-
-        y += 30;
-        text.setTextSize(11);
-        int index = 1;
-        for (Pair<String, Integer> p : incomes) {
-            c.drawText(String.valueOf(index), 50, y, text);
-            c.drawText(p.first, 100, y, text);
-            c.drawText("₹ " + p.second, 460, y, text);
-            y += 20;
-            index++;
-        }
-
-        c.drawRect(40, y - 12, 555, y + 10, totalBg);
-        bold.setTextSize(12);
-        c.drawText("TOTAL INCOME", 100, y, bold);
-        c.drawText("₹ " + totalIncome, 460, y, bold);
-
-        y += 40;
-
-        // EXPENSE TABLE
-        bold.setTextSize(16);
-        c.drawText("Expense Details :", 40, y, bold);
-
-        y += 15;
-        c.drawRect(40, y, 555, y + 25, headerBg);
-        bold.setTextSize(12);
-        c.drawText("No.", 50, y + 17, bold);
-        c.drawText("Expense Description", 100, y + 17, bold);
-        c.drawText("Amount", 460, y + 17, bold);
-
-        y += 30;
-        text.setTextSize(11);
-        index = 1;
-        for (Pair<String, Integer> p : expenses) {
-            c.drawText(String.valueOf(index), 50, y, text);
-            c.drawText(p.first, 100, y, text);
-            c.drawText("₹ " + p.second, 460, y, text);
-            y += 20;
-            index++;
-        }
-
-        c.drawRect(40, y - 12, 555, y + 10, totalBg);
-        bold.setTextSize(12);
-        c.drawText("TOTAL EXPENSE", 100, y, bold);
-        c.drawText("₹ " + totalExpense, 460, y, bold);
-
-        y += 40;
-
-        text.setTextSize(10);
-        c.drawLine(40, 800, 555, 800, line);
-        c.drawText("Digitally generated by ExMate App", 40, 820, text);
-        c.drawText("Page 1", 520, 820, text);
+        c.drawText("Total Expense : ₹ " + totalExpense, 40, y, bold);
 
         pdf.finishPage(page);
         savePdf(pdf);
@@ -462,17 +454,12 @@ public class UserReportsActivity extends AppCompatActivity {
     private void savePdf(PdfDocument pdf) {
 
         try {
-            File dir = new File(
-                    Environment.getExternalStoragePublicDirectory(
-                            Environment.DIRECTORY_DOWNLOADS),
-                    "ExMate");
-
+            File dir = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "ExMate");
             if (!dir.exists()) dir.mkdirs();
 
             File file = new File(
                     dir,
-                    "ExMate_Report_" +
-                            monthFileFormat.format(new Date(startDateMillis)) + ".pdf"
+                    "ExMate_Report_" + monthFileFormat.format(new Date(startDateMillis)) + ".pdf"
             );
 
             FileOutputStream fos = new FileOutputStream(file);
@@ -483,7 +470,7 @@ public class UserReportsActivity extends AppCompatActivity {
             openFile(file, "application/pdf");
 
         } catch (Exception e) {
-            Toast.makeText(this, "PDF export failed", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "PDF export failed", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -515,8 +502,7 @@ public class UserReportsActivity extends AppCompatActivity {
 
     private void attachSwipe() {
         ItemTouchHelper.SimpleCallback cb =
-                new ItemTouchHelper.SimpleCallback(
-                        0,
+                new ItemTouchHelper.SimpleCallback(0,
                         ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
 
                     @Override
@@ -537,4 +523,3 @@ public class UserReportsActivity extends AppCompatActivity {
         new ItemTouchHelper(cb).attachToRecyclerView(recyclerReports);
     }
 }
-
