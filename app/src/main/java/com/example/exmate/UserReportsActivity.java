@@ -336,8 +336,6 @@ public class UserReportsActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    // ================= PDF EXPORT =================
-    // ================= PDF EXPORT =================
     private void exportPdf() {
 
         if (startDateMillis == -1 || endDateMillis == -1) {
@@ -345,73 +343,56 @@ public class UserReportsActivity extends AppCompatActivity {
             return;
         }
 
-        String uid = FirebaseAuth.getInstance().getUid();
-        if (uid == null) return;
+        if (transactionList.isEmpty()) {
+            Toast.makeText(this, "No data to export", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        DatabaseReference incomeRef =
-                FirebaseDatabase.getInstance().getReference("users").child(uid).child("incomes");
-        DatabaseReference expenseRef =
-                FirebaseDatabase.getInstance().getReference("users").child(uid).child("expenses");
+        List<Pair<String, Integer>> incomes = new ArrayList<>();
+        List<Pair<String, Integer>> expenses = new ArrayList<>();
 
-        incomeRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot incomeSnap) {
+        int totalIncome = 0;
+        int totalExpense = 0;
 
-                List<Pair<String, Integer>> incomes = new ArrayList<>();
-                final int[] totalIncome = {0};   // ✅ FIX
+        for (TransactionListItem item : transactionList) {
 
-                for (DataSnapshot s : incomeSnap.getChildren()) {
-                    Long time = s.child("time").getValue(Long.class);
-                    Double amt = s.child("amount").getValue(Double.class);
-                    String src = s.child("source").getValue(String.class);
+            if (item.getType() != TransactionListItem.TYPE_TRANSACTION)
+                continue;
 
-                    if (time == null || amt == null) continue;
-                    if (time < startDateMillis || time > endDateMillis) continue;
+            String amtStr = item.getAmount();
+            if (amtStr == null) continue;
 
-                    incomes.add(new Pair<>(src == null ? "Other" : src, amt.intValue()));
-                    totalIncome[0] += amt.intValue();
-                }
+            int amount = Integer.parseInt(
+                    amtStr.replace("₹", "")
+                            .replace("+", "")
+                            .replace("-", "")
+                            .trim()
+            );
 
-                expenseRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot expenseSnap) {
-
-                        List<Pair<String, Integer>> expenses = new ArrayList<>();
-                        final int[] totalExpense = {0};   // ✅ FIX
-
-                        for (DataSnapshot s : expenseSnap.getChildren()) {
-                            Long time = s.child("time").getValue(Long.class);
-                            Double amt = s.child("amount").getValue(Double.class);
-                            String cat = s.child("category").getValue(String.class);
-
-                            if (time == null || amt == null) continue;
-                            if (time < startDateMillis || time > endDateMillis) continue;
-
-                            expenses.add(new Pair<>(cat == null ? "Other" : cat, amt.intValue()));
-                            totalExpense[0] += amt.intValue();
-                        }
-
-                        // ✅ PASS VALUES CORRECTLY
-                        generateCorporatePdf(
-                                incomes,
-                                expenses,
-                                totalIncome[0],
-                                totalExpense[0]
-                        );
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError error) {}
-                });
+            if (amtStr.startsWith("-")) {
+                // 🔴 EXPENSE
+                expenses.add(new Pair<>(item.getCategory(), amount));
+                totalExpense += amount;
+            } else {
+                // 🟢 INCOME
+                incomes.add(new Pair<>(item.getCategory(), amount));
+                totalIncome += amount;
             }
+        }
 
-            @Override
-            public void onCancelled(DatabaseError error) {}
-        });
+        // 🔥 THIS IS THE IMPORTANT LINE
+        generateCorporatePdf(
+                incomes,
+                expenses,
+                totalIncome,
+                totalExpense
+        );
     }
 
 
     // ================= PDF DRAW =================
+// ================= PDF DRAW (WITH DATA ROWS) =================
+    // ================= PDF DRAW (CORPORATE UI + COLORS) =================
     private void generateCorporatePdf(
             List<Pair<String, Integer>> incomes,
             List<Pair<String, Integer>> expenses,
@@ -426,53 +407,154 @@ public class UserReportsActivity extends AppCompatActivity {
         PdfDocument.Page page = pdf.startPage(info);
         Canvas c = page.getCanvas();
 
-        Paint text = new Paint();
+        Paint title = new Paint();
         Paint bold = new Paint();
+        Paint text = new Paint();
+        Paint line = new Paint();
+        Paint headerBg = new Paint();
+        Paint totalBg = new Paint();
+
+        // 🔥 COLOR PAINTS
+        Paint incomePaint = new Paint();
+        Paint expensePaint = new Paint();
+
+        title.setFakeBoldText(true);
+        title.setTextSize(26);
 
         bold.setFakeBoldText(true);
-        int y = 60;
+        bold.setTextSize(12);
 
-        bold.setTextSize(22);
+        text.setTextSize(11);
+
+        incomePaint.setTextSize(11);
+        incomePaint.setColor(0xFF2E7D32);   // ✅ GREEN
+
+        expensePaint.setTextSize(11);
+        expensePaint.setColor(0xFFC62828);  // ❌ RED
+
+        line.setStrokeWidth(1);
+
+        headerBg.setARGB(255, 220, 220, 220);
+        totalBg.setARGB(255, 255, 204, 102);
+
+        int y = 50;
+
+        // ===== HEADER =====
+        c.drawText("ExMate", 40, y, title);
+
+        y += 35;
+        bold.setTextSize(20);
         c.drawText("Income Expense Report", 40, y, bold);
 
-        y += 40;
+        y += 25;
+        c.drawLine(40, y, 555, y, line);
+
+        y += 20;
         text.setTextSize(12);
-        c.drawText("Period : " + txtDateRange.getText().toString(), 40, y, text);
+        c.drawText("Prepared by : ExMate User", 40, y, text);
+        c.drawText("Period : " + txtDateRange.getText().toString(), 340, y, text);
 
         y += 30;
-        bold.setTextSize(16);
-        c.drawText("Total Income : ₹ " + totalIncome, 40, y, bold);
 
-        y += 25;
-        c.drawText("Total Expense : ₹ " + totalExpense, 40, y, bold);
+        // ================= INCOME DETAILS =================
+        bold.setTextSize(14);
+        c.drawText("Income Details :", 40, y, bold);
+
+        y += 10;
+        c.drawRect(40, y, 555, y + 25, headerBg);
+        c.drawText("No.", 50, y + 17, bold);
+        c.drawText("Income Description", 100, y + 17, bold);
+        c.drawText("Amount", 460, y + 17, bold);
+
+        y += 35;
+        int index = 1;
+
+        for (Pair<String, Integer> p : incomes) {
+            c.drawText(String.valueOf(index), 50, y, incomePaint);
+            c.drawText(p.first, 100, y, incomePaint);
+            c.drawText("₹ " + p.second, 460, y, incomePaint);
+            y += 18;
+            index++;
+        }
+
+        // TOTAL INCOME
+        c.drawRect(40, y - 12, 555, y + 10, totalBg);
+        bold.setTextSize(12);
+        c.drawText("TOTAL INCOME", 100, y, bold);
+        c.drawText("₹ " + totalIncome, 460, y, bold);
+
+        y += 40;
+
+        // ================= EXPENSE DETAILS =================
+        bold.setTextSize(14);
+        c.drawText("Expense Details :", 40, y, bold);
+
+        y += 10;
+        c.drawRect(40, y, 555, y + 25, headerBg);
+        c.drawText("No.", 50, y + 17, bold);
+        c.drawText("Expense Description", 100, y + 17, bold);
+        c.drawText("Amount", 460, y + 17, bold);
+
+        y += 35;
+        index = 1;
+
+        for (Pair<String, Integer> p : expenses) {
+            c.drawText(String.valueOf(index), 50, y, expensePaint);
+            c.drawText(p.first, 100, y, expensePaint);
+            c.drawText("₹ " + p.second, 460, y, expensePaint);
+            y += 18;
+            index++;
+        }
+
+        // TOTAL EXPENSE
+        c.drawRect(40, y - 12, 555, y + 10, totalBg);
+        bold.setTextSize(12);
+        c.drawText("TOTAL EXPENSE", 100, y, bold);
+        c.drawText("₹ " + totalExpense, 460, y, bold);
+
+        // ===== FOOTER =====
+        y = 800;
+        c.drawLine(40, y, 555, y, line);
+        text.setTextSize(10);
+        c.drawText("Digitally generated by ExMate App", 40, y + 20, text);
+        c.drawText("Page 1", 520, y + 20, text);
 
         pdf.finishPage(page);
         savePdf(pdf);
     }
 
+
     // ================= SAVE PDF =================
+    // ================= SAVE PDF (FINAL FIX) =================
     private void savePdf(PdfDocument pdf) {
 
         try {
-            File dir = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "ExMate");
+            File dir = new File(
+                    getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),
+                    "ExMate"
+            );
             if (!dir.exists()) dir.mkdirs();
 
-            File file = new File(
-                    dir,
-                    "ExMate_Report_" + monthFileFormat.format(new Date(startDateMillis)) + ".pdf"
-            );
+            // 🔥 UNIQUE FILE NAME (NO CACHE ISSUE)
+            String fileName =
+                    "ExMate_Report_" + System.currentTimeMillis() + ".pdf";
+
+            File file = new File(dir, fileName);
 
             FileOutputStream fos = new FileOutputStream(file);
             pdf.writeTo(fos);
             pdf.close();
             fos.close();
 
+            // 🔥 ALWAYS OPEN NEW FILE
             openFile(file, "application/pdf");
 
         } catch (Exception e) {
+            e.printStackTrace();
             Toast.makeText(this, "PDF export failed", Toast.LENGTH_LONG).show();
         }
     }
+
 
     // ================= HELPERS =================
     private void openFile(File file, String type) {
@@ -522,4 +604,101 @@ public class UserReportsActivity extends AppCompatActivity {
 
         new ItemTouchHelper(cb).attachToRecyclerView(recyclerReports);
     }
+    // ================= FINAL PDF GENERATION =================
+    private void generatePdfFinal(
+            List<Pair<String, Integer>> incomes,
+            List<Pair<String, Integer>> expenses,
+            int totalIncome,
+            int totalExpense
+    ) {
+
+        PdfDocument pdf = new PdfDocument();
+        PdfDocument.PageInfo pageInfo =
+                new PdfDocument.PageInfo.Builder(595, 842, 1).create();
+
+        PdfDocument.Page page = pdf.startPage(pageInfo);
+        Canvas c = page.getCanvas();
+
+        Paint title = new Paint();
+        Paint text = new Paint();
+        Paint bold = new Paint();
+        Paint line = new Paint();
+
+        title.setFakeBoldText(true);
+        title.setTextSize(22);
+
+        bold.setFakeBoldText(true);
+        bold.setTextSize(14);
+
+        text.setTextSize(12);
+        line.setStrokeWidth(1);
+
+        int y = 40;
+
+        // ===== HEADER =====
+        c.drawText("ExMate", 40, y, title);
+        y += 30;
+        c.drawText("Income Expense Report", 40, y, bold);
+
+        y += 20;
+        c.drawLine(40, y, 555, y, line);
+
+        y += 20;
+        c.drawText(
+                "Period : " + txtDateRange.getText().toString(),
+                40, y, text
+        );
+
+        y += 30;
+
+        // ===== INCOME =====
+        bold.setTextSize(16);
+        c.drawText("Income Details", 40, y, bold);
+        y += 20;
+
+        int index = 1;
+        for (Pair<String, Integer> p : incomes) {
+            c.drawText(index + ". " + p.first, 50, y, text);
+            c.drawText("₹ " + p.second, 450, y, text);
+            y += 18;
+            index++;
+        }
+
+        y += 10;
+        bold.setTextSize(14);
+        c.drawText("Total Income : ₹ " + totalIncome, 50, y, bold);
+
+        y += 30;
+        c.drawLine(40, y, 555, y, line);
+        y += 20;
+
+        // ===== EXPENSE =====
+        bold.setTextSize(16);
+        c.drawText("Expense Details", 40, y, bold);
+        y += 20;
+
+        index = 1;
+        for (Pair<String, Integer> p : expenses) {
+            c.drawText(index + ". " + p.first, 50, y, text);
+            c.drawText("₹ " + p.second, 450, y, text);
+            y += 18;
+            index++;
+        }
+
+        y += 10;
+        bold.setTextSize(14);
+        c.drawText("Total Expense : ₹ " + totalExpense, 50, y, bold);
+
+        // ===== FOOTER =====
+        y = 800;
+        c.drawLine(40, y, 555, y, line);
+        y += 20;
+        text.setTextSize(10);
+        c.drawText("Digitally generated by ExMate App", 40, y, text);
+        c.drawText("Page 1", 520, y, text);
+
+        pdf.finishPage(page);
+        savePdf(pdf);
+    }
+
 }
