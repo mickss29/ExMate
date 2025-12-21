@@ -19,6 +19,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.datepicker.CalendarConstraints;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.firebase.auth.FirebaseAuth;
@@ -30,11 +32,25 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class UserReportsActivity extends AppCompatActivity {
+    // ===== ENUM (ONLY ONCE) =====
+    private enum TxnFilterType {
+        ALL,
+        INCOME,
+        EXPENSE
+    }
+
+    // ===== FILTER STATE =====
+    private TxnFilterType selectedFilterType = TxnFilterType.ALL;
+
 
     // ================= UI =================
     private RecyclerView recyclerReports;
     private TextView tvEmpty, txtDateRange;
+    private ChipGroup chipGroupFilter;
+    private Chip chipAll, chipIncome, chipExpense;
+
     private String selectedCategory = "All";
+
 
     // ================= FIREBASE =================
     private DatabaseReference userRef;
@@ -58,10 +74,38 @@ public class UserReportsActivity extends AppCompatActivity {
     private final SimpleDateFormat monthFileFormat =
             new SimpleDateFormat("MMMM_yyyy", Locale.getDefault());
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_reports);
+        chipGroupFilter = findViewById(R.id.chipGroupFilter);
+        chipAll = findViewById(R.id.chipAll);
+        chipIncome = findViewById(R.id.chipIncome);
+        chipExpense = findViewById(R.id.chipExpense);
+
+// Default
+        chipAll.setChecked(true);
+        selectedFilterType = TxnFilterType.ALL;
+
+        chipGroupFilter.setOnCheckedChangeListener((group, checkedId) -> {
+
+            if (checkedId == R.id.chipAll) {
+                selectedFilterType = TxnFilterType.ALL;
+            }
+            else if (checkedId == R.id.chipIncome) {
+                selectedFilterType = TxnFilterType.INCOME;
+            }
+            else if (checkedId == R.id.chipExpense) {
+                selectedFilterType = TxnFilterType.EXPENSE;
+            }
+
+            applyDateFilter(); // 🔥 MOST IMPORTANT
+        });
+
+
+
 
         recyclerReports = findViewById(R.id.recyclerReports);
         tvEmpty = findViewById(R.id.tvEmpty);
@@ -228,40 +272,62 @@ public class UserReportsActivity extends AppCompatActivity {
     private void applyDateFilter() {
 
         transactionList.clear();
-        String currentHeader = "";
+        String currentHeader = null;
+        boolean headerAddedForThisDate = false;
 
         for (TransactionListItem item : masterList) {
 
             if (item.getType() == TransactionListItem.TYPE_DATE) {
                 currentHeader = item.getDateTitle();
+                headerAddedForThisDate = false;
                 continue;
             }
 
             long txTime = item.getTimeMillis();
 
+            // ================= DATE MATCH =================
             boolean dateMatch =
                     (startDateMillis == -1 || endDateMillis == -1) ||
                             (txTime >= startDateMillis && txTime <= endDateMillis);
 
-            if (dateMatch) {
+            if (!dateMatch) continue;
 
-                if (transactionList.isEmpty() ||
-                        transactionList.get(transactionList.size() - 1).getType()
-                                != TransactionListItem.TYPE_DATE) {
+            // ================= TYPE MATCH =================
+            boolean isIncome = !item.getAmount().startsWith("-");
+            boolean typeMatch = false;
 
-                    TransactionListItem header =
-                            new TransactionListItem(TransactionListItem.TYPE_DATE);
-                    header.setDateTitle(currentHeader);
-                    transactionList.add(header);
-                }
+            switch (selectedFilterType) {
+                case ALL:
+                    typeMatch = true;
+                    break;
 
-                transactionList.add(item);
+                case INCOME:
+                    typeMatch = isIncome;
+                    break;
+
+                case EXPENSE:
+                    typeMatch = !isIncome;
+                    break;
             }
+
+            if (!typeMatch) continue;
+
+            // ================= ADD HEADER ONCE =================
+            if (!headerAddedForThisDate && currentHeader != null) {
+                TransactionListItem header =
+                        new TransactionListItem(TransactionListItem.TYPE_DATE);
+                header.setDateTitle(currentHeader);
+                transactionList.add(header);
+                headerAddedForThisDate = true;
+            }
+
+            transactionList.add(item);
         }
 
         adapter.notifyDataSetChanged();
         showEmpty(transactionList.isEmpty());
     }
+
 
     // ================= DATE PICKER =================
     private void pickDateRange() {
@@ -700,5 +766,20 @@ public class UserReportsActivity extends AppCompatActivity {
         pdf.finishPage(page);
         savePdf(pdf);
     }
+    public void showAll() {
+        selectedFilterType = TxnFilterType.ALL;
+        applyDateFilter();
+    }
+
+    public void showIncomeOnly() {
+        selectedFilterType = TxnFilterType.INCOME;
+        applyDateFilter();
+    }
+
+    public void showExpenseOnly() {
+        selectedFilterType = TxnFilterType.EXPENSE;
+        applyDateFilter();
+    }
+
 
 }
