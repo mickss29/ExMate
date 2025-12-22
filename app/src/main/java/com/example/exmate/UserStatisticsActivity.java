@@ -24,7 +24,7 @@ public class UserStatisticsActivity extends AppCompatActivity {
 
     // ---------------- INIT ----------------
     private void initViews() {
-        rvCategoryStats = findViewById(R.id.rvCategoryStats);
+       // rvCategoryStats = findViewById(R.id.rvCategoryStats);
 
         rvCategoryStats.setLayoutManager(
                 new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
