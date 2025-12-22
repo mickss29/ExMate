@@ -9,7 +9,7 @@ import androidx.cardview.widget.CardView;
 
 public class AdminDashboardActivity extends AppCompatActivity {
 
-    private CardView cardUsers, cardCategories, cardReports;
+    private CardView cardUsers, cardCategories, cardReports, cardFeedback;
     private Toolbar adminToolbar;
 
     @Override
@@ -25,29 +25,34 @@ public class AdminDashboardActivity extends AppCompatActivity {
         cardUsers = findViewById(R.id.cardUsers);
         cardCategories = findViewById(R.id.cardCategories);
         cardReports = findViewById(R.id.cardReports);
+        cardFeedback = findViewById(R.id.cardFeedback); // 🔥 NEW
 
         // ➜ Manage Users
-        cardUsers.setOnClickListener(v -> {
-            startActivity(new Intent(
-                    AdminDashboardActivity.this,
-                    ManageUsersActivity.class
-            ));
-        });
+        cardUsers.setOnClickListener(v ->
+                startActivity(new Intent(
+                        AdminDashboardActivity.this,
+                        ManageUsersActivity.class
+                )));
 
-        // ➜ Expense Management (IMPORTANT FIX 🔥)
-        cardCategories.setOnClickListener(v -> {
-            startActivity(new Intent(
-                    AdminDashboardActivity.this,
-                    AdminUserFinanceReportActivity.class
-            ));
-        });
+        // ➜ Expense Management
+        cardCategories.setOnClickListener(v ->
+                startActivity(new Intent(
+                        AdminDashboardActivity.this,
+                        AdminUserFinanceReportActivity.class
+                )));
 
-        // ➜ Reports & Analytics (future / optional)
-        cardReports.setOnClickListener(v -> {
-            startActivity(new Intent(
-                    AdminDashboardActivity.this,
-                    ReportsActivity.class
-            ));
-        });
+        // ➜ Reports & Analytics
+        cardReports.setOnClickListener(v ->
+                startActivity(new Intent(
+                        AdminDashboardActivity.this,
+                        ReportsActivity.class
+                )));
+
+        // ➜ 🔥 USER FEEDBACK & SUPPORT
+        cardFeedback.setOnClickListener(v ->
+                startActivity(new Intent(
+                        AdminDashboardActivity.this,
+                        AdminFeedbackActivity.class
+                )));
     }
 }

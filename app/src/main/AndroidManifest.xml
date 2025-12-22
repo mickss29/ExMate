@@ -100,6 +100,14 @@
         <activity
             android:name=".AdminUserFullFinanceReportActivity"
             android:exported="false" />
+        <activity android:name=".AdminFeedbackDetailActivity"
+            android:exported="false" />
+        <activity android:name=".AdminFeedbackActivity"
+            android:exported="false" />
+        <activity android:name=".AdminUserFinanceActivity"
+            android:exported="false" />
+
+
 
         <!-- 📂 FILE PROVIDER (PDF / CSV EXPORT – REQUIRED) -->
         <provider
