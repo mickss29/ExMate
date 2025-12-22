@@ -391,21 +391,20 @@ public class AdminUserFullFinanceReportActivity extends AppCompatActivity {
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setDataAndType(uri, type);
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
 
-            if (intent.resolveActivity(getPackageManager()) != null) {
-                startActivity(intent);
-            } else {
-                Toast.makeText(this,
-                        "No app installed to open this file",
-                        Toast.LENGTH_LONG).show();
-            }
+            // 🔥 IMPORTANT: Chooser
+            Intent chooser = Intent.createChooser(intent, "Open file with");
+
+            startActivity(chooser);
 
         } catch (Exception e) {
             Toast.makeText(this,
-                    "Open failed: " + e.getMessage(),
+                    "No app found to open this file.\nPlease install a PDF/CSV viewer.",
                     Toast.LENGTH_LONG).show();
         }
     }
+
 
 
     private String safe(String v) {
