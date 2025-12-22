@@ -4,13 +4,9 @@
 
     <!-- ================= REQUIRED PERMISSIONS ================= -->
 
-    <!-- Internet (Firebase) -->
     <uses-permission android:name="android.permission.INTERNET" />
-
-    <!-- Vibration (UI feedback) -->
     <uses-permission android:name="android.permission.VIBRATE" />
 
-    <!-- Legacy storage (ONLY for Android 9 and below) -->
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
@@ -25,9 +21,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ExMate">
 
-        <!-- 🔐 AUTH / LOGIN (APP ENTRY POINT) -->
+        <!-- 🚀 SPLASH SCREEN (NEW APP ENTRY POINT) -->
         <activity
-            android:name=".AuthActivity"
+            android:name=".SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -35,81 +31,35 @@
             </intent-filter>
         </activity>
 
+        <!-- 🔐 AUTH / LOGIN -->
+        <activity
+            android:name=".AuthActivity"
+            android:exported="false" />
+
         <!-- 👤 USER SIDE -->
-        <activity
-            android:name=".UserDashboardActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".UserReportsActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".AddIncomeActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".AddExpenseActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".UserDetailsActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".UserProfile"
-            android:exported="false" />
-
-        <activity
-            android:name=".EditProfileActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".StatisticsActivity"
-            android:exported="false" />
+        <activity android:name=".UserDashboardActivity" android:exported="false" />
+        <activity android:name=".UserReportsActivity" android:exported="false" />
+        <activity android:name=".AddIncomeActivity" android:exported="false" />
+        <activity android:name=".AddExpenseActivity" android:exported="false" />
+        <activity android:name=".UserDetailsActivity" android:exported="false" />
+        <activity android:name=".UserProfile" android:exported="false" />
+        <activity android:name=".EditProfileActivity" android:exported="false" />
+        <activity android:name=".StatisticsActivity" android:exported="false" />
 
         <!-- 👨‍💼 ADMIN SIDE -->
-        <activity
-            android:name=".AdminDashboardActivity"
-            android:exported="false" />
+        <activity android:name=".AdminDashboardActivity" android:exported="false" />
+        <activity android:name=".ManageUsersActivity" android:exported="false" />
+        <activity android:name=".ManageExpensesActivity" android:exported="false" />
+        <activity android:name=".ManageCategoriesActivity" android:exported="false" />
+        <activity android:name=".ReportsActivity" android:exported="false" />
+        <activity android:name=".AdminUserFinanceReportActivity" android:exported="false" />
+        <activity android:name=".AdminUserSelectActivity" android:exported="false" />
+        <activity android:name=".AdminUserFullFinanceReportActivity" android:exported="false" />
+        <activity android:name=".AdminFeedbackDetailActivity" android:exported="false" />
+        <activity android:name=".AdminFeedbackActivity" android:exported="false" />
+        <activity android:name=".AdminUserFinanceActivity" android:exported="false" />
 
-        <activity
-            android:name=".ManageUsersActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".ManageExpensesActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".ManageCategoriesActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".ReportsActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".AdminUserFinanceReportActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".AdminUserSelectActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".AdminUserFullFinanceReportActivity"
-            android:exported="false" />
-        <activity android:name=".AdminFeedbackDetailActivity"
-            android:exported="false" />
-        <activity android:name=".AdminFeedbackActivity"
-            android:exported="false" />
-        <activity android:name=".AdminUserFinanceActivity"
-            android:exported="false" />
-
-
-
-        <!-- 📂 FILE PROVIDER (PDF / CSV EXPORT – REQUIRED) -->
+        <!-- 📂 FILE PROVIDER -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
