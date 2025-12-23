@@ -1,10 +1,12 @@
 package com.example.exmate;
 
+import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -37,7 +39,25 @@ public class AuthActivity extends AppCompatActivity {
     private LinearLayout layoutLogin, layoutSignup;
     private TextView tabLogin, tabSignup, tvForgotPassword;
     private ConstraintLayout rootLayout;
+    private TextView tvSwipeHint;
+
+    private static final String PREF_ONBOARDING = "auth_onboarding";
+    private static final String KEY_SWIPE_HINT_SHOWN = "swipe_hint_shown";
+
     private View shapeCircle, shapeTriangle;
+    private View toggleIndicator;
+    private int toggleWidth = 0;
+    private float swipeDownX;
+    private static final int SWIPE_THRESHOLD = 120;
+    private float swipeStartX;
+    private long swipeStartTime;
+
+    private static final int SWIPE_DISTANCE = 70;   // 🔥 small distance
+    private static final int SWIPE_VELOCITY = 600;  // 🔥 fast flick
+
+
+
+
 
     private TextInputEditText etLoginEmail, etLoginPassword;
     private TextInputEditText etFullName, etSignupEmail,
@@ -110,20 +130,65 @@ public class AuthActivity extends AppCompatActivity {
 
         btnLogin = findViewById(R.id.btnLogin);
         btnSignup = findViewById(R.id.btnSignup);
+        toggleIndicator = findViewById(R.id.toggleIndicator);
+        tvSwipeHint = findViewById(R.id.tvSwipeHint);
+
+
+// Set indicator width AFTER layout is drawn
+        toggleIndicator.post(() -> {
+            toggleWidth = ((View) toggleIndicator.getParent()).getWidth() / 2;
+
+            // Apply width
+            toggleIndicator.getLayoutParams().width = toggleWidth;
+            toggleIndicator.requestLayout();
+
+            // Default position (Login)
+            toggleIndicator.setTranslationX(0);
+        });
+
 
         setupLoader();
         setupDragWithHaptic();
+        setupAuthCardSwipe();
+
 
         showLogin(false);
         animateDarkBlueBackground();
         startFloatingParallax();
+        tabLogin.setOnClickListener(v -> {
+            if (!isLoginVisible) {
+                performToggleHaptic();
+                animateAuthSwapSimple(false, () -> showLogin(false));
+            }
+        });
 
-        tabLogin.setOnClickListener(v -> showLogin(true));
-        tabSignup.setOnClickListener(v -> showSignup(true));
+        tabSignup.setOnClickListener(v -> {
+            if (isLoginVisible) {
+                performToggleHaptic();
+                animateAuthSwapSimple(true, () -> showSignup(false));
+            }
+        });
+
+
 
         btnSignup.setOnClickListener(v -> registerUser());
         btnLogin.setOnClickListener(v -> loginUser());
         tvForgotPassword.setOnClickListener(v -> showForgotPasswordDialog());
+        SharedPreferences prefs =
+                getSharedPreferences(PREF_ONBOARDING, MODE_PRIVATE);
+
+        boolean shown = prefs.getBoolean(KEY_SWIPE_HINT_SHOWN, false);
+
+        if (!shown) {
+            layoutLogin.postDelayed(() -> {
+                showSwipeOnboardingHint();
+
+                prefs.edit()
+                        .putBoolean(KEY_SWIPE_HINT_SHOWN, true)
+                        .apply();
+            }, 700);
+        }
+
     }
 
     // ================= VALIDATED REGISTER =================
@@ -308,15 +373,44 @@ public class AuthActivity extends AppCompatActivity {
 
     private void showLogin(boolean animate) {
         isLoginVisible = true;
+
         layoutSignup.setVisibility(View.GONE);
         layoutLogin.setVisibility(View.VISIBLE);
+
+        tabLogin.setTextColor(0xFFFFFFFF);
+        tabSignup.setTextColor(0xFFB0C4DE);
+
+        if (animate) {
+            toggleIndicator.animate()
+                    .translationX(0)
+                    .setDuration(250)
+                    .setInterpolator(new DecelerateInterpolator())
+                    .start();
+        } else {
+            toggleIndicator.setTranslationX(0);
+        }
     }
 
     private void showSignup(boolean animate) {
         isLoginVisible = false;
+
         layoutLogin.setVisibility(View.GONE);
         layoutSignup.setVisibility(View.VISIBLE);
+
+        tabSignup.setTextColor(0xFFFFFFFF);
+        tabLogin.setTextColor(0xFFB0C4DE);
+
+        if (animate) {
+            toggleIndicator.animate()
+                    .translationX(toggleWidth)
+                    .setDuration(250)
+                    .setInterpolator(new DecelerateInterpolator())
+                    .start();
+        } else {
+            toggleIndicator.setTranslationX(toggleWidth);
+        }
     }
+
 
     private void setupLoader() {
 
@@ -396,5 +490,181 @@ public class AuthActivity extends AppCompatActivity {
                 .setNegativeButton("Cancel", null)
                 .show();
     }
+
+    private void setupAuthCardSwipe() {
+
+        View.OnTouchListener swipeListener = (v, event) -> {
+
+            switch (event.getAction()) {
+
+                case MotionEvent.ACTION_DOWN:
+                    swipeStartX = event.getRawX();
+                    swipeStartTime = System.currentTimeMillis();
+                    return true;
+
+                case MotionEvent.ACTION_UP:
+                    float endX = event.getRawX();
+                    long endTime = System.currentTimeMillis();
+
+                    float diffX = endX - swipeStartX;
+                    long duration = endTime - swipeStartTime;
+
+                    // velocity in px/sec
+                    float velocity = Math.abs(diffX) / Math.max(duration, 1) * 1000;
+
+                    // 👉 Swipe RIGHT → Signup
+                    if ((diffX > SWIPE_DISTANCE || velocity > SWIPE_VELOCITY)
+                            && isLoginVisible) {
+
+                        animateAuthSwapPremium(() -> {
+                            performToggleHaptic();
+                            showSignup(true);
+                        });
+                        return true;
+                    }
+
+                    // 👉 Swipe LEFT → Login
+                    if ((diffX < -SWIPE_DISTANCE || velocity > SWIPE_VELOCITY)
+                            && !isLoginVisible) {
+
+                        animateAuthSwapPremium(() -> {
+                            performToggleHaptic();
+                            showLogin(true);
+                        });
+                        return true;
+                    }
+
+                    return false;
+            }
+            return false;
+        };
+
+        layoutLogin.setOnTouchListener(swipeListener);
+        layoutSignup.setOnTouchListener(swipeListener);
+    }
+
+    private void animateAuthSwap(boolean toSignup) {
+
+        View target = isLoginVisible ? layoutLogin : layoutSignup;
+
+        float direction = toSignup ? -1f : 1f;
+
+        target.animate()
+                .translationX(direction * 40)
+                .alpha(0.95f)
+                .setDuration(120)
+                .withEndAction(() -> {
+                    target.setTranslationX(0);
+                    target.setAlpha(1f);
+                })
+                .start();
+    }
+    private void performToggleHaptic() {
+        if (vibrator == null) return;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(
+                    VibrationEffect.createOneShot(
+                            14, // short premium tick
+                            VibrationEffect.EFFECT_TICK
+                    )
+            );
+        } else {
+            vibrator.vibrate(14);
+        }
+    }
+    private void animateAuthSwapPremium(Runnable onComplete) {
+
+        View target = isLoginVisible ? layoutLogin : layoutSignup;
+
+        target.animate()
+                .scaleX(0.97f)
+                .scaleY(0.97f)
+                .alpha(0.88f)
+                .setDuration(120)
+                .withEndAction(() -> {
+
+                    // reset instantly before next screen
+                    target.setScaleX(1f);
+                    target.setScaleY(1f);
+                    target.setAlpha(1f);
+
+                    if (onComplete != null) onComplete.run();
+                })
+                .start();
+    }
+    private void showSwipeOnboardingHint() {
+
+        View target = isLoginVisible ? layoutLogin : layoutSignup;
+
+        ObjectAnimator slideRight =
+                ObjectAnimator.ofFloat(target, "translationX", 0f, 40f);
+        slideRight.setDuration(250);
+
+        ObjectAnimator slideLeft =
+                ObjectAnimator.ofFloat(target, "translationX", 40f, -40f);
+        slideLeft.setDuration(350);
+
+        ObjectAnimator backToCenter =
+                ObjectAnimator.ofFloat(target, "translationX", -40f, 0f);
+        backToCenter.setDuration(250);
+
+        AnimatorSet set = new AnimatorSet();
+        set.playSequentially(slideRight, slideLeft, backToCenter);
+        set.setInterpolator(new DecelerateInterpolator());
+        set.start();
+    }
+    private void showSwipeTextHint() {
+
+        if (tvSwipeHint == null) return;
+
+        tvSwipeHint.setVisibility(View.VISIBLE);
+
+        tvSwipeHint.animate()
+                .alpha(1f)
+                .setDuration(300)
+                .withEndAction(() -> tvSwipeHint.postDelayed(() ->
+
+                                tvSwipeHint.animate()
+                                        .alpha(0f)
+                                        .setDuration(400)
+                                        .withEndAction(() ->
+                                                tvSwipeHint.setVisibility(View.GONE))
+                                        .start()
+
+                        , 1500))
+                .start();
+    }
+    private void animateAuthSwapSimple(boolean toSignup, Runnable onEnd) {
+
+        View current = isLoginVisible ? layoutLogin : layoutSignup;
+        View next = isLoginVisible ? layoutSignup : layoutLogin;
+
+        float direction = toSignup ? -1f : 1f;
+
+        next.setTranslationX(-direction * 60);
+        next.setAlpha(0f);
+        next.setVisibility(View.VISIBLE);
+
+        current.animate()
+                .translationX(direction * 60)
+                .alpha(0f)
+                .setDuration(180)
+                .start();
+
+        next.animate()
+                .translationX(0)
+                .alpha(1f)
+                .setDuration(180)
+                .withEndAction(() -> {
+                    current.setTranslationX(0);
+                    current.setAlpha(1f);
+                    current.setVisibility(View.GONE);
+                    if (onEnd != null) onEnd.run();
+                })
+                .start();
+    }
+
+
 
 }

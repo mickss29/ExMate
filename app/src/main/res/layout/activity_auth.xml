@@ -45,34 +45,50 @@
         app:layout_constraintEnd_toEndOf="parent">
 
         <!-- TOGGLE -->
-        <LinearLayout
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:orientation="horizontal"
             android:padding="4dp"
             android:background="@drawable/toggle_midnight_bg">
 
-            <TextView
-                android:id="@+id/tabLogin"
+            <!-- SLIDING INDICATOR -->
+            <View
+                android:id="@+id/toggleIndicator"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="Login"
-                android:textStyle="bold"
-                android:textColor="@android:color/white"
-                android:background="@drawable/toggle_selected_midnight"/>
+                android:layout_gravity="start"
+                android:background="@drawable/toggle_selected_midnight" />
 
-            <TextView
-                android:id="@+id/tabSignup"
-                android:layout_width="0dp"
+            <!-- TABS -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="Sign Up"
-                android:textStyle="bold"
-                android:textColor="#B0C4DE"/>
-        </LinearLayout>
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <TextView
+                    android:id="@+id/tabLogin"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="Login"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/white"/>
+
+                <TextView
+                    android:id="@+id/tabSignup"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="Sign Up"
+                    android:textStyle="bold"
+                    android:textColor="#B0C4DE"/>
+            </LinearLayout>
+
+        </FrameLayout>
+
 
         <!-- ================= LOGIN ================= -->
         <LinearLayout
@@ -315,6 +331,18 @@
                     android:textSize="18sp"
                     android:textColor="#8AB4F8"/>
             </LinearLayout>
+            <TextView
+                android:id="@+id/tvSwipeHint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Swipe →"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="#80FFFFFF"
+                android:alpha="0"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="12dp"/>
+
         </LinearLayout>
 
     </LinearLayout>
