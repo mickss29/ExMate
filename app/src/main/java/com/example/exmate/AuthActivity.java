@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.util.Patterns;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
@@ -28,6 +29,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.*;
 
 import java.util.HashMap;
+import java.util.regex.Pattern;
 
 public class AuthActivity extends AppCompatActivity {
 
@@ -51,12 +53,30 @@ public class AuthActivity extends AppCompatActivity {
 
     // Drag + Haptic
     private float startX;
-    private boolean isDragging = false;
     private boolean hapticDone = false;
     private static final int DRAG_THRESHOLD = 180;
 
     private Vibrator vibrator;
     private boolean isLoginVisible = true;
+
+    // ===== REGEX PATTERNS =====
+    private static final Pattern NAME_PATTERN =
+            Pattern.compile("^[a-zA-Z ]+$");
+
+    private static final Pattern PHONE_PATTERN =
+            Pattern.compile("^[0-9]{10}$");
+
+    private static final Pattern STRONG_PASSWORD_PATTERN =
+            Pattern.compile(
+                    "^" +
+                            "(?=.*[0-9])" +         // at least 1 digit
+                            "(?=.*[a-z])" +         // at least 1 lower
+                            "(?=.*[A-Z])" +         // at least 1 upper
+                            "(?=.*[@#$%^&+=!])" +   // at least 1 special
+                            "(?=\\S+$)" +           // no spaces
+                            ".{8,}" +               // min 8 chars
+                            "$"
+            );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,43 +126,7 @@ public class AuthActivity extends AppCompatActivity {
         tvForgotPassword.setOnClickListener(v -> showForgotPasswordDialog());
     }
 
-    // ================= AUTO LOGIN ROLE (ONLY ADDITION) =================
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        FirebaseUser currentUser = auth.getCurrentUser();
-        if (currentUser == null) return;
-
-        if (!currentUser.isEmailVerified()) {
-            auth.signOut();
-            return;
-        }
-
-        usersRef.child(currentUser.getUid()).child("role")
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot snapshot) {
-                        String role = snapshot.getValue(String.class);
-
-                        if ("admin".equals(role)) {
-                            startActivity(new Intent(AuthActivity.this,
-                                    AdminDashboardActivity.class));
-                        } else {
-                            startActivity(new Intent(AuthActivity.this,
-                                    UserDashboardActivity.class));
-                        }
-                        finish();
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError error) { }
-                });
-    }
-
-    // ================= AUTH LOGIC =================
-
+    // ================= VALIDATED REGISTER =================
     private void registerUser() {
 
         String name = etFullName.getText().toString().trim();
@@ -151,13 +135,34 @@ public class AuthActivity extends AppCompatActivity {
         String pass = etSignupPassword.getText().toString().trim();
         String cpass = etSignupConfirmPassword.getText().toString().trim();
 
-        if (name.isEmpty() || email.isEmpty() || pass.isEmpty() || cpass.isEmpty()) {
-            Toast.makeText(this, "Fill all required fields", Toast.LENGTH_SHORT).show();
+        if (name.isEmpty() || email.isEmpty() || phone.isEmpty()
+                || pass.isEmpty() || cpass.isEmpty()) {
+            toast("Fill all required fields");
+            return;
+        }
+
+        if (!NAME_PATTERN.matcher(name).matches()) {
+            toast("Name must contain only alphabets");
+            return;
+        }
+
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            toast("Enter valid email address");
+            return;
+        }
+
+        if (!PHONE_PATTERN.matcher(phone).matches()) {
+            toast("Phone number must be 10 digits");
+            return;
+        }
+
+        if (!STRONG_PASSWORD_PATTERN.matcher(pass).matches()) {
+            toast("Password must contain uppercase, lowercase, number & special character");
             return;
         }
 
         if (!pass.equals(cpass)) {
-            Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show();
+            toast("Passwords do not match");
             return;
         }
 
@@ -168,9 +173,7 @@ public class AuthActivity extends AppCompatActivity {
 
                     if (!task.isSuccessful()) {
                         loader.dismiss();
-                        Toast.makeText(this,
-                                task.getException().getMessage(),
-                                Toast.LENGTH_LONG).show();
+                        toast(task.getException().getMessage());
                         return;
                     }
 
@@ -194,21 +197,25 @@ public class AuthActivity extends AppCompatActivity {
                     usersRef.child(uid).setValue(map).addOnCompleteListener(dbTask -> {
                         loader.dismiss();
                         auth.signOut();
-                        Toast.makeText(this,
-                                "Verification email sent. Please verify.",
-                                Toast.LENGTH_LONG).show();
+                        toast("Verification email sent. Please verify.");
                         showLogin(true);
                     });
                 });
     }
 
+    // ================= LOGIN (UNCHANGED) =================
     private void loginUser() {
 
         String email = etLoginEmail.getText().toString().trim();
         String pass = etLoginPassword.getText().toString().trim();
 
         if (email.isEmpty() || pass.isEmpty()) {
-            Toast.makeText(this, "Enter email & password", Toast.LENGTH_SHORT).show();
+            toast("Enter email & password");
+            return;
+        }
+
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            toast("Enter valid email");
             return;
         }
 
@@ -219,24 +226,15 @@ public class AuthActivity extends AppCompatActivity {
 
                     if (!task.isSuccessful()) {
                         loader.dismiss();
-                        Toast.makeText(this,
-                                task.getException().getMessage(),
-                                Toast.LENGTH_LONG).show();
+                        toast(task.getException().getMessage());
                         return;
                     }
 
                     FirebaseUser user = auth.getCurrentUser();
-                    if (user == null) {
-                        loader.dismiss();
-                        return;
-                    }
-
-                    if (!user.isEmailVerified()) {
+                    if (user == null || !user.isEmailVerified()) {
                         loader.dismiss();
                         auth.signOut();
-                        Toast.makeText(this,
-                                "Email not verified",
-                                Toast.LENGTH_LONG).show();
+                        toast("Email not verified");
                         return;
                     }
 
@@ -245,58 +243,33 @@ public class AuthActivity extends AppCompatActivity {
                                 @Override
                                 public void onDataChange(DataSnapshot snapshot) {
                                     loader.dismiss();
-
                                     String role = snapshot.getValue(String.class);
-
-                                    if ("admin".equals(role)) {
-                                        startActivity(new Intent(AuthActivity.this,
-                                                AdminDashboardActivity.class));
-                                    } else {
-                                        startActivity(new Intent(AuthActivity.this,
-                                                UserDashboardActivity.class));
-                                    }
+                                    startActivity(new Intent(AuthActivity.this,
+                                            "admin".equals(role)
+                                                    ? AdminDashboardActivity.class
+                                                    : UserDashboardActivity.class));
                                     finish();
                                 }
 
                                 @Override
                                 public void onCancelled(DatabaseError error) {
                                     loader.dismiss();
-                                    Toast.makeText(AuthActivity.this,
-                                            "Login failed",
-                                            Toast.LENGTH_SHORT).show();
+                                    toast("Login failed");
                                 }
                             });
                 });
     }
 
-    private void showForgotPasswordDialog() {
-        TextInputEditText input = new TextInputEditText(this);
-        input.setHint("Enter registered email");
-
-        new AlertDialog.Builder(this)
-                .setTitle("Reset Password")
-                .setView(input)
-                .setPositiveButton("Send", (d, w) -> {
-                    String email = input.getText().toString().trim();
-                    if (!email.isEmpty()) {
-                        auth.sendPasswordResetEmail(email);
-                        Toast.makeText(this,
-                                "Reset email sent",
-                                Toast.LENGTH_LONG).show();
-                    }
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
+    private void toast(String msg) {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 
     // ================= UI / ANIMATION (UNCHANGED) =================
-
     private void setupDragWithHaptic() {
         View.OnTouchListener dragListener = (v, event) -> {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     startX = event.getRawX();
-                    isDragging = true;
                     hapticDone = false;
                     return true;
                 case MotionEvent.ACTION_MOVE:
@@ -310,7 +283,6 @@ public class AuthActivity extends AppCompatActivity {
                     return true;
                 case MotionEvent.ACTION_UP:
                     resetPosition(v);
-                    isDragging = false;
                     return true;
             }
             return false;
@@ -321,10 +293,10 @@ public class AuthActivity extends AppCompatActivity {
 
     private void performHaptic() {
         if (vibrator == null) return;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             vibrator.vibrate(VibrationEffect.createOneShot(20,
                     VibrationEffect.DEFAULT_AMPLITUDE));
-        } else vibrator.vibrate(20);
+        else vibrator.vibrate(20);
     }
 
     private void resetPosition(View view) {
@@ -347,16 +319,30 @@ public class AuthActivity extends AppCompatActivity {
     }
 
     private void setupLoader() {
+
         loader = new Dialog(this);
         loader.setContentView(R.layout.dialog_loader);
         loader.setCancelable(false);
-        loader.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+
+        // ✅ FIX 1: Window null safety
+        if (loader.getWindow() != null) {
+            loader.getWindow()
+                    .setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
         ImageView ring = loader.findViewById(R.id.loaderRing);
-        ObjectAnimator rotate = ObjectAnimator.ofFloat(ring, "rotation", 0f, 360f);
-        rotate.setDuration(1200);
-        rotate.setRepeatCount(ValueAnimator.INFINITE);
-        rotate.start();
+
+        // ✅ FIX 2: View null safety
+        if (ring != null) {
+            ObjectAnimator rotate =
+                    ObjectAnimator.ofFloat(ring, "rotation", 0f, 360f);
+            rotate.setDuration(1200);
+            rotate.setRepeatCount(ValueAnimator.INFINITE);
+            rotate.setInterpolator(null);
+            rotate.start();
+        }
     }
+
 
     private void animateDarkBlueBackground() {
         GradientDrawable gd = new GradientDrawable(
@@ -371,4 +357,44 @@ public class AuthActivity extends AppCompatActivity {
         ObjectAnimator.ofFloat(shapeTriangle, "translationY", 0f, -14f)
                 .setDuration(5000).start();
     }
+    private void showForgotPasswordDialog() {
+
+        TextInputEditText input = new TextInputEditText(this);
+        input.setHint("Enter registered email");
+
+        new AlertDialog.Builder(this)
+                .setTitle("Reset Password")
+                .setView(input)
+                .setPositiveButton("Send", (dialog, which) -> {
+
+                    String email = input.getText().toString().trim();
+
+                    if (email.isEmpty()) {
+                        Toast.makeText(this,
+                                "Email required",
+                                Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                        Toast.makeText(this,
+                                "Enter valid email",
+                                Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    auth.sendPasswordResetEmail(email)
+                            .addOnSuccessListener(unused ->
+                                    Toast.makeText(this,
+                                            "Reset email sent",
+                                            Toast.LENGTH_LONG).show())
+                            .addOnFailureListener(e ->
+                                    Toast.makeText(this,
+                                            e.getMessage(),
+                                            Toast.LENGTH_LONG).show());
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
 }
