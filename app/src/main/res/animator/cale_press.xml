@@ -1,0 +1,8 @@
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true">
+        <objectAnimator
+            android:propertyName="scaleX"
+            android:valueTo="0.97"
+            android:duration="120"/>
+    </item>
+</selector>

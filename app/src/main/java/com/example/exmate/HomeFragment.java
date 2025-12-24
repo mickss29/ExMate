@@ -83,7 +83,7 @@ public class HomeFragment extends Fragment {
         userId = FirebaseAuth.getInstance().getUid();
 
         if (userId == null) {
-            Toast.makeText(getContext(), "User not logged in", Toast.LENGTH_SHORT).show();
+            // 🔒 SAFETY: fragment opened before login
             return;
         }
 
@@ -95,7 +95,7 @@ public class HomeFragment extends Fragment {
     // ================= LOAD DATA =================
 
     private void loadDashboardData() {
-        if (adapter == null) return;
+        if (adapter == null || userRef == null) return;
 
         transactionList.clear();
         adapter.notifyDataSetChanged();

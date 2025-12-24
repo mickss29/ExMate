@@ -1,0 +1,19 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Base dark layer -->
+    <item>
+        <color android:color="#020617"/>
+    </item>
+
+    <!-- Gradient overlay -->
+    <item>
+        <shape>
+            <gradient
+                android:angle="270"
+                android:startColor="#020617"
+                android:centerColor="#020617"
+                android:endColor="#0F172A"/>
+        </shape>
+    </item>
+
+</layer-list>
