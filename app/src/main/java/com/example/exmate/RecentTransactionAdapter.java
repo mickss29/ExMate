@@ -18,7 +18,7 @@ import java.util.Locale;
 public class RecentTransactionAdapter
         extends RecyclerView.Adapter<RecentTransactionAdapter.ViewHolder> {
 
-    // ✅ final = cleaner & warning-free
+    // ================= DATA =================
     private final List<TransactionModel> list;
 
     public RecentTransactionAdapter(List<TransactionModel> list) {
@@ -34,7 +34,6 @@ public class RecentTransactionAdapter
         ViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            // 🔥 MUST MATCH item_recent_transaction.xml IDs
             imgType  = itemView.findViewById(R.id.imgType);
             tvTitle  = itemView.findViewById(R.id.tvTitle);
             tvSub    = itemView.findViewById(R.id.tvSub);
@@ -66,22 +65,21 @@ public class RecentTransactionAdapter
         holder.tvTitle.setText(model.getType());
 
         // ---------- DATE / TIME ----------
-        String timeText = formatTime(model.getTime());
-        holder.tvSub.setText(timeText);
+        holder.tvSub.setText(formatTime(model.getTime()));
 
         // ---------- AMOUNT ----------
-        holder.tvAmount.setText("₹" + model.getAmount());
+        holder.tvAmount.setText("₹ " + model.getAmount());
 
         // ---------- INCOME / EXPENSE UI ----------
-        if (model.getType().equalsIgnoreCase("Income")) {
+        if ("Income".equalsIgnoreCase(model.getType())) {
 
-            holder.tvAmount.setTextColor(Color.parseColor("#22C55E"));
+            holder.tvAmount.setTextColor(Color.parseColor("#22C55E")); // green
             holder.imgType.setImageResource(R.drawable.ic_income);
             holder.imgType.setBackgroundResource(R.drawable.bg_circle_green);
 
         } else {
 
-            holder.tvAmount.setTextColor(Color.parseColor("#F87171"));
+            holder.tvAmount.setTextColor(Color.parseColor("#F87171")); // red
             holder.imgType.setImageResource(R.drawable.ic_expense);
             holder.imgType.setBackgroundResource(R.drawable.bg_circle_red);
         }
