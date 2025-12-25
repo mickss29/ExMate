@@ -1,113 +1,193 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0E1A2B">
+    android:background="#0A0F1C"
+    android:padding="18dp">
 
-    <TextView
-        android:id="@+id/tvTitle"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="My Profile"
-        android:textColor="@android:color/white"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:layout_marginTop="24dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        android:orientation="vertical">
 
-    <ImageView
-        android:id="@+id/imgAvatar"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:src="@drawable/ic_user_placeholder"
-        android:layout_marginTop="24dp"
-        app:layout_constraintTop_toBottomOf="@id/tvTitle"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        <!-- ================= PROFILE HEADER ================= -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:padding="12dp">
 
-    <TextView
-        android:id="@+id/tvUserName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@id/imgAvatar"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="My Profile"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:textSize="20sp" />
 
-    <TextView
-        android:id="@+id/tvUserEmail"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="#B0C4DE"
-        android:layout_marginTop="4dp"
-        app:layout_constraintTop_toBottomOf="@id/tvUserName"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+            <!-- Avatar -->
+            <ImageView
+                android:id="@+id/imgAvatar"
+                android:layout_width="86dp"
+                android:layout_height="86dp"
+                android:layout_marginTop="16dp"
+                android:src="@drawable/ic_user"
+                android:padding="16dp"
+                android:background="@drawable/bg_glass_card"
+                android:tint="#FFFFFF" />
 
-    <TextView
-        android:id="@+id/tvUserPhone"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="#B0C4DE"
-        android:layout_marginTop="4dp"
-        app:layout_constraintTop_toBottomOf="@id/tvUserEmail"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+            <!-- Name -->
+            <TextView
+                android:id="@+id/tvUserName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="User"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold"/>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnEditProfile"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Edit Profile"
-        android:layout_margin="24dp"
-        app:cornerRadius="14dp"
-        app:backgroundTint="#3F51B5"
-        app:layout_constraintTop_toBottomOf="@id/tvUserPhone"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+            <!-- Email -->
+            <TextView
+                android:id="@+id/tvUserEmail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="email@example.com"
+                android:textColor="#9CA3AF"
+                android:textSize="14sp"/>
 
-    <!-- SEND FEEDBACK -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnSendFeedback"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Send Feedback / Ask Question"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
-        app:cornerRadius="14dp"
-        app:backgroundTint="#009688"
-        app:layout_constraintTop_toBottomOf="@id/btnEditProfile"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+            <!-- Phone -->
+            <TextView
+                android:id="@+id/tvUserPhone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="#9CA3AF"
+                android:textSize="14sp"/>
+        </LinearLayout>
 
-    <!-- FEEDBACK STATUS -->
-    <TextView
-        android:id="@+id/tvFeedbackStatus"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:textColor="#FFD54F"
-        android:textSize="14sp"
-        android:layout_margin="24dp"
-        app:layout_constraintTop_toBottomOf="@id/btnSendFeedback"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        <!-- ================= GENERAL SETTINGS ================= -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="General Settings"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="6dp"/>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnLogout"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Logout"
-        android:layout_margin="24dp"
-        app:cornerRadius="14dp"
-        app:backgroundTint="#D32F2F"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        <!-- Profile Info -->
+        <include
+            layout="@layout/row_profile_item"
+            android:id="@+id/itemProfileInfo"
+            app:itemIcon="@drawable/ic_user"
+            app:itemTitle="Profile info"
+            android:background="@drawable/bg_row_card"/>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <!-- App Lock / Switch Row -->
+        <include
+            layout="@layout/row_profile_item_switch"
+            android:id="@+id/itemAppLock"
+            app:itemIcon="@drawable/ic_lock"
+            app:itemTitle="App lock"
+            android:background="@drawable/bg_row_card"/>
+
+        <!-- Rate App -->
+        <include
+            layout="@layout/row_profile_item"
+            android:id="@+id/itemRateApp"
+            app:itemIcon="@drawable/ic_star"
+            app:itemTitle="Rate App"
+            android:background="@drawable/bg_row_card"/>
+
+        <!-- Subscription -->
+        <include
+            layout="@layout/row_profile_item"
+            android:id="@+id/itemSubscription"
+            app:itemIcon="@drawable/ic_subscription"
+            app:itemTitle="Subscription"
+            android:background="@drawable/bg_row_card"/>
+
+        <!-- Invite -->
+        <include
+            layout="@layout/row_profile_item"
+            android:id="@+id/itemInvite"
+            app:itemIcon="@drawable/ic_invite"
+            app:itemTitle="Invite Friend amp; Family"
+            android:background="@drawable/bg_row_card"/>
+
+        <!-- About -->
+        <include
+            layout="@layout/row_profile_item"
+            android:id="@+id/itemAbout"
+            app:itemIcon="@drawable/ic_info"
+            app:itemTitle="About Us"
+            android:background="@drawable/bg_row_card"/>
+
+        <!-- Terms -->
+        <include
+            layout="@layout/row_profile_item"
+            android:id="@+id/itemTerms"
+            app:itemIcon="@drawable/ic_terms"
+            app:itemTitle="Terms amp; Conditions"
+            android:background="@drawable/bg_row_card"/>
+
+        <!-- Privacy -->
+        <include
+            layout="@layout/row_profile_item"
+            android:id="@+id/itemPrivacy"
+            app:itemIcon="@drawable/ic_privacy"
+            app:itemTitle="Privacy Policy"
+            android:background="@drawable/bg_row_card"/>
+
+        <!-- ================= HELP ================= -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Help amp; Support"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginTop="22dp"
+            android:layout_marginBottom="6dp"/>
+
+        <include
+            layout="@layout/row_profile_item"
+            android:id="@+id/itemFinancialSupport"
+            app:itemIcon="@drawable/ic_support"
+            app:itemTitle="Financial Support"
+            android:background="@drawable/bg_row_card"/>
+
+        <include
+            layout="@layout/row_profile_item"
+            android:id="@+id/itemWhatsNew"
+            app:itemIcon="@drawable/ic_new"
+            app:itemTitle="What's New"
+            android:background="@drawable/bg_row_card"/>
+
+        <!-- ================= LOGOUT BUTTON ================= -->
+        <Button
+            android:id="@+id/btnLogout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:text="Logout"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#EF4444"/>
+
+        <!-- Feedback Status -->
+        <TextView
+            android:id="@+id/tvFeedbackStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"/>
+    </LinearLayout>
+
+</ScrollView>

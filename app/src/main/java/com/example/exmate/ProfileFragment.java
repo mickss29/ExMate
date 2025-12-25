@@ -3,6 +3,7 @@ package com.example.exmate;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -29,12 +30,16 @@ import java.util.Map;
 
 public class ProfileFragment extends Fragment {
 
-    // ================= UI =================
+    // ---------- UI ----------
     private ImageView imgAvatar;
-    private TextView tvUserName, tvUserEmail, tvUserPhone, tvFeedbackStatus;
-    private MaterialButton btnEditProfile, btnSendFeedback, btnLogout;
+    private TextView tvUserName, tvUserEmail, tvFeedbackStatus;
 
-    // ================= FIREBASE =================
+    private MaterialCardView itemProfileInfo,
+            itemAppLock, itemRateApp, itemSubscription, itemInvite,
+            itemAbout, itemTerms, itemPrivacy,
+            itemFinancialSupport, itemWhatsNew, itemLogout;
+
+    // ---------- FIREBASE ----------
     private FirebaseAuth auth;
     private DatabaseReference userRef;
 
@@ -43,8 +48,7 @@ public class ProfileFragment extends Fragment {
     public View onCreateView(
             @NonNull LayoutInflater inflater,
             @Nullable ViewGroup container,
-            @Nullable Bundle savedInstanceState
-    ) {
+            @Nullable Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.profile_fragment, container, false);
 
@@ -56,24 +60,31 @@ public class ProfileFragment extends Fragment {
         return view;
     }
 
-    // ================= INIT =================
+    // ---------- INIT UI ----------
     private void initViews(View view) {
-        imgAvatar = view.findViewById(R.id.imgAvatar);
-        tvUserName = view.findViewById(R.id.tvUserName);
-        tvUserEmail = view.findViewById(R.id.tvUserEmail);
-        tvUserPhone = view.findViewById(R.id.tvUserPhone);
+        imgAvatar        = view.findViewById(R.id.imgAvatar);
+        tvUserName       = view.findViewById(R.id.tvUserName);
+        tvUserEmail      = view.findViewById(R.id.tvUserEmail);
         tvFeedbackStatus = view.findViewById(R.id.tvFeedbackStatus);
 
-        btnEditProfile = view.findViewById(R.id.btnEditProfile);
-        btnSendFeedback = view.findViewById(R.id.btnSendFeedback);
-        btnLogout = view.findViewById(R.id.btnLogout);
+        itemProfileInfo      = view.findViewById(R.id.rowProfileInfo);
+        itemAppLock          = view.findViewById(R.id.rowAppLock);
+        itemRateApp          = view.findViewById(R.id.rowRateApp);
+        itemSubscription     = view.findViewById(R.id.rowSubscription);
+        itemInvite           = view.findViewById(R.id.rowInvite);
+        itemAbout            = view.findViewById(R.id.rowAbout);
+        itemTerms            = view.findViewById(R.id.rowTerms);
+        itemPrivacy          = view.findViewById(R.id.rowPrivacy);
+        itemFinancialSupport = view.findViewById(R.id.rowFinancialSupport);
+        itemWhatsNew         = view.findViewById(R.id.rowWhatsNew);
+        itemLogout           = view.findViewById(R.id.rowLogout);
     }
 
-    // ================= FIREBASE =================
+    // ---------- FIREBASE SETUP ----------
     private void setupFirebase() {
         auth = FirebaseAuth.getInstance();
-        FirebaseUser user = auth.getCurrentUser();
 
+        FirebaseUser user = auth.getCurrentUser();
         if (user == null) {
             Toast.makeText(getContext(), "User not logged in", Toast.LENGTH_SHORT).show();
             return;
@@ -84,30 +95,19 @@ public class ProfileFragment extends Fragment {
                 .child(user.getUid());
     }
 
-    // ================= LOAD USER DATA =================
+    // ---------- LOAD USER DATA ----------
     private void loadUserData() {
-
         FirebaseUser user = auth.getCurrentUser();
         if (user == null) return;
 
-        // Email from FirebaseAuth
         tvUserEmail.setText(user.getEmail());
 
-        // Name & Phone from Database
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
 
                 String name = snapshot.child("name").getValue(String.class);
-                String phone = snapshot.child("phone").getValue(String.class);
-
-                tvUserName.setText(
-                        name == null || name.isEmpty() ? "User" : name
-                );
-
-                tvUserPhone.setText(
-                        phone == null || phone.isEmpty() ? "" : phone
-                );
+                tvUserName.setText(!TextUtils.isEmpty(name) ? name : "User");
             }
 
             @Override
@@ -115,82 +115,100 @@ public class ProfileFragment extends Fragment {
         });
     }
 
-    // ================= BUTTON CLICKS =================
+    // ---------- CLICK ACTIONS ----------
     private void setupClicks() {
 
-        btnEditProfile.setOnClickListener(v ->
-                Toast.makeText(
-                        getContext(),
-                        "Edit profile coming soon",
-                        Toast.LENGTH_SHORT
-                ).show()
+        itemProfileInfo.setOnClickListener(v ->
+                Toast.makeText(getContext(), "Profile editing soon ✨", Toast.LENGTH_SHORT).show()
         );
 
-        btnSendFeedback.setOnClickListener(v -> showFeedbackDialog());
+        itemRateApp.setOnClickListener(v ->
+                Toast.makeText(getContext(), "Redirect to PlayStore coming soon", Toast.LENGTH_SHORT).show()
+        );
 
-        btnLogout.setOnClickListener(v -> {
-            auth.signOut();
+        itemAppLock.setOnClickListener(v ->
+                Toast.makeText(getContext(), "App Lock feature coming", Toast.LENGTH_SHORT).show()
+        );
 
-            Intent i = new Intent(requireActivity(), AuthActivity.class);
-            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(i);
-            requireActivity().finish();
-        });
+        itemFinancialSupport.setOnClickListener(v ->
+                Toast.makeText(getContext(), "Support screen soon", Toast.LENGTH_SHORT).show()
+        );
+
+        itemWhatsNew.setOnClickListener(v ->
+                Toast.makeText(getContext(), "What's new page soon", Toast.LENGTH_SHORT).show()
+        );
+
+        itemSubscription.setOnClickListener(v ->
+                Toast.makeText(getContext(), "Premium plans coming ⚡", Toast.LENGTH_SHORT).show()
+        );
+
+        itemInvite.setOnClickListener(v ->
+                Toast.makeText(getContext(), "Invite feature coming 🎉", Toast.LENGTH_SHORT).show()
+        );
+
+        itemAbout.setOnClickListener(v ->
+                Toast.makeText(getContext(), "About page coming", Toast.LENGTH_SHORT).show()
+        );
+
+        itemTerms.setOnClickListener(v ->
+                Toast.makeText(getContext(), "Terms page soon", Toast.LENGTH_SHORT).show()
+        );
+
+        itemPrivacy.setOnClickListener(v ->
+                Toast.makeText(getContext(), "Privacy Policy soon", Toast.LENGTH_SHORT).show()
+        );
+
+        itemLogout.setOnClickListener(v -> logoutUser());
     }
 
-    // ================= FEEDBACK =================
-    private void showFeedbackDialog() {
+    // ---------- LOGOUT ----------
+    private void logoutUser() {
+        auth.signOut();
+        Intent i = new Intent(requireActivity(), AuthActivity.class);
+        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(i);
+        requireActivity().finish();
+    }
 
-        AlertDialog.Builder builder =
-                new AlertDialog.Builder(requireContext());
-
-        builder.setTitle("Send Feedback");
-
+    // ---------- FEEDBACK ----------
+    public void showFeedbackDialog() {
         final EditText input = new EditText(requireContext());
-        input.setHint("Write your feedback here...");
+        input.setHint("Write your feedback...");
         input.setMinLines(3);
         input.setPadding(32, 32, 32, 32);
 
-        builder.setView(input);
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Send Feedback")
+                .setView(input)
+                .setPositiveButton("Send", (dialog, which) ->
+                        sendFeedback(input.getText().toString().trim()))
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                .show();
+    }
 
-        builder.setPositiveButton("Send", (dialog, which) -> {
+    private void sendFeedback(String msg) {
+        if (TextUtils.isEmpty(msg)) {
+            Toast.makeText(getContext(), "Feedback empty", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-            String message = input.getText().toString().trim();
+        String uid = auth.getUid();
+        if (uid == null) return;
 
-            if (message.isEmpty()) {
-                Toast.makeText(
-                        getContext(),
-                        "Feedback cannot be empty",
-                        Toast.LENGTH_SHORT
-                ).show();
-                return;
-            }
+        DatabaseReference ref = FirebaseDatabase.getInstance()
+                .getReference("users")
+                .child(uid)
+                .child("feedback")
+                .push();
 
-            String uid = FirebaseAuth.getInstance().getUid();
-            if (uid == null) return;
+        Map<String, Object> map = new HashMap<>();
+        map.put("message", msg);
+        map.put("time", System.currentTimeMillis());
 
-            DatabaseReference feedbackRef =
-                    FirebaseDatabase.getInstance()
-                            .getReference("users")
-                            .child(uid)
-                            .child("feedback");
-
-            String key = feedbackRef.push().getKey();
-
-            Map<String, Object> map = new HashMap<>();
-            map.put("message", message);
-            map.put("time", System.currentTimeMillis());
-
-            feedbackRef.child(key).setValue(map)
-                    .addOnSuccessListener(aVoid -> {
-                        tvFeedbackStatus.setText("✅ Feedback sent successfully");
-                    })
-                    .addOnFailureListener(e -> {
-                        tvFeedbackStatus.setText("❌ Failed to send feedback");
-                    });
-        });
-
-        builder.setNegativeButton("Cancel", (d, w) -> d.dismiss());
-        builder.show();
+        ref.setValue(map)
+                .addOnSuccessListener(a ->
+                        tvFeedbackStatus.setText("✔ Sent"))
+                .addOnFailureListener(e ->
+                        tvFeedbackStatus.setText("❌ Failed"));
     }
 }

@@ -29,4 +29,15 @@
         <item name="chipStrokeColor">@color/chip_expense_border</item>
     </style>
 
+    <style name="TopPanelRoundedBottomOnly">
+        <item name="cornerFamily">rounded</item>
+        <!-- top straight -->
+        <item name="cornerSizeTopLeft">0dp</item>
+        <item name="cornerSizeTopRight">0dp</item>
+        <!-- bottom rounded big -->
+        <item name="cornerSizeBottomLeft">30dp</item>
+        <item name="cornerSizeBottomRight">30dp</item>
+    </style>
+
+
 </resources>

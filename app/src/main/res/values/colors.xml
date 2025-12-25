@@ -21,7 +21,9 @@
     <!-- 🧱 UI Backgrounds -->
     <color name="card_background">#F7F9FC</color>
     <color name="input_background">#F7F9FC</color>
-
+    <color name="Dark_background">#F1F5F9</color>
+    <color name="LIGHT_background">#0F172A</color>
+    <color name="SLIE_background">#0B101A</color>
     <!-- 🔴 Status / Utility -->
     <color name="error_red">#F44336</color>
     <color name="success_green">#4CAF50</color>

@@ -4,15 +4,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background_gradient_premium">
+    android:background="#0B101A">
 
     <ScrollView
         android:id="@+id/scrollView2"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true"
-        android:paddingBottom="100dp">   <!-- 👈 just nav height -->
-
+        android:paddingBottom="100dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -20,239 +19,266 @@
             android:orientation="vertical"
             android:padding="18dp">
 
-            <!-- TOP PILL -->
+            <!-- 🔷 FULL WIDTH POLISH BACKGROUND CONTAINER -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:backgroundTint="#1E293B"
+                app:cardBackgroundColor="#132238"
                 app:cardCornerRadius="30dp"
-                app:cardElevation="6dp"
-                app:strokeColor="#33FFFFFF"
-                app:strokeWidth="1dp">
+                app:cardElevation="0dp"
+                app:strokeColor="#F8FAFC"
+                app:strokeWidth="0dp"
+                android:layout_marginLeft="0dp"
+                android:layout_marginRight="0dp"
+                android:layout_marginStart="0dp"
+                android:layout_marginEnd="0dp">
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:paddingVertical="14dp"
-                    android:text="Empowering Your Financial Journey"
-                    android:textColor="#E5E7EB"
-                    android:textSize="13sp"
-                    android:textStyle="bold"/>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- USER ROW -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="22dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:backgroundTint="#111827"
-                    app:cardCornerRadius="24dp"
-                    app:cardElevation="4dp">
-
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:padding="10dp"
-                        android:src="@drawable/ic_user"
-                        android:tint="#E5E7EB"/>
-                </com.google.android.material.card.MaterialCardView>
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="14dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Welcome back,"
-                        android:textColor="#9CA3AF"
-                        android:textSize="12sp"/>
-
-                    <TextView
-                        android:id="@+id/tvUserName"
-                        android:text="—"
-                        android:textColor="#FFFFFF"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        />
-
-                </LinearLayout>
-            </LinearLayout>
-
-            <!-- BALANCE CARD -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="22dp"
-                android:backgroundTint="#111827"
-                app:cardCornerRadius="30dp"
-                app:cardElevation="10dp"
-                app:strokeColor="#22FFFFFF"
-                app:strokeWidth="1dp">
-
+                <!-- 👇 moved padding inside -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="22dp">
+                    android:padding="18dp">
 
-                    <!-- MONTH ROW -->
+
+                <!-- TOP PILL -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:cardBackgroundColor="#0E1A2B"
+                        app:cardCornerRadius="30dp"
+                        app:cardElevation="6dp"
+                        app:strokeColor="#CBD5E1"
+                        app:strokeWidth="1dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:paddingVertical="14dp"
+                            android:text="Empowering Your Financial Journey"
+                            android:textColor="#F7F9FC"
+                            android:textSize="13sp"
+                            android:textStyle="bold"/>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- USER ROW -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="22dp"
                         android:orientation="horizontal"
                         android:gravity="center_vertical">
 
-                        <ImageView
-                            android:layout_width="18dp"
-                            android:layout_height="18dp"
-                            android:src="@drawable/ic_calender"
-                            android:tint="#9CA3AF"/>
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            app:cardBackgroundColor="#F8FAFC"
+                            app:cardCornerRadius="24dp"
+                            app:cardElevation="4dp">
 
-                        <TextView
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:padding="10dp"
+                                android:src="@drawable/ic_user"
+                                android:tint="#0F172A"/>
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
-                            android:text="This Month"
-                            android:textColor="#E5E7EB"
-                            android:textSize="14sp"
-                            android:textStyle="bold"/>
-
-                        <View
-                            android:layout_width="0dp"
-                            android:layout_height="0dp"
-                            android:layout_weight="1"/>
-
-                        <ImageView
-                            android:layout_width="18dp"
-                            android:layout_height="18dp"
-                            android:src="@drawable/ic_arrow_right"
-                            android:tint="#9CA3AF"/>
-                    </LinearLayout>
-
-                    <!-- BALANCE ROW -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginTop="12dp"
-                        android:layout_marginBottom="18dp">
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
+                            android:layout_marginStart="14dp"
                             android:orientation="vertical">
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Current Balance"
-                                android:textColor="#9CA3AF"
+                                android:text="Welcome back,"
+                                android:textColor="#F7F9FC"
                                 android:textSize="12sp"/>
 
                             <TextView
-                                android:id="@+id/tvCurrentBalance"
+                                android:id="@+id/tvUserName"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="₹0"
-                                android:textColor="#FFFFFF"
-                                android:textSize="22sp"
-                                android:textStyle="bold"/>
-                        </LinearLayout>
-
-                        <View
-                            android:layout_width="1dp"
-                            android:layout_height="40dp"
-                            android:layout_marginHorizontal="12dp"
-                            android:background="#1E293B"/>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Total Balance"
-                                android:textColor="#9CA3AF"
-                                android:textSize="12sp"/>
-
-                            <TextView
-                                android:id="@+id/tvTotalBalance"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="₹0"
-                                android:textColor="#FFFFFF"
-                                android:textSize="22sp"
+                                android:text="—"
+                                android:textColor="#F7F9FC"
+                                android:textSize="20sp"
                                 android:textStyle="bold"/>
                         </LinearLayout>
                     </LinearLayout>
 
-                    <!-- INCOME / EXPENSE -->
-                    <LinearLayout
+                    <!-- BALANCE CARD -->
+                    <com.google.android.material.card.MaterialCardView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal">
+                        android:layout_marginTop="22dp"
+                        app:cardBackgroundColor="#0E1A2B"
+                        app:cardCornerRadius="30dp"
+                        app:cardElevation="10dp"
+                        app:strokeColor="#CBD5E1"
+                        app:strokeWidth="1dp">
 
-                        <com.google.android.material.card.MaterialCardView
-                            android:id="@+id/cardAddIncome"
-                            android:layout_width="0dp"
-                            android:layout_height="58dp"
-                            android:layout_weight="1"
-                            android:layout_marginEnd="8dp"
-                            android:backgroundTint="#064E3B"
-                            app:cardCornerRadius="30dp"
-                            app:cardElevation="6dp">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="22dp">
 
-                            <TextView
-                                android:id="@+id/tvIncome"
+                            <!-- (your complete balance content unchanged) -->
+
+                            <!-- MONTH ROW -->
+                            <LinearLayout
                                 android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:gravity="center"
-                                android:text="Income ₹0"
-                                android:textColor="#ECFDF5"
-                                android:textSize="15sp"
-                                android:textStyle="bold"/>
-                        </com.google.android.material.card.MaterialCardView>
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical">
 
-                        <com.google.android.material.card.MaterialCardView
-                            android:id="@+id/cardAddExpense"
-                            android:layout_width="0dp"
-                            android:layout_height="58dp"
-                            android:layout_weight="1"
-                            android:layout_marginStart="8dp"
-                            android:backgroundTint="#7F1D1D"
-                            app:cardCornerRadius="30dp"
-                            app:cardElevation="6dp">
+                                <ImageView
+                                    android:layout_width="18dp"
+                                    android:layout_height="18dp"
+                                    android:src="@drawable/ic_calender"
+                                    android:tint="#F7F9FC"/>
 
-                            <TextView
-                                android:id="@+id/tvExpense"
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="8dp"
+                                    android:text="This Month"
+                                    android:textColor="#F7F9FC"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"/>
+
+                                <View
+                                    android:layout_width="0dp"
+                                    android:layout_height="0dp"
+                                    android:layout_weight="1"/>
+
+                                <ImageView
+                                    android:layout_width="18dp"
+                                    android:layout_height="18dp"
+                                    android:src="@drawable/ic_arrow_right"
+                                    android:tint="#F7F9FC"/>
+                            </LinearLayout>
+
+                            <!-- BALANCE ROW -->
+                            <LinearLayout
                                 android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:gravity="center"
-                                android:text="Expense ₹0"
-                                android:textColor="#FEF2F2"
-                                android:textSize="15sp"
-                                android:textStyle="bold"/>
-                        </com.google.android.material.card.MaterialCardView>
-                    </LinearLayout>
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:layout_marginTop="12dp"
+                                android:layout_marginBottom="18dp">
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Current Balance"
+                                        android:textColor="#F7F9FC"
+                                        android:textSize="12sp"/>
+
+                                    <TextView
+                                        android:id="@+id/tvCurrentBalance"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="₹0"
+                                        android:textColor="#F7F9FC"
+                                        android:textSize="22sp"
+                                        android:textStyle="bold"/>
+                                </LinearLayout>
+
+                                <View
+                                    android:layout_width="1dp"
+                                    android:layout_height="40dp"
+                                    android:layout_marginHorizontal="12dp"
+                                    android:background="#CBD5E1"/>
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Total Balance"
+                                        android:textColor="#F7F9FC"
+                                        android:textSize="12sp"/>
+
+                                    <TextView
+                                        android:id="@+id/tvTotalBalance"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="₹0"
+                                        android:textColor="#F7F9FC"
+                                        android:textSize="22sp"
+                                        android:textStyle="bold"/>
+                                </LinearLayout>
+                            </LinearLayout>
+
+                            <!-- INCOME / EXPENSE -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal">
+
+                                <com.google.android.material.card.MaterialCardView
+                                    android:id="@+id/cardAddIncome"
+                                    android:layout_width="0dp"
+                                    android:layout_height="58dp"
+                                    android:layout_weight="1"
+                                    android:layout_marginEnd="8dp"
+                                    app:cardBackgroundColor="#0EA5E9"
+                                    app:cardCornerRadius="30dp"
+                                    app:cardElevation="6dp">
+
+                                    <TextView
+                                        android:id="@+id/tvIncome"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:gravity="center"
+                                        android:text="Income ₹0"
+                                        android:textColor="#FFFFFF"
+                                        android:textSize="15sp"
+                                        android:textStyle="bold"/>
+                                </com.google.android.material.card.MaterialCardView>
+
+                                <com.google.android.material.card.MaterialCardView
+                                    android:id="@+id/cardAddExpense"
+                                    android:layout_width="0dp"
+                                    android:layout_height="58dp"
+                                    android:layout_weight="1"
+                                    android:layout_marginStart="8dp"
+                                    app:cardBackgroundColor="#F44336"
+                                    app:cardCornerRadius="30dp"
+                                    app:cardElevation="6dp">
+
+                                    <TextView
+                                        android:id="@+id/tvExpense"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:gravity="center"
+                                        android:text="Expense ₹0"
+                                        android:textColor="#FFFFFF"
+                                        android:textSize="15sp"
+                                        android:textStyle="bold"/>
+                                </com.google.android.material.card.MaterialCardView>
+                            </LinearLayout>
+
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+            <!-- 🔷 POLISH CONTAINER END -->
+
 
             <!-- RECENT HEADER -->
             <LinearLayout
@@ -266,7 +292,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Recent Transactions"
-                    android:textColor="#FFFFFF"
+                    android:textColor="#F8FAFC"
                     android:textSize="18sp"
                     android:textStyle="bold"/>
 
@@ -280,18 +306,19 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="View all"
-                    android:textColor="#60A5FA"
+                    android:textColor="#4B6BFB"
                     android:textSize="13sp"/>
             </LinearLayout>
 
+            <!-- RECENT LIST -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
-                android:backgroundTint="#111827"
+                app:cardBackgroundColor="#132238"
                 app:cardCornerRadius="24dp"
                 app:cardElevation="8dp"
-                app:strokeColor="#22FFFFFF"
+                app:strokeColor="#CBD5E1"
                 app:strokeWidth="1dp">
 
                 <androidx.recyclerview.widget.RecyclerView
@@ -301,10 +328,9 @@
                     android:nestedScrollingEnabled="false"
                     android:paddingBottom="120dp"
                     android:clipToPadding="false"/>
-
-
             </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
     </ScrollView>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="#0A0F1C">
+    android:background="#0B101A">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -85,7 +85,7 @@
             android:layout_margin="16dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="6dp"
-            app:cardBackgroundColor="#102235"
+            app:cardBackgroundColor="#0E1A2B"
             app:layout_constraintTop_toBottomOf="@id/reportsTopBar"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
@@ -108,7 +108,7 @@
             android:layout_margin="16dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="6dp"
-            app:cardBackgroundColor="#132238"
+            app:cardBackgroundColor="#0E1A2B"
             app:layout_constraintTop_toBottomOf="@id/cardInsight"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
