@@ -35,6 +35,26 @@ import java.util.regex.Pattern;
 
 public class AuthActivity extends AppCompatActivity {
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) return;
+
+        if (AppLockManager.isEnabled(this) && !AppLockManager.isUnlocked(this)) {
+            startActivity(new Intent(this, AppLockActivity.class));
+            finish();
+        }
+    }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        AppLockManager.markBackgroundTime(this);
+    }
+
+
     // UI
     private LinearLayout layoutLogin, layoutSignup;
     private TextView tabLogin, tabSignup, tvForgotPassword;
@@ -97,9 +117,51 @@ public class AuthActivity extends AppCompatActivity {
                             ".{8,}" +               // min 8 chars
                             "$"
             );
+    private void autoLoginIfPossible() {
+
+        FirebaseUser user = auth.getCurrentUser();
+        if (user == null) return;
+
+        if (!user.isEmailVerified()) {
+            auth.signOut();
+            return;
+        }
+
+        // 🔐 FIRST CHECK → APP LOCK
+        if (AppLockManager.isEnabled(this) && !AppLockManager.isUnlocked(this)) {
+            startActivity(new Intent(this, AppLockActivity.class));
+            finish();
+            return;
+        }
+
+        // 🔓 ELSE → GO TO DASHBOARD
+        usersRef.child(user.getUid()).child("role")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot snapshot) {
+                        loader.dismiss();
+
+                        // 🔐 RESTORE APP LOCK AFTER CLEAR DATA
+                        restoreAppLockFromServer();
+
+                        String role = snapshot.getValue(String.class);
+
+                        startActivity(new Intent(AuthActivity.this,
+                                "admin".equals(role)
+                                        ? AdminDashboardActivity.class
+                                        : UserDashboardActivity.class));
+                        finish();
+                    }
+
+
+                    @Override
+                    public void onCancelled(DatabaseError error) {}
+                });
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_auth);
 
@@ -107,6 +169,12 @@ public class AuthActivity extends AppCompatActivity {
         usersRef = FirebaseDatabase.getInstance().getReference("users");
 
         vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+        auth = FirebaseAuth.getInstance();
+        usersRef = FirebaseDatabase.getInstance().getReference("users");
+
+// ✅ AUTO LOGIN CHECK
+        autoLoginIfPossible();
+
 
         // UI init
         rootLayout = findViewById(R.id.rootLayout);
@@ -190,6 +258,7 @@ public class AuthActivity extends AppCompatActivity {
         }
 
     }
+
 
     // ================= VALIDATED REGISTER =================
     private void registerUser() {
@@ -663,6 +732,32 @@ public class AuthActivity extends AppCompatActivity {
                     if (onEnd != null) onEnd.run();
                 })
                 .start();
+    }
+
+    private void restoreAppLockFromServer() {
+
+        String uid = FirebaseAuth.getInstance().getUid();
+        if (uid == null) return;
+
+        DatabaseReference ref = FirebaseDatabase.getInstance()
+                .getReference("users")
+                .child(uid)
+                .child("appLock");
+
+        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+
+                Boolean enabled = snapshot.child("enabled").getValue(Boolean.class);
+                String pinHash = snapshot.child("pinHash").getValue(String.class);
+
+                if (enabled != null && enabled && pinHash != null) {
+                    AppLockManager.restoreFromServer(AuthActivity.this, pinHash);
+                }
+            }
+
+            @Override public void onCancelled(DatabaseError error) {}
+        });
     }
 
 

@@ -11,6 +11,24 @@ public class AdminDashboardActivity extends AppCompatActivity {
 
     private CardView cardUsers, cardCategories, cardReports, cardFeedback;
     private Toolbar adminToolbar;
+    @Override
+    protected void onPause() {
+        super.onPause();
+        AppLockManager.markBackgroundTime(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (AppLockManager.isEnabled(this)
+                && AppLockManager.shouldAutoLock(this)) {
+
+            AppLockManager.setUnlocked(this, false);
+            startActivity(new Intent(this, AppLockActivity.class));
+        }
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Background -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_lock_gradient"/>
+
+    <!-- Lock Card -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="24dp"
+        app:cardCornerRadius="22dp"
+        app:cardElevation="12dp"
+        app:cardBackgroundColor="@android:color/white"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="28dp"
+            android:gravity="center_horizontal">
+
+            <!-- Icon -->
+            <ImageView
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:src="@drawable/ic_lock"
+                app:tint="#1E3C72"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- Title -->
+            <TextView
+                android:text="Welcome Back 👋"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="#1E3C72"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"/>
+
+            <!-- Subtitle -->
+            <TextView
+                android:text="Enter your PIN to unlock"
+                android:textSize="14sp"
+                android:textColor="#6B7280"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="22dp"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"/>
+
+            <!-- PIN DOTS -->
+            <LinearLayout
+                android:id="@+id/pinDotsLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginBottom="24dp">
+
+                <View style="@style/PinDot"/>
+                <View style="@style/PinDot"/>
+                <View style="@style/PinDot"/>
+                <View style="@style/PinDot"/>
+            </LinearLayout>
+
+            <!-- CUSTOM KEYPAD -->
+            <GridLayout
+                android:id="@+id/keypad"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:columnCount="3"
+                android:layout_marginTop="24dp"
+                android:alignmentMode="alignMargins"
+                android:useDefaultMargins="true"
+                android:gravity="center"
+                android:layout_gravity="center">
+
+                <!-- Row 1 -->
+                <TextView android:id="@+id/key1" style="@style/KeypadKey" android:text="1"/>
+                <TextView android:id="@+id/key2" style="@style/KeypadKey" android:text="2"/>
+                <TextView android:id="@+id/key3" style="@style/KeypadKey" android:text="3"/>
+
+                <!-- Row 2 -->
+                <TextView android:id="@+id/key4" style="@style/KeypadKey" android:text="4"/>
+                <TextView android:id="@+id/key5" style="@style/KeypadKey" android:text="5"/>
+                <TextView android:id="@+id/key6" style="@style/KeypadKey" android:text="6"/>
+
+                <!-- Row 3 -->
+                <TextView android:id="@+id/key7" style="@style/KeypadKey" android:text="7"/>
+                <TextView android:id="@+id/key8" style="@style/KeypadKey" android:text="8"/>
+                <TextView android:id="@+id/key9" style="@style/KeypadKey" android:text="9"/>
+
+                <!-- Row 4 -->
+                <View
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"/>
+
+                <TextView
+                    android:id="@+id/key0"
+                    style="@style/KeypadKey"
+                    android:text="0"/>
+
+                <ImageView
+                    android:id="@+id/btnBackspace"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:src="@drawable/ic_backspace"
+                    app:tint="#1E3C72"
+                    android:layout_gravity="center"/>
+            </GridLayout>
+
+            <!-- Hidden PIN Input -->
+            <EditText
+                android:id="@+id/etPin"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:maxLength="4"
+                android:inputType="numberPassword"
+                android:visibility="invisible"/>
+
+            <!-- Biometric -->
+            <TextView
+                android:id="@+id/tvBiometric"
+                android:text="Use Fingerprint / Face ID"
+                android:textStyle="bold"
+                android:textColor="#1E3C72"
+                android:layout_marginTop="18dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"/>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+</androidx.constraintlayout.widget.ConstraintLayout>

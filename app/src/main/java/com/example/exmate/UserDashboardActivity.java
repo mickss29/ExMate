@@ -13,6 +13,24 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 public class UserDashboardActivity extends AppCompatActivity {
 
     private BottomNavigationView bottomNav;
+    @Override
+    protected void onPause() {
+        super.onPause();
+        AppLockManager.markBackgroundTime(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (AppLockManager.isEnabled(this)
+                && AppLockManager.shouldAutoLock(this)) {
+
+            AppLockManager.setUnlocked(this, false);
+            startActivity(new Intent(this, AppLockActivity.class));
+        }
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

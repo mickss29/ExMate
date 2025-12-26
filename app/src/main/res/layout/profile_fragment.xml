@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="#0A0F1C"
     android:padding="18dp">
 
@@ -27,7 +27,6 @@
                 android:textStyle="bold"
                 android:textSize="20sp" />
 
-            <!-- Avatar -->
             <ImageView
                 android:id="@+id/imgAvatar"
                 android:layout_width="86dp"
@@ -36,9 +35,8 @@
                 android:src="@drawable/ic_user"
                 android:padding="16dp"
                 android:background="@drawable/bg_glass_card"
-                android:tint="#FFFFFF" />
+                app:tint="#FFFFFF" />
 
-            <!-- Name -->
             <TextView
                 android:id="@+id/tvUserName"
                 android:layout_width="wrap_content"
@@ -49,7 +47,6 @@
                 android:textSize="18sp"
                 android:textStyle="bold"/>
 
-            <!-- Email -->
             <TextView
                 android:id="@+id/tvUserEmail"
                 android:layout_width="wrap_content"
@@ -59,7 +56,6 @@
                 android:textColor="#9CA3AF"
                 android:textSize="14sp"/>
 
-            <!-- Phone -->
             <TextView
                 android:id="@+id/tvUserPhone"
                 android:layout_width="wrap_content"
@@ -80,75 +76,51 @@
             android:layout_marginTop="16dp"
             android:layout_marginBottom="6dp"/>
 
-        <!-- Profile Info -->
         <include
-            layout="@layout/row_profile_item"
             android:id="@+id/itemProfileInfo"
-            app:itemIcon="@drawable/ic_user"
-            app:itemTitle="Profile info"
+            layout="@layout/row_profile_item"
             android:background="@drawable/bg_row_card"/>
 
-        <!-- App Lock / Switch Row -->
         <include
-            layout="@layout/row_profile_item_switch"
             android:id="@+id/itemAppLock"
-            app:itemIcon="@drawable/ic_lock"
-            app:itemTitle="App lock"
+            layout="@layout/row_profile_item_switch"
             android:background="@drawable/bg_row_card"/>
 
-        <!-- Rate App -->
         <include
-            layout="@layout/row_profile_item"
             android:id="@+id/itemRateApp"
-            app:itemIcon="@drawable/ic_star"
-            app:itemTitle="Rate App"
+            layout="@layout/row_profile_item"
             android:background="@drawable/bg_row_card"/>
 
-        <!-- Subscription -->
         <include
-            layout="@layout/row_profile_item"
             android:id="@+id/itemSubscription"
-            app:itemIcon="@drawable/ic_subscription"
-            app:itemTitle="Subscription"
+            layout="@layout/row_profile_item"
             android:background="@drawable/bg_row_card"/>
 
-        <!-- Invite -->
         <include
-            layout="@layout/row_profile_item"
             android:id="@+id/itemInvite"
-            app:itemIcon="@drawable/ic_invite"
-            app:itemTitle="Invite Friend amp; Family"
+            layout="@layout/row_profile_item"
             android:background="@drawable/bg_row_card"/>
 
-        <!-- About -->
         <include
-            layout="@layout/row_profile_item"
             android:id="@+id/itemAbout"
-            app:itemIcon="@drawable/ic_info"
-            app:itemTitle="About Us"
+            layout="@layout/row_profile_item"
             android:background="@drawable/bg_row_card"/>
 
-        <!-- Terms -->
         <include
-            layout="@layout/row_profile_item"
             android:id="@+id/itemTerms"
-            app:itemIcon="@drawable/ic_terms"
-            app:itemTitle="Terms amp; Conditions"
+            layout="@layout/row_profile_item"
             android:background="@drawable/bg_row_card"/>
 
-        <!-- Privacy -->
         <include
-            layout="@layout/row_profile_item"
             android:id="@+id/itemPrivacy"
-            app:itemIcon="@drawable/ic_privacy"
-            app:itemTitle="Privacy Policy"
+            layout="@layout/row_profile_item"
             android:background="@drawable/bg_row_card"/>
 
         <!-- ================= HELP ================= -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Help amp; Support"
+            android:text="Help &amp; Support"
             android:textColor="#FFFFFF"
             android:textStyle="bold"
             android:textSize="16sp"
@@ -156,17 +128,13 @@
             android:layout_marginBottom="6dp"/>
 
         <include
-            layout="@layout/row_profile_item"
             android:id="@+id/itemFinancialSupport"
-            app:itemIcon="@drawable/ic_support"
-            app:itemTitle="Financial Support"
+            layout="@layout/row_profile_item"
             android:background="@drawable/bg_row_card"/>
 
         <include
-            layout="@layout/row_profile_item"
             android:id="@+id/itemWhatsNew"
-            app:itemIcon="@drawable/ic_new"
-            app:itemTitle="What's New"
+            layout="@layout/row_profile_item"
             android:background="@drawable/bg_row_card"/>
 
         <!-- ================= LOGOUT BUTTON ================= -->
@@ -180,7 +148,6 @@
             android:textColor="#FFFFFF"
             android:backgroundTint="#EF4444"/>
 
-        <!-- Feedback Status -->
         <TextView
             android:id="@+id/tvFeedbackStatus"
             android:layout_width="wrap_content"

@@ -58,6 +58,9 @@
         <activity android:name=".AdminFeedbackDetailActivity" android:exported="false" />
         <activity android:name=".AdminFeedbackActivity" android:exported="false" />
         <activity android:name=".AdminUserFinanceActivity" android:exported="false" />
+        <activity android:name=".AppLockActivity" android:exported="false"/>
+        <activity android:name=".AppLockManager" android:exported="false"/>
+        <activity android:name=".SetPinActivity" android:exported="false"/>
 
         <!-- 📂 FILE PROVIDER -->
         <provider
