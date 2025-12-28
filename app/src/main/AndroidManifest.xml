@@ -36,6 +36,7 @@
             </intent-filter>
         </activity>
 
+
         <!-- 🔐 AUTH / LOGIN -->
         <activity
             android:name=".AuthActivity"
@@ -86,6 +87,16 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+        <receiver
+            android:name=".DailyReminderReceiver"
+            android:exported="false"/>
+        <receiver
+            android:name=".DailySummaryReceiver"
+            android:exported="false"/>
+        <receiver
+            android:name=".MorningGreetingReceiver"
+            android:exported="false"/>
+
 
     </application>
 

@@ -1,6 +1,11 @@
 package com.example.exmate;
 
 import android.app.DatePickerDialog;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -9,6 +14,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
@@ -53,6 +59,8 @@ public class AddExpenseActivity extends AppCompatActivity {
         setupFirebase();
 
         btnSaveExpense.setOnClickListener(v -> validateAndSave());
+        createTransactionChannel();
+
     }
 
     // ================= FIREBASE =================
@@ -178,11 +186,104 @@ public class AddExpenseActivity extends AppCompatActivity {
 
         expenseRef.push().setValue(data)
                 .addOnSuccessListener(unused -> {
-                    Toast.makeText(this, "Expense added", Toast.LENGTH_SHORT).show();
+
+                    double amt = Double.parseDouble(
+                            etExpenseAmount.getText().toString().trim()
+                    );
+                    String category = spExpenseCategory.getSelectedItem().toString();
+
+                    showTransactionNotification(
+                            "✅ Expense Added",
+                            "Expense of ₹" + amt + " added under " + category
+                    );
+
+                    Toast.makeText(this, "Expense added successfully", Toast.LENGTH_SHORT).show();
                     finish();
                 })
+
                 .addOnFailureListener(e ->
                         Toast.makeText(this, "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
                 );
     }
+    private void createTransactionChannel() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+
+            android.app.NotificationChannel channel =
+                    new android.app.NotificationChannel(
+                            "transaction_alert",
+                            "Transaction Alerts",
+                            android.app.NotificationManager.IMPORTANCE_DEFAULT
+                    );
+
+            channel.setDescription("Transaction added notifications");
+
+            android.app.NotificationManager manager =
+                    getSystemService(android.app.NotificationManager.class);
+
+            manager.createNotificationChannel(channel);
+        }
+    }
+    private void showTransactionNotification(
+            String type,
+            double amount,
+            String category
+    ) {
+        String title = "✅ Transaction Added";
+        String msg = type + " of ₹" + amount + " added under " + category;
+
+        android.app.Notification notification =
+                new androidx.core.app.NotificationCompat.Builder(
+                        this, "transaction_alert"
+                )
+                        .setSmallIcon(R.drawable.ic_notification) // use your app icon
+                        .setContentTitle(title)
+                        .setContentText(msg)
+                        .setPriority(androidx.core.app.NotificationCompat.PRIORITY_DEFAULT)
+                        .setAutoCancel(true)
+                        .build();
+
+        android.app.NotificationManager manager =
+                (android.app.NotificationManager)
+                        getSystemService(android.content.Context.NOTIFICATION_SERVICE);
+
+        manager.notify((int) System.currentTimeMillis(), notification);
+    }
+    private void showTransactionNotification(
+            String title,
+            String message
+    ) {
+
+        // 👉 Open Dashboard on tap
+        Intent intent = new Intent(this, UserDashboardActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+        PendingIntent pendingIntent =
+                PendingIntent.getActivity(
+                        this,
+                        0,
+                        intent,
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+                );
+
+        Notification notification =
+                new NotificationCompat.Builder(this, "transaction_alert")
+                        .setSmallIcon(R.drawable.ic_notification)
+                        .setContentTitle(title)
+                        .setContentText(message)
+                        .setContentIntent(pendingIntent) // 👈 TAP ACTION
+                        .setAutoCancel(true)
+                        .setPriority(NotificationCompat.PRIORITY_HIGH)
+                        .setDefaults(NotificationCompat.DEFAULT_SOUND
+                                | NotificationCompat.DEFAULT_VIBRATE) // 🔊📳
+                        .build();
+
+        NotificationManager manager =
+                (NotificationManager)
+                        getSystemService(Context.NOTIFICATION_SERVICE);
+
+        manager.notify((int) System.currentTimeMillis(), notification);
+    }
+
+
+
 }
