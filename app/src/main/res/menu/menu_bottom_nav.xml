@@ -5,16 +5,16 @@
         android:icon="@drawable/ic_dashboard"
         android:title="Dashboard"/>
 
-    <item
-        android:id="@+id/nav_statistics"
-        android:icon="@drawable/ic_statistics"
-        android:title="Stats"/>
-
     <!-- CENTER PLUS -->
     <item
         android:id="@+id/nav_add"
         android:icon="@drawable/ic_add"
         android:title="Add"/>
+
+    <item
+        android:id="@+id/nav_budget"
+        android:icon="@drawable/ic_budget"
+        android:title="Budget" />
 
     <item
         android:id="@+id/nav_reports"

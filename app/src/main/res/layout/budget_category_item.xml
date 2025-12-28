@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="90dp"
+    android:background="#0D1A27"
+    android:padding="14dp">
+
+    <ImageView
+        android:id="@+id/ivIcon"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:src="@drawable/ic_category_default"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:id="@+id/tvCategoryName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Category"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        android:layout_toEndOf="@id/ivIcon"
+        android:layout_marginStart="12dp" />
+
+    <TextView
+        android:id="@+id/tvLimit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Limit: ₹0"
+        android:textColor="#9FB7CC"
+        android:textSize="14sp"
+        android:layout_toEndOf="@id/ivIcon"
+        android:layout_below="@id/tvCategoryName"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="4dp"/>
+
+    <TextView
+        android:id="@+id/tvSpent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Spent: ₹0"
+        android:textColor="#EF5350"
+        android:textSize="14sp"
+        android:layout_alignParentEnd="true" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:layout_below="@id/tvLimit"
+        android:layout_marginTop="12dp"
+        android:max="100"
+        android:progress="0"
+        android:progressTint="#4CAF50"
+        android:background="#263544"/>
+
+    <TextView
+        android:id="@+id/tvRemaining"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Remaining: ₹0"
+        android:textColor="#9FB7CC"
+        android:textSize="14sp"
+        android:layout_below="@id/progressBar"
+        android:layout_marginTop="6dp"/>
+
+    <TextView
+        android:id="@+id/tvPercent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0% used"
+        android:textColor="#9FB7CC"
+        android:textSize="14sp"
+        android:layout_toEndOf="@id/tvRemaining"
+        android:layout_marginStart="16dp"
+        android:layout_below="@id/progressBar"
+        android:layout_marginTop="6dp"/>
+
+</RelativeLayout>

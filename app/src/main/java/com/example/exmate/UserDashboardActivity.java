@@ -64,8 +64,8 @@ public class UserDashboardActivity extends AppCompatActivity {
             }
 
             // 📊 STATISTICS
-            if (id == R.id.nav_statistics) {
-                loadFragment(new StatisticFragment());
+            if (id == R.id.nav_budget) {
+                loadFragment(new BudgetFragment());
                 return true;
             }
 

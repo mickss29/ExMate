@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="22dp"
+    android:background="#0B101A">
+
+    <TextView
+        android:text="Add New Category"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <EditText
+        android:id="@+id/etCategoryName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:hint="Category Name (Ex: Food)"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#6C7989"
+        android:backgroundTint="#1D9BF0"/>
+
+    <EditText
+        android:id="@+id/etCategoryLimit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:inputType="number"
+        android:hint="Monthly Limit (₹)"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#6C7989"
+        android:backgroundTint="#1D9BF0"/>
+
+    <!-- Category Icon Picker -->
+    <MaterialButton
+        android:id="@+id/btnPickIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Choose Icon"
+        android:textColor="@android:color/white"
+        android:backgroundTint="#2563EB"/>
+
+    <MaterialButton
+        android:id="@+id/btnSaveCategory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:text="Save Category"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        android:backgroundTint="#22C55E"/>
+
+</LinearLayout>

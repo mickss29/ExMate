@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!-- Card Background Color -->
+    <solid android:color="#0F1623" />   <!-- midnight blur style -->
+
+    <!-- Smooth Rounded Corners -->
+    <corners android:radius="18dp"/>
+
+    <!-- Soft Outline + shadow feel -->
+    <stroke
+        android:width="1dp"
+        android:color="#263445"/>
+
+    <!-- Padding inside card -->
+    <padding
+        android:left="12dp"
+        android:top="12dp"
+        android:right="12dp"
+        android:bottom="12dp" />
+
+</shape>
