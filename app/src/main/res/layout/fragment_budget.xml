@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="?attr/colorSurface">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:text="Monthly Budget"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="?attr/colorOnSurface"
+            android:layout_marginBottom="12dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <!-- BUDGET LIST -->
+        <include layout="@layout/item_budget_row_food"/>
+        <include layout="@layout/item_budget_row_transport"/>
+        <include layout="@layout/item_budget_row_shopping"/>
+        <include layout="@layout/item_budget_row_bills"/>
+        <include layout="@layout/item_budget_row_entertainment"/>
+        <include layout="@layout/item_budget_row_health"/>
+        <include layout="@layout/item_budget_row_education"/>
+        <include layout="@layout/item_budget_row_other"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSaveBudget"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="Save Budget"
+            android:layout_marginTop="16dp"
+            app:cornerRadius="14dp"/>
+
+    </LinearLayout>
+</ScrollView>
