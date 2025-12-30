@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -16,7 +17,7 @@ import java.util.Calendar;
 public class DailySummaryReceiver extends BroadcastReceiver {
 
     @Override
-    public void onReceive(Context context, Intent intent) {
+    public void onReceive(@NonNull Context context, @NonNull Intent intent) {
 
         String uid = FirebaseAuth.getInstance().getUid();
         if (uid == null) return;
@@ -25,28 +26,28 @@ public class DailySummaryReceiver extends BroadcastReceiver {
                 .getReference("users")
                 .child(uid);
 
-        long start = getTodayStart();
-        long end = getTodayEnd();
+        final long start = getTodayStart();
+        final long end = getTodayEnd();
 
         userRef.child("expenses")
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
-                    public void onDataChange(DataSnapshot expSnap) {
+                    public void onDataChange(@NonNull DataSnapshot expSnap) {
 
-                        double expense = 0;
+                        final double[] expense = {0}; // effectively final
                         for (DataSnapshot s : expSnap.getChildren()) {
                             Double amt = s.child("amount").getValue(Double.class);
                             Long time = s.child("time").getValue(Long.class);
                             if (amt != null && time != null
                                     && time >= start && time <= end) {
-                                expense += amt;
+                                expense[0] += amt;
                             }
                         }
 
                         userRef.child("incomes")
                                 .addListenerForSingleValueEvent(new ValueEventListener() {
                                     @Override
-                                    public void onDataChange(DataSnapshot incSnap) {
+                                    public void onDataChange(@NonNull DataSnapshot incSnap) {
 
                                         double income = 0;
                                         for (DataSnapshot s : incSnap.getChildren()) {
@@ -58,24 +59,21 @@ public class DailySummaryReceiver extends BroadcastReceiver {
                                             }
                                         }
 
-                                        sendSummaryNotification(
-                                                context, income, expense
-                                        );
+                                        // expense[0] use
+                                        sendSummaryNotification(context, income, expense[0]);
                                     }
 
-                                    @Override public void onCancelled(DatabaseError error) {}
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError error) {}
                                 });
                     }
 
-                    @Override public void onCancelled(DatabaseError error) {}
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {}
                 });
     }
 
-    private void sendSummaryNotification(
-            Context context,
-            double income,
-            double expense
-    ) {
+    private void sendSummaryNotification(Context context, double income, double expense) {
         String msg = "Income: ₹" + income + " | Expense: ₹" + expense;
 
         Notification notification =
@@ -88,8 +86,7 @@ public class DailySummaryReceiver extends BroadcastReceiver {
                         .build();
 
         NotificationManager manager =
-                (NotificationManager)
-                        context.getSystemService(Context.NOTIFICATION_SERVICE);
+                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         manager.notify(4001, notification);
     }

@@ -4,19 +4,18 @@ import android.app.AlarmManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.util.Calendar;
 
 public class UserDashboardActivity extends AppCompatActivity {
 
     private BottomNavigationView bottomNav;
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -35,7 +34,6 @@ public class UserDashboardActivity extends AppCompatActivity {
         }
     }
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,7 +41,7 @@ public class UserDashboardActivity extends AppCompatActivity {
 
         bottomNav = findViewById(R.id.bottomNav);
 
-        // 🔹 Default screen = Dashboard
+        // Default fragment
         if (savedInstanceState == null) {
             loadFragment(new HomeFragment());
         }
@@ -55,11 +53,6 @@ public class UserDashboardActivity extends AppCompatActivity {
         scheduleDailySummary();
         createMorningGreetingChannel();
         scheduleMorningGreeting();
-
-
-
-
-
     }
 
     // ================= BOTTOM NAV =================
@@ -72,33 +65,27 @@ public class UserDashboardActivity extends AppCompatActivity {
 
             int id = item.getItemId();
 
-            // 🏠 DASHBOARD
             if (id == R.id.nav_dashboard) {
                 loadFragment(new HomeFragment());
                 return true;
             }
 
-            // 📊 STATISTICS
             if (id == R.id.nav_budget) {
                 loadFragment(new BudgetFragment());
                 return true;
             }
 
-
-
-            // ➕ CENTER ADD BUTTON (BOTTOM SHEET)
+            // ⭐ NOW ADD BUTTON DIRECTLY OPENS SCREEN
             if (id == R.id.nav_add) {
-                showAddBottomSheet();
-                return false; // IMPORTANT: tab change nahi hoga
+                startActivity(new Intent(this, AddTransactionActivity.class));
+                return false; // tab highlight nahi change hoga
             }
 
-            // 📑 REPORTS
             if (id == R.id.nav_reports) {
                 loadFragment(new ReportsFragment());
                 return true;
             }
 
-            // 👤 PROFILE
             if (id == R.id.nav_profile) {
                 loadFragment(new ProfileFragment());
                 return true;
@@ -106,29 +93,6 @@ public class UserDashboardActivity extends AppCompatActivity {
 
             return false;
         });
-    }
-
-    // ================= BOTTOM SHEET =================
-
-    private void showAddBottomSheet() {
-
-        BottomSheetDialog dialog = new BottomSheetDialog(this);
-        View view = getLayoutInflater()
-                .inflate(R.layout.bottomsheet_add_button, null);
-
-        dialog.setContentView(view);
-
-        view.findViewById(R.id.optionAddIncome).setOnClickListener(v -> {
-            dialog.dismiss();
-            startActivity(new Intent(this, AddIncomeActivity.class));
-        });
-
-        view.findViewById(R.id.optionAddExpense).setOnClickListener(v -> {
-            dialog.dismiss();
-            startActivity(new Intent(this, AddExpenseActivity.class));
-        });
-
-        dialog.show();
     }
 
     // ================= FRAGMENT LOADER =================
@@ -140,9 +104,10 @@ public class UserDashboardActivity extends AppCompatActivity {
                 .commit();
     }
 
+    // ================== SCHEDULERS / NOTIFS — UNTOUCHED ==================
+
     private void createDailyReminderChannel() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-
             android.app.NotificationChannel channel =
                     new android.app.NotificationChannel(
                             "daily_reminder",
@@ -158,43 +123,39 @@ public class UserDashboardActivity extends AppCompatActivity {
             manager.createNotificationChannel(channel);
         }
     }
-    private void scheduleDailyReminder() {
 
+    private void scheduleDailyReminder() {
         android.app.AlarmManager alarmManager =
-                (android.app.AlarmManager)
-                        getSystemService(Context.ALARM_SERVICE);
+                (android.app.AlarmManager) getSystemService(Context.ALARM_SERVICE);
 
         Intent intent = new Intent(this, DailyReminderReceiver.class);
 
         android.app.PendingIntent pendingIntent =
                 android.app.PendingIntent.getBroadcast(
-                        this,
-                        0,
-                        intent,
+                        this, 0, intent,
                         android.app.PendingIntent.FLAG_UPDATE_CURRENT
                                 | android.app.PendingIntent.FLAG_IMMUTABLE
                 );
 
-        java.util.Calendar calendar = java.util.Calendar.getInstance();
-        calendar.set(java.util.Calendar.HOUR_OF_DAY, 19); // 7 PM
-        calendar.set(java.util.Calendar.MINUTE, 0);
-        calendar.set(java.util.Calendar.SECOND, 0);
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 19);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
 
-        // If time already passed today → schedule for tomorrow
         if (calendar.getTimeInMillis() < System.currentTimeMillis()) {
-            calendar.add(java.util.Calendar.DAY_OF_MONTH, 1);
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
         }
 
         alarmManager.setRepeating(
-                android.app.AlarmManager.RTC_WAKEUP,
+                AlarmManager.RTC_WAKEUP,
                 calendar.getTimeInMillis(),
-                android.app.AlarmManager.INTERVAL_DAY,
+                AlarmManager.INTERVAL_DAY,
                 pendingIntent
         );
     }
+
     private void createDailySummaryChannel() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-
             android.app.NotificationChannel channel =
                     new android.app.NotificationChannel(
                             "daily_summary",
@@ -210,25 +171,22 @@ public class UserDashboardActivity extends AppCompatActivity {
             manager.createNotificationChannel(channel);
         }
     }
-    private void scheduleDailySummary() {
 
+    private void scheduleDailySummary() {
         android.app.AlarmManager alarmManager =
-                (android.app.AlarmManager)
-                        getSystemService(Context.ALARM_SERVICE);
+                (android.app.AlarmManager) getSystemService(Context.ALARM_SERVICE);
 
         Intent intent = new Intent(this, DailySummaryReceiver.class);
 
         android.app.PendingIntent pendingIntent =
                 android.app.PendingIntent.getBroadcast(
-                        this,
-                        4001,
-                        intent,
+                        this, 4001, intent,
                         android.app.PendingIntent.FLAG_UPDATE_CURRENT
                                 | android.app.PendingIntent.FLAG_IMMUTABLE
                 );
 
         Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 21); // 9 PM
+        calendar.set(Calendar.HOUR_OF_DAY, 21);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
 
@@ -243,10 +201,9 @@ public class UserDashboardActivity extends AppCompatActivity {
                 pendingIntent
         );
     }
+
     private void createMorningGreetingChannel() {
-
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-
             android.app.NotificationChannel channel =
                     new android.app.NotificationChannel(
                             "morning_greeting",
@@ -262,43 +219,34 @@ public class UserDashboardActivity extends AppCompatActivity {
             manager.createNotificationChannel(channel);
         }
     }
-    private void scheduleMorningGreeting() {
 
+    private void scheduleMorningGreeting() {
         android.app.AlarmManager alarmManager =
-                (android.app.AlarmManager)
-                        getSystemService(Context.ALARM_SERVICE);
+                (android.app.AlarmManager) getSystemService(Context.ALARM_SERVICE);
 
         Intent intent = new Intent(this, MorningGreetingReceiver.class);
 
         android.app.PendingIntent pendingIntent =
                 android.app.PendingIntent.getBroadcast(
-                        this,
-                        7001,
-                        intent,
+                        this, 7001, intent,
                         android.app.PendingIntent.FLAG_UPDATE_CURRENT
                                 | android.app.PendingIntent.FLAG_IMMUTABLE
                 );
 
-        java.util.Calendar calendar = java.util.Calendar.getInstance();
-        calendar.set(java.util.Calendar.HOUR_OF_DAY, 7); // 7 AM
-        calendar.set(java.util.Calendar.MINUTE, 0);
-        calendar.set(java.util.Calendar.SECOND, 0);
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 7);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
 
-        // If already past 7 AM → next day
         if (calendar.getTimeInMillis() < System.currentTimeMillis()) {
-            calendar.add(java.util.Calendar.DAY_OF_MONTH, 1);
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
         }
 
         alarmManager.setRepeating(
-                android.app.AlarmManager.RTC_WAKEUP,
+                AlarmManager.RTC_WAKEUP,
                 calendar.getTimeInMillis(),
-                android.app.AlarmManager.INTERVAL_DAY,
+                AlarmManager.INTERVAL_DAY,
                 pendingIntent
         );
     }
-
-
-
-
-
 }

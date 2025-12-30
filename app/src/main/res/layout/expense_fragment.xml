@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0B101A"
+    android:fitsSystemWindows="true"
+    android:paddingLeft="20dp"
+    android:paddingRight="20dp"
+    android:paddingBottom="30dp"
+    android:paddingTop="100dp"> <!-- 👈 Extra notch/camera safe -->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <!-- 💸 Expense Amount -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Expense Amount"
+            android:textColor="@android:color/white"
+            android:textSize="15sp"
+            android:layout_marginBottom="6dp" />
+
+        <EditText
+            android:id="@+id/etExpenseAmount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter your expense"
+            android:inputType="numberDecimal"
+            android:textColor="@android:color/white"
+            android:textColorHint="@color/premiumHintColor"
+            android:backgroundTint="@color/premiumInputTint"
+            android:padding="14dp" />
+
+        <!-- 🏷 Category -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Category"
+            android:textColor="@android:color/white"
+            android:textSize="15sp"
+            android:layout_marginTop="22dp"
+            android:layout_marginBottom="6dp" />
+
+        <Spinner
+            android:id="@+id/spExpenseCategory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/spinner_background" />
+
+        <!-- 💳 Payment Mode -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Payment Mode"
+            android:textColor="@android:color/white"
+            android:textSize="15sp"
+            android:layout_marginTop="22dp"
+            android:layout_marginBottom="6dp" />
+
+        <Spinner
+            android:id="@+id/spExpensePaymentMode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/spinner_background" />
+
+        <!-- 📆 Date -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Date"
+            android:textColor="@android:color/white"
+            android:textSize="15sp"
+            android:layout_marginTop="22dp"
+            android:layout_marginBottom="6dp" />
+
+        <EditText
+            android:id="@+id/etExpenseDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Select Date"
+            android:focusable="false"
+            android:clickable="true"
+            android:textColor="@android:color/white"
+            android:textColorHint="@color/premiumHintColor"
+            android:backgroundTint="@color/premiumInputTint"
+            android:padding="14dp" />
+
+        <!-- 📝 Note -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Note (optional)"
+            android:textColor="@android:color/white"
+            android:textSize="15sp"
+            android:layout_marginTop="22dp"
+            android:layout_marginBottom="6dp" />
+
+        <EditText
+            android:id="@+id/etExpenseNote"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Message, remarks, etc."
+            android:textColor="@android:color/white"
+            android:textColorHint="@color/premiumHintColor"
+            android:backgroundTint="@color/premiumInputTint"
+            android:padding="14dp" />
+
+        <!-- 🔘 Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="30dp">
+
+            <!-- Save Only -->
+            <Button
+                android:id="@+id/btnSaveExpense"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Save Expense"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:backgroundTint="@color/premiumButtonColor"
+                android:padding="16dp" />
+
+            <!-- Save + Add New -->
+            <Button
+                android:id="@+id/btnSaveAddNewExpense"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Add New"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:backgroundTint="#2A4158"
+                android:layout_marginTop="12dp"
+                android:padding="16dp" />
+
+        </LinearLayout>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

@@ -8,8 +8,7 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
-
-
+    <!-- 📝 Storage permission (safe, legacy) -->
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
@@ -25,8 +24,7 @@
         android:theme="@style/Theme.ExMate"
         android:enableOnBackInvokedCallback="true">
 
-
-        <!-- 🚀 SPLASH SCREEN (NEW APP ENTRY POINT) -->
+        <!-- 🚀 SPLASH SCREEN -->
         <activity
             android:name=".SplashActivity"
             android:exported="true">
@@ -36,11 +34,8 @@
             </intent-filter>
         </activity>
 
-
         <!-- 🔐 AUTH / LOGIN -->
-        <activity
-            android:name=".AuthActivity"
-            android:exported="false" />
+        <activity android:name=".AuthActivity" android:exported="false" />
 
         <!-- 👤 USER SIDE -->
         <activity android:name=".UserDashboardActivity" android:exported="false" />
@@ -51,6 +46,11 @@
         <activity android:name=".UserProfile" android:exported="false" />
         <activity android:name=".EditProfileActivity" android:exported="false" />
         <activity android:name=".StatisticsActivity" android:exported="false" />
+
+        <!-- ⭐ NEW REQUIRED ACTIVITY (SAFE) -->
+        <activity
+            android:name=".AddTransactionActivity"
+            android:exported="false" />
 
         <!-- 👨‍💼 ADMIN SIDE -->
         <activity android:name=".AdminDashboardActivity" android:exported="false" />
@@ -68,14 +68,8 @@
         <activity android:name=".AppLockManager" android:exported="false"/>
         <activity android:name=".SetPinActivity" android:exported="false"/>
 
-        <activity
-            android:name=".AddCategoryActivity"
-            android:exported="false" />
-        <activity
-            android:name=".SetBudgetActivity"
-            android:exported="false" />
-
-
+        <activity android:name=".AddCategoryActivity" android:exported="false" />
+        <activity android:name=".SetBudgetActivity" android:exported="false" />
 
         <!-- 📂 FILE PROVIDER -->
         <provider
@@ -87,16 +81,11 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
-        <receiver
-            android:name=".DailyReminderReceiver"
-            android:exported="false"/>
-        <receiver
-            android:name=".DailySummaryReceiver"
-            android:exported="false"/>
-        <receiver
-            android:name=".MorningGreetingReceiver"
-            android:exported="false"/>
 
+        <!-- 🔔 RECEIVERS -->
+        <receiver android:name=".DailyReminderReceiver" android:exported="false" />
+        <receiver android:name=".DailySummaryReceiver" android:exported="false" />
+        <receiver android:name=".MorningGreetingReceiver" android:exported="false" />
 
     </application>
 

@@ -19,7 +19,6 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.card.MaterialCardView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -50,58 +49,72 @@ public class HomeFragment extends Fragment {
     private final List<TransactionModel> transactionList = new ArrayList<>();
     private RecentTransactionAdapter adapter;
 
-    // ================= BALANCE =================
     private double totalIncome = 0;
     private double totalExpense = 0;
     private double lastBalance = 0;
 
     private final DecimalFormat moneyFormat = new DecimalFormat("#,##0.##");
 
-    // ================= LIFECYCLE =================
+    // ============= REALTIME LISTENER ===============
+    private final ValueEventListener realTimeListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(@NonNull DataSnapshot snapshot) {
+            loadDashboardData();   // ⭐ realtime refresh
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError error) {}
+    };
+
+    // =========================================================================================
 
     @Nullable
     @Override
-    public View onCreateView(
-            @NonNull LayoutInflater inflater,
-            @Nullable ViewGroup container,
-            @Nullable Bundle savedInstanceState
-    ) {
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
         initViews(view);
         setupRecentList();
-        setupCardClicks();
         setupFirebase();
-        loadUserProfile();          // ✅ NEW (SAFE)
+        setupCardClicks();
+        loadUserProfile();
         playEntryAnimation();
 
         return view;
     }
 
+    // ⭐ AUTO-LISTEN START
     @Override
-    public void onResume() {
-        super.onResume();
-        loadDashboardData();
+    public void onStart() {
+        super.onStart();
+        attachRealTimeListeners();
     }
 
-    // ================= INIT =================
+    // ⭐ CLEAN UP listener
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (userRef != null) {
+            userRef.child("incomes").removeEventListener(realTimeListener);
+            userRef.child("expenses").removeEventListener(realTimeListener);
+        }
+    }
+
+    // =========================================================================================
 
     private void initViews(View view) {
         rvRecent = view.findViewById(R.id.rvRecent);
         tvIncome = view.findViewById(R.id.tvIncome);
         tvExpense = view.findViewById(R.id.tvExpense);
-
         tvCurrentBalance = view.findViewById(R.id.tvCurrentBalance);
         tvTotalBalance = view.findViewById(R.id.tvTotalBalance);
-
         tvUserName = view.findViewById(R.id.tvUserName);
         btnViewAll = view.findViewById(R.id.btnViewAll);
-
         cardAddIncome = view.findViewById(R.id.cardAddIncome);
         cardAddExpense = view.findViewById(R.id.cardAddExpense);
     }
-
-    // ================= FIREBASE =================
 
     private void setupFirebase() {
         userId = FirebaseAuth.getInstance().getUid();
@@ -112,17 +125,22 @@ public class HomeFragment extends Fragment {
                 .child(userId);
     }
 
-    // ================= USER PROFILE =================
+    private void attachRealTimeListeners() {
+        if (userRef != null) {
+            userRef.child("incomes").addValueEventListener(realTimeListener);
+            userRef.child("expenses").addValueEventListener(realTimeListener);
+        }
+    }
 
+    // =========================================================================================
+    // USER NAME DISPLAY
     private void loadUserProfile() {
         if (userRef == null) return;
 
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-
-                String name =
-                        snapshot.child("name").getValue(String.class);
+                String name = snapshot.child("name").getValue(String.class);
 
                 if (TextUtils.isEmpty(name)) {
                     name = snapshot.child("username").getValue(String.class);
@@ -137,8 +155,7 @@ public class HomeFragment extends Fragment {
                 }
             }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {}
+            @Override public void onCancelled(@NonNull DatabaseError error) {}
         });
     }
 
@@ -153,8 +170,8 @@ public class HomeFragment extends Fragment {
         view.startAnimation(anim);
     }
 
-    // ================= LOAD DATA =================
-
+    // =========================================================================================
+    // LOAD MAIN DATA
     private void loadDashboardData() {
         if (adapter == null || userRef == null) return;
 
@@ -170,54 +187,42 @@ public class HomeFragment extends Fragment {
 
     private void loadIncome() {
         userRef.child("incomes")
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        for (DataSnapshot snap : snapshot.getChildren()) {
-                            Double amount = snap.child("amount").getValue(Double.class);
-                            Long time = snap.child("time").getValue(Long.class);
-                            if (amount == null || time == null) continue;
+                .get().addOnSuccessListener(snapshot -> {
+                    for (DataSnapshot snap : snapshot.getChildren()) {
+                        Double amount = snap.child("amount").getValue(Double.class);
+                        Long time = snap.child("time").getValue(Long.class);
+                        if (amount == null || time == null) continue;
 
-                            totalIncome += amount;
-                            transactionList.add(new TransactionModel("Income", amount, time));
-                        }
-
-                        tvIncome.setText("Income  ₹" + moneyFormat.format(totalIncome));
-                        updateBalances();
-                        finalizeList();
+                        totalIncome += amount;
+                        transactionList.add(new TransactionModel("Income", amount, time));
                     }
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {}
+                    tvIncome.setText("Income  ₹" + moneyFormat.format(totalIncome));
+                    updateBalances();
+                    finalizeList();
                 });
     }
 
     private void loadExpense() {
         userRef.child("expenses")
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        for (DataSnapshot snap : snapshot.getChildren()) {
-                            Double amount = snap.child("amount").getValue(Double.class);
-                            Long time = snap.child("time").getValue(Long.class);
-                            if (amount == null || time == null) continue;
+                .get().addOnSuccessListener(snapshot -> {
+                    for (DataSnapshot snap : snapshot.getChildren()) {
+                        Double amount = snap.child("amount").getValue(Double.class);
+                        Long time = snap.child("time").getValue(Long.class);
+                        if (amount == null || time == null) continue;
 
-                            totalExpense += amount;
-                            transactionList.add(new TransactionModel("Expense", amount, time));
-                        }
-
-                        tvExpense.setText("Expenses  ₹" + moneyFormat.format(totalExpense));
-                        updateBalances();
-                        finalizeList();
+                        totalExpense += amount;
+                        transactionList.add(new TransactionModel("Expense", amount, time));
                     }
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {}
+                    tvExpense.setText("Expenses  ₹" + moneyFormat.format(totalExpense));
+                    updateBalances();
+                    finalizeList();
                 });
     }
 
-    // ================= BALANCE =================
-
+    // =========================================================================================
+    // BALANCE
     private void updateBalances() {
         double newBalance = totalIncome - totalExpense;
 
@@ -248,28 +253,32 @@ public class HomeFragment extends Fragment {
         adapter.notifyDataSetChanged();
     }
 
-    // ================= LIST =================
-
+    // =========================================================================================
+    // RECENT LIST
     private void setupRecentList() {
         adapter = new RecentTransactionAdapter(transactionList);
         rvRecent.setLayoutManager(new LinearLayoutManager(getContext()));
         rvRecent.setAdapter(adapter);
     }
 
-    // ================= CLICKS =================
-
+    // =========================================================================================
+    // CARD CLICKS
     private void setupCardClicks() {
-        cardAddIncome.setOnClickListener(v ->
-                startActivity(new Intent(getContext(), AddIncomeActivity.class))
-        );
+        cardAddIncome.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), AddTransactionActivity.class);
+            intent.putExtra("openTab", 1);
+            startActivity(intent);
+        });
 
-        cardAddExpense.setOnClickListener(v ->
-                startActivity(new Intent(getContext(), AddExpenseActivity.class))
-        );
+        cardAddExpense.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), AddTransactionActivity.class);
+            intent.putExtra("openTab", 0);
+            startActivity(intent);
+        });
     }
 
-    // ================= ANIMATION =================
-
+    // =========================================================================================
+    // ANIMATION
     private void playEntryAnimation() {
         if (getContext() == null) return;
 
