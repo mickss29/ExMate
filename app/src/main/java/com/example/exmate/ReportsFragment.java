@@ -41,11 +41,13 @@ public class ReportsFragment extends Fragment {
     // ===== FILTER ENUM =====
     private enum TxnFilterType { ALL, INCOME, EXPENSE }
     private TxnFilterType selectedFilterType = TxnFilterType.ALL;
+    private boolean isCustomRangeSelected = false;
+    private final Map<String, Double> budgetMap = new HashMap<>();
+
 
     // ================= UI =================
     private RecyclerView recyclerReports;
     private TextView tvEmpty, txtDateRange;
-    private ChipGroup chipGroupFilter;
     private Chip chipAll, chipIncome, chipExpense;
     private ExtendedFloatingActionButton fabExport;
 
@@ -61,7 +63,6 @@ public class ReportsFragment extends Fragment {
     private long startDateMillis = -1;
     private long endDateMillis = -1;
 
-    // ================= FORMATTERS =================
     private final SimpleDateFormat dateKeyFormat =
             new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
     private final SimpleDateFormat dateHeaderFormat =
@@ -69,7 +70,6 @@ public class ReportsFragment extends Fragment {
     private final SimpleDateFormat timeFormat =
             new SimpleDateFormat("hh:mm a", Locale.getDefault());
 
-    // ================= FRAGMENT =================
     @Nullable
     @Override
     public View onCreateView(
@@ -80,12 +80,24 @@ public class ReportsFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.reports_fragment, container, false);
 
-        initViews(view);
+        recyclerReports = view.findViewById(R.id.recyclerReports);
+        tvEmpty = view.findViewById(R.id.tvEmpty);
+        txtDateRange = view.findViewById(R.id.txtDateRange);
+        chipAll = view.findViewById(R.id.chipAll);
+        chipIncome = view.findViewById(R.id.chipIncome);
+        chipExpense = view.findViewById(R.id.chipExpense);
+        fabExport = view.findViewById(R.id.fabExport);
+
+        recyclerReports.setLayoutManager(new LinearLayoutManager(requireContext()));
+        adapter = new TransactionAdapter(transactionList);
+        recyclerReports.setAdapter(adapter);
+
         setupFirebase();
-        setupRecycler();
         setupChips();
         attachSwipe();
         loadTransactions();
+        loadBudgets();
+
 
         txtDateRange.setOnClickListener(v -> pickDateRange());
         fabExport.setOnClickListener(v -> showExportSheet());
@@ -93,35 +105,6 @@ public class ReportsFragment extends Fragment {
         return view;
     }
 
-    // ================= INIT =================
-    private void initViews(View view) {
-        recyclerReports = view.findViewById(R.id.recyclerReports);
-        tvEmpty = view.findViewById(R.id.tvEmpty);
-        txtDateRange = view.findViewById(R.id.txtDateRange);
-        chipGroupFilter = view.findViewById(R.id.chipGroupFilter);
-        chipAll = view.findViewById(R.id.chipAll);
-        chipIncome = view.findViewById(R.id.chipIncome);
-        chipExpense = view.findViewById(R.id.chipExpense);
-        fabExport = view.findViewById(R.id.fabExport);
-    }
-
-    private void setupRecycler() {
-        recyclerReports.setLayoutManager(new LinearLayoutManager(requireContext()));
-        adapter = new TransactionAdapter(transactionList);
-        recyclerReports.setAdapter(adapter);
-    }
-
-    private void setupChips() {
-        chipAll.setChecked(true);
-        chipGroupFilter.setOnCheckedChangeListener((g, id) -> {
-            if (id == R.id.chipIncome) selectedFilterType = TxnFilterType.INCOME;
-            else if (id == R.id.chipExpense) selectedFilterType = TxnFilterType.EXPENSE;
-            else selectedFilterType = TxnFilterType.ALL;
-            applyDateFilter();
-        });
-    }
-
-    // ================= FIREBASE =================
     private void setupFirebase() {
         String uid = FirebaseAuth.getInstance().getUid();
         if (uid == null) return;
@@ -130,143 +113,114 @@ public class ReportsFragment extends Fragment {
                 .child(uid);
     }
 
-    // ================= LOAD TRANSACTIONS =================
+    private void setupChips() {
+        chipAll.setChecked(true);
+        chipAll.setOnClickListener(v -> { selectedFilterType = TxnFilterType.ALL; applyFilter(); });
+        chipIncome.setOnClickListener(v -> { selectedFilterType = TxnFilterType.INCOME; applyFilter(); });
+        chipExpense.setOnClickListener(v -> { selectedFilterType = TxnFilterType.EXPENSE; applyFilter(); });
+    }
+
+    // ================= LOAD DATA =================
     private void loadTransactions() {
-
-        masterList.clear();
-        transactionList.clear();
-
-        Map<String, List<TransactionListItem>> grouped =
-                new TreeMap<>(Collections.reverseOrder());
 
         DatabaseReference incomeRef = userRef.child("incomes");
         DatabaseReference expenseRef = userRef.child("expenses");
 
-        incomeRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-
-                for (DataSnapshot snap : snapshot.getChildren()) {
-
-                    Long time = snap.child("time").getValue(Long.class);
-                    Double amount = snap.child("amount").getValue(Double.class);
-                    String source = snap.child("source").getValue(String.class);
-                    String note = snap.child("note").getValue(String.class);
-
-                    if (time == null || amount == null) continue;
-
-                    String key = dateKeyFormat.format(new Date(time));
-                    grouped.putIfAbsent(key, new ArrayList<>());
-
-                    TransactionListItem item =
-                            new TransactionListItem(TransactionListItem.TYPE_TRANSACTION);
-
-                    item.setTransaction(
-                            source == null ? "Income" : source,
-                            note == null ? "" : note,
-                            "₹ " + amount.intValue(),
-                            dateHeaderFormat.format(new Date(time)) + " • " +
-                                    timeFormat.format(new Date(time)) + " • Income",
-                            amount >= 1000
-                    );
-
-                    item.setTimeMillis(time);
-                    grouped.get(key).add(item);
-                }
-
-                expenseRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-
-                        for (DataSnapshot snap : snapshot.getChildren()) {
-
-                            Long time = snap.child("time").getValue(Long.class);
-                            Double amount = snap.child("amount").getValue(Double.class);
-                            String category = snap.child("category").getValue(String.class);
-                            String note = snap.child("note").getValue(String.class);
-
-                            if (time == null || amount == null) continue;
-
-                            String key = dateKeyFormat.format(new Date(time));
-                            grouped.putIfAbsent(key, new ArrayList<>());
-
-                            TransactionListItem item =
-                                    new TransactionListItem(TransactionListItem.TYPE_TRANSACTION);
-
-                            item.setTransaction(
-                                    category == null ? "Expense" : category,
-                                    note == null ? "" : note,
-                                    "- ₹" + amount.intValue(),
-                                    dateHeaderFormat.format(new Date(time)) + " • " +
-                                            timeFormat.format(new Date(time)) + " • Expense",
-                                    amount >= 1000
-                            );
-
-                            item.setTimeMillis(time);
-                            grouped.get(key).add(item);
-                        }
+        incomeRef.addValueEventListener(new ValueEventListener() {
+            @Override public void onDataChange(@NonNull DataSnapshot iSnap) {
+                expenseRef.addValueEventListener(new ValueEventListener() {
+                    @Override public void onDataChange(@NonNull DataSnapshot eSnap) {
 
                         masterList.clear();
-                        for (String key : grouped.keySet()) {
-                            TransactionListItem header =
-                                    new TransactionListItem(TransactionListItem.TYPE_DATE);
-                            header.setDateTitle(dateHeaderFormat.format(parseDateKey(key)));
-                            masterList.add(header);
-                            masterList.addAll(grouped.get(key));
+                        Map<String, List<TransactionListItem>> map =
+                                new TreeMap<>(Collections.reverseOrder());
+
+                        for (DataSnapshot s : iSnap.getChildren()) {
+                            addItem(map, s, true);
+                        }
+                        for (DataSnapshot s : eSnap.getChildren()) {
+                            addItem(map, s, false);
                         }
 
-                        applyDateFilter();
-                    }
+                        for (String k : map.keySet()) {
+                            TransactionListItem h =
+                                    new TransactionListItem(TransactionListItem.TYPE_DATE);
+                            h.setDateTitle(dateHeaderFormat.format(parseDateKey(k)));
+                            masterList.add(h);
+                            masterList.addAll(map.get(k));
+                        }
 
-                    @Override public void onCancelled(@NonNull DatabaseError e) {
-                        showEmpty(true);
+                        applyFilter();
                     }
+                    @Override public void onCancelled(@NonNull DatabaseError e) {}
                 });
             }
-
-            @Override public void onCancelled(@NonNull DatabaseError e) {
-                showEmpty(true);
-            }
+            @Override public void onCancelled(@NonNull DatabaseError e) {}
         });
     }
 
+    private void addItem(Map<String, List<TransactionListItem>> map,
+                         DataSnapshot snap, boolean income) {
+
+        Long time = snap.child("time").getValue(Long.class);
+        Double amount = snap.child("amount").getValue(Double.class);
+        if (time == null || amount == null) return;
+
+        String title = income
+                ? snap.child("source").getValue(String.class)
+                : snap.child("category").getValue(String.class);
+
+        String note = snap.child("note").getValue(String.class);
+
+        String key = dateKeyFormat.format(new Date(time));
+        map.putIfAbsent(key, new ArrayList<>());
+
+        TransactionListItem item =
+                new TransactionListItem(TransactionListItem.TYPE_TRANSACTION);
+
+        item.setTransaction(
+                title == null ? (income ? "Income" : "Expense") : title,
+                note == null ? "" : note,
+                (income ? "₹ " : "- ₹ ") + Math.round(amount),
+                dateHeaderFormat.format(new Date(time)) + " • " +
+                        timeFormat.format(new Date(time)),
+                income
+        );
+
+        item.setTimeMillis(time);
+        map.get(key).add(item);
+    }
+
     // ================= FILTER =================
-    private void applyDateFilter() {
+    private void applyFilter() {
 
         transactionList.clear();
-        String header = null;
-        boolean headerAdded = false;
+        String lastHeader = null;
 
         for (TransactionListItem item : masterList) {
 
             if (item.getType() == TransactionListItem.TYPE_DATE) {
-                header = item.getDateTitle();
-                headerAdded = false;
+                lastHeader = item.getDateTitle();
                 continue;
             }
 
-            long time = item.getTimeMillis();
+            long t = item.getTimeMillis();
+            if (startDateMillis != -1 &&
+                    (t < startDateMillis || t > endDateMillis)) continue;
 
-            boolean dateMatch =
-                    (startDateMillis == -1 || endDateMillis == -1) ||
-                            (time >= startDateMillis && time <= endDateMillis);
-
-            if (!dateMatch) continue;
-
-            boolean isIncome = !item.getAmount().startsWith("-");
-            boolean typeMatch =
+            boolean match =
                     selectedFilterType == TxnFilterType.ALL ||
-                            (selectedFilterType == TxnFilterType.INCOME && isIncome) ||
-                            (selectedFilterType == TxnFilterType.EXPENSE && !isIncome);
+                            (selectedFilterType == TxnFilterType.INCOME && item.isIncome()) ||
+                            (selectedFilterType == TxnFilterType.EXPENSE && !item.isIncome());
 
-            if (!typeMatch) continue;
+            if (!match) continue;
 
-            if (!headerAdded && header != null) {
+            if (lastHeader != null) {
                 TransactionListItem h =
                         new TransactionListItem(TransactionListItem.TYPE_DATE);
-                h.setDateTitle(header);
+                h.setDateTitle(lastHeader);
                 transactionList.add(h);
-                headerAdded = true;
+                lastHeader = null;
             }
 
             transactionList.add(item);
@@ -279,17 +233,9 @@ public class ReportsFragment extends Fragment {
     // ================= DATE PICKER =================
     private void pickDateRange() {
 
-        long today = MaterialDatePicker.todayInUtcMilliseconds();
-
-        CalendarConstraints constraints =
-                new CalendarConstraints.Builder()
-                        .setEnd(today)
-                        .build();
-
         MaterialDatePicker<Pair<Long, Long>> picker =
                 MaterialDatePicker.Builder.dateRangePicker()
                         .setTitleText("Select Date Range")
-                        .setCalendarConstraints(constraints)
                         .build();
 
         picker.addOnPositiveButtonClickListener(selection -> {
@@ -299,252 +245,386 @@ public class ReportsFragment extends Fragment {
             endDateMillis = getEndOfDay(selection.second);
 
             txtDateRange.setText(
-                    dateHeaderFormat.format(new Date(startDateMillis))
-                            + " - "
-                            + dateHeaderFormat.format(new Date(endDateMillis))
+                    dateHeaderFormat.format(new Date(startDateMillis)) +
+                            " - " +
+                            dateHeaderFormat.format(new Date(endDateMillis))
             );
 
-            applyDateFilter();
+            // 🔥 IMPORTANT
+            isCustomRangeSelected = true;
+
+            applyFilter();
         });
 
-        picker.show(getParentFragmentManager(), "DATE_RANGE");
+
+        picker.show(getParentFragmentManager(), "DATE");
     }
 
-    private long getStartOfDay(long millis) {
+    private long getStartOfDay(long m) {
         Calendar c = Calendar.getInstance();
-        c.setTimeInMillis(millis);
-        c.set(11,0); c.set(12,0); c.set(13,0); c.set(14,0);
+        c.setTimeInMillis(m);
+        c.set(Calendar.HOUR_OF_DAY, 0);
+        c.set(Calendar.MINUTE, 0);
+        c.set(Calendar.SECOND, 0);
+        c.set(Calendar.MILLISECOND, 0);
         return c.getTimeInMillis();
     }
 
-    private long getEndOfDay(long millis) {
+    private long getEndOfDay(long m) {
         Calendar c = Calendar.getInstance();
-        c.setTimeInMillis(millis);
-        c.set(11,23); c.set(12,59); c.set(13,59); c.set(14,999);
+        c.setTimeInMillis(m);
+        c.set(Calendar.HOUR_OF_DAY, 23);
+        c.set(Calendar.MINUTE, 59);
+        c.set(Calendar.SECOND, 59);
+        c.set(Calendar.MILLISECOND, 999);
         return c.getTimeInMillis();
     }
 
-    // ================= EXPORT =================
     private void showExportSheet() {
+
         BottomSheetDialog d = new BottomSheetDialog(requireContext());
         View v = LayoutInflater.from(getContext())
                 .inflate(R.layout.bottomsheet_export, null);
         d.setContentView(v);
 
-        v.findViewById(R.id.optionPdf).setOnClickListener(b -> {
+        View btnThisMonth = v.findViewById(R.id.optionThisMonth);
+        View btnLastMonth = v.findViewById(R.id.optionLastMonth);
+        View btnExportPdf = v.findViewById(R.id.optionPdf);
+        View btnClearRange = v.findViewById(R.id.optionClearRange);
+
+        // ================= STATE CONTROL =================
+        if (isCustomRangeSelected) {
+            // Disable month buttons
+            disableView(btnThisMonth);
+            disableView(btnLastMonth);
+
+            // Enable custom export + clear
+            btnClearRange.setVisibility(View.VISIBLE);
+        } else {
+            // Disable custom export + hide clear
+            disableView(btnExportPdf);
+            btnClearRange.setVisibility(View.GONE);
+        }
+
+        // ================= CLICK HANDLERS =================
+
+        btnThisMonth.setOnClickListener(v1 -> {
+            if (isCustomRangeSelected) return;
+            d.dismiss();
+            applyThisMonth();
+            exportPdf();
+        });
+
+        btnLastMonth.setOnClickListener(v1 -> {
+            if (isCustomRangeSelected) return;
+            d.dismiss();
+            applyLastMonth();
+            exportPdf();
+        });
+
+        btnExportPdf.setOnClickListener(v1 -> {
+            if (!isCustomRangeSelected) return;
             d.dismiss();
             exportPdf();
         });
 
-        v.findViewById(R.id.btnCancel).setOnClickListener(b -> d.dismiss());
+        btnClearRange.setOnClickListener(v1 -> {
+            d.dismiss();
+            clearCustomRange();
+        });
+
+        v.findViewById(R.id.btnCancel)
+                .setOnClickListener(v1 -> d.dismiss());
+
         d.show();
     }
+    private void clearCustomRange() {
+        startDateMillis = -1;
+        endDateMillis = -1;
+        isCustomRangeSelected = false;
+
+        txtDateRange.setText("Select date range");
+        applyFilter();
+
+        Toast.makeText(
+                getContext(),
+                "Custom range cleared",
+                Toast.LENGTH_SHORT
+        ).show();
+    }
+    private void autoClearRangeAfterExport() {
+        if (!isCustomRangeSelected) return;
+
+        startDateMillis = -1;
+        endDateMillis = -1;
+        isCustomRangeSelected = false;
+
+        txtDateRange.setText("Select date range");
+        applyFilter();
+    }
+
 
     private void exportPdf() {
 
-        if (startDateMillis == -1 || endDateMillis == -1) {
-            Toast.makeText(getContext(), "Select date range first", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         if (transactionList.isEmpty()) {
-            Toast.makeText(getContext(), "No data to export", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(),
+                    "No data to export", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        List<Pair<String, Integer>> incomes = new ArrayList<>();
-        List<Pair<String, Integer>> expenses = new ArrayList<>();
+        List<Pair<String, Double>> incomes = new ArrayList<>();
+        List<Pair<String, Double>> expenses = new ArrayList<>();
 
-        int totalIncome = 0;
-        int totalExpense = 0;
+        double totalIncome = 0;
+        double totalExpense = 0;
 
         for (TransactionListItem item : transactionList) {
 
             if (item.getType() != TransactionListItem.TYPE_TRANSACTION)
                 continue;
 
-            String amtStr = item.getAmount();
-            if (amtStr == null) continue;
+            double amount = item.getAmountValue();
 
-            int amount = Integer.parseInt(
-                    amtStr.replace("₹", "")
-                            .replace("+", "")
-                            .replace("-", "")
-                            .trim()
-            );
-
-            if (amtStr.startsWith("-")) {
-                expenses.add(new Pair<>(item.getCategory(), amount));
-                totalExpense += amount;
-            } else {
+            if (item.isIncome()) {
                 incomes.add(new Pair<>(item.getCategory(), amount));
                 totalIncome += amount;
+            } else {
+                expenses.add(new Pair<>(item.getCategory(), amount));
+                totalExpense += amount;
             }
         }
 
-        // 🔥 SAME OLD CORPORATE PDF
         generateCorporatePdf(
                 incomes,
                 expenses,
                 totalIncome,
                 totalExpense
         );
+
+        // 🔄 AUTO-CLEAR ONLY IF CUSTOM RANGE WAS USED
+        if (isCustomRangeSelected) {
+            startDateMillis = -1;
+            endDateMillis = -1;
+            isCustomRangeSelected = false;
+            txtDateRange.setText("Select date range");
+            applyFilter();
+        }
     }
+
 
 
     private void generateCorporatePdf(
-            List<Pair<String, Integer>> incomes,
-            List<Pair<String, Integer>> expenses,
-            int totalIncome,
-            int totalExpense
+            List<Pair<String, Double>> incomes,
+            List<Pair<String, Double>> expenses,
+            double totalIncome,
+            double totalExpense
     ) {
 
         PdfDocument pdf = new PdfDocument();
-        PdfDocument.PageInfo info =
+
+        // =====================================================
+        // PAGE 1 : SUMMARY (NO SUGGESTION HERE)
+        // =====================================================
+        PdfDocument.PageInfo summaryInfo =
                 new PdfDocument.PageInfo.Builder(595, 842, 1).create();
+        PdfDocument.Page page1 = pdf.startPage(summaryInfo);
+        Canvas c = page1.getCanvas();
 
-        PdfDocument.Page page = pdf.startPage(info);
-        Canvas c = page.getCanvas();
+        Paint title = new Paint(Paint.ANTI_ALIAS_FLAG);
+        Paint text = new Paint(Paint.ANTI_ALIAS_FLAG);
+        Paint incomePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        Paint expensePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        Paint highlightPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
-        Paint title = new Paint();
+        title.setTextSize(26);
+        title.setFakeBoldText(true);
+
+        text.setTextSize(13);
+
+        incomePaint.setColor(0xFF2E7D32);
+        expensePaint.setColor(0xFFC62828);
+        highlightPaint.setColor(0xFFFFD54F);
+        highlightPaint.setTextSize(13);
+
+        int y = 60;
+
+        // HEADER
+        c.drawText("ExMate – Financial Summary", 40, y, title);
+        y += 35;
+        c.drawText("Period: " + txtDateRange.getText().toString(), 40, y, text);
+        y += 35;
+
+        // TOTALS
+        c.drawText("Total Income:", 40, y, text);
+        c.drawText("₹ " + String.format("%.2f", totalIncome), 360, y, incomePaint);
+        y += 22;
+
+        c.drawText("Total Expense:", 40, y, text);
+        c.drawText("₹ " + String.format("%.2f", totalExpense), 360, y, expensePaint);
+        y += 22;
+
+        double net = totalIncome - totalExpense;
+        Paint netPaint = net >= 0 ? incomePaint : expensePaint;
+        c.drawText("Net Balance:", 40, y, text);
+        c.drawText("₹ " + String.format("%.2f", net), 360, y, netPaint);
+
+        // PIE DATA
+        Map<String, Double> incomeMap = new LinkedHashMap<>();
+        Map<String, Double> expenseMap = new LinkedHashMap<>();
+
+        for (Pair<String, Double> p : incomes)
+            incomeMap.put(p.first, incomeMap.getOrDefault(p.first, 0.0) + p.second);
+
+        for (Pair<String, Double> p : expenses)
+            expenseMap.put(p.first, expenseMap.getOrDefault(p.first, 0.0) + p.second);
+
+        // HIGHEST INCOME
+        String topIncomeCat = "";
+        double topIncomeVal = 0;
+        for (String k : incomeMap.keySet()) {
+            if (incomeMap.get(k) > topIncomeVal) {
+                topIncomeVal = incomeMap.get(k);
+                topIncomeCat = k;
+            }
+        }
+
+        // HIGHEST EXPENSE
+        String topExpenseCat = "";
+        double topExpenseVal = 0;
+        for (String k : expenseMap.keySet()) {
+            if (expenseMap.get(k) > topExpenseVal) {
+                topExpenseVal = expenseMap.get(k);
+                topExpenseCat = k;
+            }
+        }
+
+        int[] colors = {
+                0xFF1E88E5, 0xFF43A047, 0xFFFDD835,
+                0xFFE53935, 0xFF8E24AA, 0xFFFF7043
+        };
+
+        // INCOME PIE
+        y += 45;
+        c.drawText("Income Distribution", 40, y, text);
+        drawPieChart(c, incomeMap, totalIncome, 60, y + 15, 220, colors, text);
+        y += 260;
+        c.drawText("⭐ Highest Income: " + topIncomeCat +
+                " (₹ " + String.format("%.2f", topIncomeVal) + ")", 40, y, highlightPaint);
+
+        // EXPENSE PIE
+        y += 40;
+        c.drawText("Expense Distribution", 40, y, text);
+        drawPieChart(c, expenseMap, totalExpense, 60, y + 15, 220, colors, text);
+        y += 260;
+        c.drawText("⚠ Highest Expense: " + topExpenseCat +
+                " (₹ " + String.format("%.2f", topExpenseVal) + ")", 40, y, highlightPaint);
+
+        pdf.finishPage(page1);
+
+        // =====================================================
+        // PAGE 2 : DETAILS + FINAL SUGGESTION
+        // =====================================================
+        PdfDocument.PageInfo detailInfo =
+                new PdfDocument.PageInfo.Builder(595, 842, 2).create();
+        PdfDocument.Page page2 = pdf.startPage(detailInfo);
+        Canvas canvas = page2.getCanvas();
+
         Paint bold = new Paint();
-        Paint text = new Paint();
+        Paint normal = new Paint();
         Paint line = new Paint();
         Paint headerBg = new Paint();
-        Paint totalBg = new Paint();
-        Paint incomePaint = new Paint();
-        Paint expensePaint = new Paint();
 
-        title.setFakeBoldText(true);
-        title.setTextSize(26);
-
+        bold.setTextSize(12);
         bold.setFakeBoldText(true);
-        bold.setTextSize(12);
-
-        text.setTextSize(11);
-
-        incomePaint.setTextSize(11);
-        incomePaint.setColor(0xFF2E7D32);   // GREEN
-
-        expensePaint.setTextSize(11);
-        expensePaint.setColor(0xFFC62828);  // RED
-
+        normal.setTextSize(11);
         line.setStrokeWidth(1);
-
         headerBg.setARGB(255, 220, 220, 220);
-        totalBg.setARGB(255, 255, 204, 102);
 
-        int y = 50;
+        int yy = 50;
 
-        // ===== HEADER =====
-        c.drawText("ExMate", 40, y, title);
+        canvas.drawText("Income Expense Report", 40, yy, bold);
+        yy += 20;
+        canvas.drawLine(40, yy, 555, yy, line);
+        yy += 20;
 
-        y += 35;
-        bold.setTextSize(20);
-        c.drawText("Income Expense Report", 40, y, bold);
+        // INCOME TABLE
+        canvas.drawText("Income Details", 40, yy, bold);
+        yy += 10;
+        canvas.drawRect(40, yy, 555, yy + 25, headerBg);
+        canvas.drawText("Category", 50, yy + 17, bold);
+        canvas.drawText("Amount", 450, yy + 17, bold);
 
-        y += 25;
-        c.drawLine(40, y, 555, y, line);
-
-        y += 20;
-        text.setTextSize(12);
-        c.drawText("Prepared by : ExMate User", 40, y, text);
-        c.drawText("Period : " + txtDateRange.getText().toString(), 340, y, text);
-
-        y += 30;
-
-        // ===== INCOME TABLE =====
-        bold.setTextSize(14);
-        c.drawText("Income Details :", 40, y, bold);
-
-        y += 10;
-        c.drawRect(40, y, 555, y + 25, headerBg);
-        c.drawText("No.", 50, y + 17, bold);
-        c.drawText("Income Description", 100, y + 17, bold);
-        c.drawText("Amount", 460, y + 17, bold);
-
-        y += 35;
-        int index = 1;
-
-        for (Pair<String, Integer> p : incomes) {
-            c.drawText(String.valueOf(index), 50, y, incomePaint);
-            c.drawText(p.first, 100, y, incomePaint);
-            c.drawText("₹ " + p.second, 460, y, incomePaint);
-            y += 18;
-            index++;
+        yy += 35;
+        for (Pair<String, Double> p : incomes) {
+            canvas.drawText(p.first, 50, yy, normal);
+            canvas.drawText("₹ " + String.format("%.2f", p.second), 450, yy, normal);
+            yy += 18;
         }
 
-        // TOTAL INCOME
-        c.drawRect(40, y - 12, 555, y + 10, totalBg);
-        bold.setTextSize(12);
-        c.drawText("TOTAL INCOME", 100, y, bold);
-        c.drawText("₹ " + totalIncome, 460, y, bold);
+        yy += 30;
 
-        y += 40;
+        // EXPENSE TABLE
+        canvas.drawText("Expense Details", 40, yy, bold);
+        yy += 10;
+        canvas.drawRect(40, yy, 555, yy + 25, headerBg);
+        canvas.drawText("Category", 50, yy + 17, bold);
+        canvas.drawText("Amount", 450, yy + 17, bold);
 
-        // ===== EXPENSE TABLE =====
-        bold.setTextSize(14);
-        c.drawText("Expense Details :", 40, y, bold);
-
-        y += 10;
-        c.drawRect(40, y, 555, y + 25, headerBg);
-        c.drawText("No.", 50, y + 17, bold);
-        c.drawText("Expense Description", 100, y + 17, bold);
-        c.drawText("Amount", 460, y + 17, bold);
-
-        y += 35;
-        index = 1;
-
-        for (Pair<String, Integer> p : expenses) {
-            c.drawText(String.valueOf(index), 50, y, expensePaint);
-            c.drawText(p.first, 100, y, expensePaint);
-            c.drawText("₹ " + p.second, 460, y, expensePaint);
-            y += 18;
-            index++;
+        yy += 35;
+        for (Pair<String, Double> p : expenses) {
+            canvas.drawText(p.first, 50, yy, normal);
+            canvas.drawText("₹ " + String.format("%.2f", p.second), 450, yy, normal);
+            yy += 18;
         }
 
-        // TOTAL EXPENSE
-        c.drawRect(40, y - 12, 555, y + 10, totalBg);
-        bold.setTextSize(12);
-        c.drawText("TOTAL EXPENSE", 100, y, bold);
-        c.drawText("₹ " + totalExpense, 460, y, bold);
+        // =====================================================
+        // FINAL SMART BUDGET SUGGESTION (SAFE, NOT CUT)
+        // =====================================================
+        if (budgetMap.containsKey(topExpenseCat)) {
+            double budget = budgetMap.get(topExpenseCat);
+            if (budget > 0 && topExpenseVal > budget) {
 
-        // ===== FOOTER =====
-        y = 800;
-        c.drawLine(40, y, 555, y, line);
-        text.setTextSize(10);
-        c.drawText("Digitally generated by ExMate App", 40, y + 20, text);
-        c.drawText("Page 1", 520, y + 20, text);
+                String suggestion =
+                        "🧠 Budget Insight\n\n" +
+                                "Category: " + topExpenseCat + "\n" +
+                                "Budget: ₹ " + String.format("%.0f", budget) + "\n" +
+                                "Spent: ₹ " + String.format("%.0f", topExpenseVal) + "\n" +
+                                "Over by: ₹ " + String.format("%.0f", (topExpenseVal - budget)) +
+                                " (" + String.format("%.0f", ((topExpenseVal - budget) / budget) * 100) + "%)\n\n" +
+                                "Suggestion: Reduce " + topExpenseCat +
+                                " spending next month to improve savings.";
 
-        pdf.finishPage(page);
+                if (yy > 720) {
+                    pdf.finishPage(page2);
+                    PdfDocument.PageInfo extra =
+                            new PdfDocument.PageInfo.Builder(595, 842, 3).create();
+                    page2 = pdf.startPage(extra);
+                    canvas = page2.getCanvas();
+                    yy = 60;
+                }
+
+                Paint boxPaint = new Paint();
+                boxPaint.setColor(0xFFE3F2FD);
+
+                Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+                textPaint.setTextSize(12);
+                textPaint.setColor(0xFF0D47A1);
+
+                int boxTop = yy;
+                canvas.drawRect(40, boxTop, 555, boxTop + 140, boxPaint);
+
+                int textY = boxTop + 22;
+                for (String lineText : suggestion.split("\n")) {
+                    canvas.drawText(lineText, 52, textY, textPaint);
+                    textY += 18;
+                }
+            }
+        }
+
+        pdf.finishPage(page2);
         savePdf(pdf);
     }
 
-
-    private void savePdf(PdfDocument pdf) {
-        try {
-            File dir = new File(
-                    requireContext().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),
-                    "ExMate"
-            );
-            if (!dir.exists()) dir.mkdirs();
-
-            File file = new File(
-                    dir,
-                    "ExMate_Report_" + System.currentTimeMillis() + ".pdf"
-            );
-
-            FileOutputStream fos = new FileOutputStream(file);
-            pdf.writeTo(fos);
-            pdf.close();
-            fos.close();
-
-            openFile(file);
-
-        } catch (Exception e) {
-            Toast.makeText(getContext(), "PDF export failed", Toast.LENGTH_LONG).show();
-        }
-    }
 
     private void openFile(File file) {
         Uri uri = FileProvider.getUriForFile(
@@ -556,7 +636,13 @@ public class ReportsFragment extends Fragment {
         Intent i = new Intent(Intent.ACTION_VIEW);
         i.setDataAndType(uri, "application/pdf");
         i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        startActivity(i);
+
+        try {
+            startActivity(Intent.createChooser(i, "Open PDF"));
+        } catch (Exception e) {
+            Toast.makeText(getContext(),
+                    "No PDF viewer installed", Toast.LENGTH_LONG).show();
+        }
     }
 
     private void showEmpty(boolean show) {
@@ -584,4 +670,177 @@ public class ReportsFragment extends Fragment {
                 };
         new ItemTouchHelper(cb).attachToRecyclerView(recyclerReports);
     }
+    private void savePdf(PdfDocument pdf) {
+        try {
+            File dir = new File(
+                    requireContext().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),
+                    "ExMate"
+            );
+
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+
+            File file = new File(
+                    dir,
+                    "ExMate_Report_" + System.currentTimeMillis() + ".pdf"
+            );
+
+            FileOutputStream fos = new FileOutputStream(file);
+            pdf.writeTo(fos);
+            pdf.close();
+            fos.close();
+
+            openFile(file);
+
+        } catch (Exception e) {
+            Toast.makeText(
+                    getContext(),
+                    "PDF export failed: " + e.getMessage(),
+                    Toast.LENGTH_LONG
+            ).show();
+        }
+    }
+    private void disableView(View v) {
+        v.setAlpha(0.4f);
+        v.setEnabled(false);
+    }
+
+    private void applyThisMonth() {
+        Calendar c = Calendar.getInstance();
+        c.set(Calendar.DAY_OF_MONTH, 1);
+        startDateMillis = getStartOfDay(c.getTimeInMillis());
+        endDateMillis = getEndOfDay(System.currentTimeMillis());
+        isCustomRangeSelected = false;
+        txtDateRange.setText("This Month");
+        applyFilter();
+    }
+
+    private void applyLastMonth() {
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.MONTH, -1);
+        c.set(Calendar.DAY_OF_MONTH, 1);
+        startDateMillis = getStartOfDay(c.getTimeInMillis());
+
+        c.set(Calendar.DAY_OF_MONTH, c.getActualMaximum(Calendar.DAY_OF_MONTH));
+        endDateMillis = getEndOfDay(c.getTimeInMillis());
+
+        isCustomRangeSelected = false;
+        txtDateRange.setText("Last Month");
+        applyFilter();
+    }
+    private void drawPieChart(
+            Canvas c,
+            Map<String, Double> data,
+            double total,
+            int left, int top, int size,
+            int[] colors,
+            Paint text
+    ) {
+        Paint piePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        float startAngle = 0f;
+        int colorIndex = 0;
+
+        int legendX = left + size + 25;
+        int legendY = top + 20;
+
+        for (String key : data.keySet()) {
+
+            double value = data.get(key);
+            float sweep = (float) ((value / total) * 360f);
+
+            piePaint.setColor(colors[colorIndex % colors.length]);
+
+            c.drawArc(
+                    left,
+                    top,
+                    left + size,
+                    top + size,
+                    startAngle,
+                    sweep,
+                    true,
+                    piePaint
+            );
+
+            // LEGEND
+            c.drawRect(
+                    legendX,
+                    legendY - 10,
+                    legendX + 16,
+                    legendY + 6,
+                    piePaint
+            );
+
+            double percent = (value / total) * 100;
+            c.drawText(
+                    key + " (" + String.format("%.1f", percent) + "%)",
+                    legendX + 22,
+                    legendY + 5,
+                    text
+            );
+
+            legendY += 20;
+            startAngle += sweep;
+            colorIndex++;
+        }
+    }
+    private void loadBudgets() {
+        if (userRef == null) return;
+
+        // Get current month key like "2026-01"
+        SimpleDateFormat monthFormat =
+                new SimpleDateFormat("yyyy-MM", Locale.getDefault());
+        String currentMonthKey = monthFormat.format(new Date());
+
+        userRef.child("budgets")
+                .child(currentMonthKey)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                        budgetMap.clear();
+
+                        if (!snapshot.exists()) {
+                            // No budgets set for this month
+                            return;
+                        }
+
+                        for (DataSnapshot s : snapshot.getChildren()) {
+                            Object val = s.getValue();
+                            if (val instanceof Number) {
+                                budgetMap.put(
+                                        s.getKey(),
+                                        ((Number) val).doubleValue()
+                                );
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        // ignore safely
+                    }
+                });
+    }
+
+    private String generateBudgetSuggestion(
+            String category,
+            double spent,
+            double budget
+    ) {
+        if (budget <= 0 || spent <= budget) return "";
+
+        double overAmount = spent - budget;
+        double overPercent = (overAmount / budget) * 100;
+
+        return "🧠 Budget Alert: You exceeded your "
+                + category + " budget by ₹"
+                + String.format(Locale.getDefault(), "%.0f", overAmount)
+                + " (" + String.format(Locale.getDefault(), "%.0f", overPercent)
+                + "%). Consider reducing spending next month.";
+    }
+
+
+
+
 }

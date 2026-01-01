@@ -1,80 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="20dp"
-    android:background="@drawable/bg_bottomsheet_dark_rounded">
+    android:padding="16dp"
+    android:background="#0E1A2B">
 
-    <!-- Drag Handle -->
-    <View
-        android:layout_width="40dp"
-        android:layout_height="4dp"
-        android:layout_gravity="center"
-        android:background="@drawable/bg_drag_handle"
-        android:layout_marginBottom="14dp"/>
-
-    <!-- Title -->
     <TextView
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Export Report"
-        android:textSize="20sp"
+        android:textSize="18sp"
         android:textStyle="bold"
         android:textColor="#FFFFFF"
-        android:layout_marginBottom="16dp"/>
+        android:layout_marginBottom="12dp"/>
 
-    <!-- Month Filters -->
-    <LinearLayout
+    <!-- THIS MONTH -->
+    <TextView
+        android:id="@+id/optionThisMonth"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="16dp">
+        android:text="📅 This Month"
+        android:textSize="16sp"
+        android:textColor="#FFFFFF"
+        android:padding="14dp"
+        android:background="@drawable/bg_bottomsheet_item"
+        android:layout_marginBottom="8dp"/>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnThisMonth"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="This Month"
-            app:cornerRadius="12dp"
-            android:layout_marginEnd="6dp"/>
+    <!-- LAST MONTH -->
+    <TextView
+        android:id="@+id/optionLastMonth"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="📅 Last Month"
+        android:textSize="16sp"
+        android:textColor="#FFFFFF"
+        android:padding="14dp"
+        android:background="@drawable/bg_bottomsheet_item"
+        android:layout_marginBottom="8dp"/>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnLastMonth"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Last Month"
-            app:cornerRadius="12dp"/>
-    </LinearLayout>
-
-    <!-- Export Buttons -->
-    <com.google.android.material.button.MaterialButton
+    <!-- EXPORT CUSTOM RANGE -->
+    <TextView
         android:id="@+id/optionPdf"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Export as PDF"
-        android:icon="@android:drawable/ic_menu_save"
-        android:layout_marginBottom="10dp"
-        app:cornerRadius="14dp"/>
+        android:text="📄 Export Selected Range"
+        android:textSize="16sp"
+        android:textColor="#FFFFFF"
+        android:padding="14dp"
+        android:background="@drawable/bg_bottomsheet_item"
+        android:layout_marginBottom="8dp"/>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/optionCsv"
+    <!-- 🧹 CLEAR CUSTOM RANGE -->
+    <TextView
+        android:id="@+id/optionClearRange"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Export as CSV"
-        android:icon="@android:drawable/ic_menu_upload"
-        android:layout_marginBottom="14dp"
-        app:cornerRadius="14dp"/>
+        android:text="🧹 Clear Custom Range"
+        android:textSize="15sp"
+        android:textColor="#FFD54F"
+        android:padding="14dp"
+        android:background="@drawable/bg_bottomsheet_item"
+        android:layout_marginBottom="12dp"
+        android:visibility="gone"/>
 
-    <com.google.android.material.button.MaterialButton
+    <!-- CANCEL -->
+    <TextView
         android:id="@+id/btnCancel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Cancel"
-        android:textColor="#FF6B6B"
-        app:backgroundTint="@android:color/transparent"/>
-
+        android:textSize="15sp"
+        android:textColor="#FF5252"
+        android:gravity="center"
+        android:padding="12dp"/>
 </LinearLayout>

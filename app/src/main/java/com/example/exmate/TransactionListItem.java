@@ -14,9 +14,18 @@ public class TransactionListItem {
     // ---------- TRANSACTION ----------
     private String category;
     private String note;
+
+    // ⚠️ DISPLAY VALUE (unchanged)
     private String amount;
+
+    // ✅ REAL NUMERIC VALUE (NEW – PREMIUM)
+    private double amountValue;
+
     private String meta;
     private boolean highSpend;
+
+    // ✅ REAL TRANSACTION TYPE (FIXED)
+    private boolean income;   // true = income, false = expense
 
     // 🔥 IMPORTANT: REAL TRANSACTION TIME
     private long timeMillis;
@@ -47,6 +56,10 @@ public class TransactionListItem {
         return amount;
     }
 
+    public double getAmountValue() {
+        return amountValue;
+    }
+
     public String getMeta() {
         return meta;
     }
@@ -55,7 +68,11 @@ public class TransactionListItem {
         return highSpend;
     }
 
-    // 🔥 NEW GETTER
+    // ✅ CORRECT INCOME / EXPENSE CHECK
+    public boolean isIncome() {
+        return income;
+    }
+
     public long getTimeMillis() {
         return timeMillis;
     }
@@ -65,21 +82,39 @@ public class TransactionListItem {
         this.dateTitle = dateTitle;
     }
 
+    /**
+     * MAIN TRANSACTION SETTER
+     * (Backward compatible + future ready)
+     */
     public void setTransaction(
             String category,
             String note,
             String amount,
             String meta,
-            boolean highSpend
+            boolean isIncome
     ) {
         this.category = category;
         this.note = note;
         this.amount = amount;
         this.meta = meta;
-        this.highSpend = highSpend;
+        this.income = isIncome;
+
+        // ✅ SAFE numeric extraction
+        try {
+            this.amountValue = Double.parseDouble(
+                    amount.replace("₹", "")
+                            .replace("+", "")
+                            .replace("-", "")
+                            .trim()
+            );
+        } catch (Exception e) {
+            this.amountValue = 0;
+        }
+
+        // ⭐ Premium rule (can be changed)
+        this.highSpend = amountValue >= 1000;
     }
 
-    // 🔥 NEW SETTER
     public void setTimeMillis(long timeMillis) {
         this.timeMillis = timeMillis;
     }

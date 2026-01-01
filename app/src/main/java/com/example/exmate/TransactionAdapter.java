@@ -1,11 +1,13 @@
 package com.example.exmate;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
@@ -67,33 +69,44 @@ public class TransactionAdapter
             TransactionViewHolder vh =
                     (TransactionViewHolder) holder;
 
+            Context ctx = vh.itemView.getContext();
+
             vh.txtCategory.setText(item.getCategory());
             vh.txtNote.setText(item.getNote());
             vh.txtAmount.setText(item.getAmount());
             vh.txtMeta.setText(item.getMeta());
 
-            // ================= AMOUNT COLOR LOGIC =================
-            // Expense -> Red | Income -> Green
-            if (item.getAmount() != null && item.getAmount().startsWith("-")) {
-                // Expense
+            // ================= FIXED AMOUNT COLOR LOGIC =================
+            // ✅ Use real transaction type (NOT string check)
+            if (item.isIncome()) {
                 vh.txtAmount.setTextColor(
-                        vh.itemView.getContext()
-                                .getColor(android.R.color.holo_red_dark)
+                        ContextCompat.getColor(
+                                ctx,
+                                android.R.color.holo_green_dark
+                        )
                 );
             } else {
-                // Income
                 vh.txtAmount.setTextColor(
-                        vh.itemView.getContext()
-                                .getColor(android.R.color.holo_green_dark)
+                        ContextCompat.getColor(
+                                ctx,
+                                android.R.color.holo_red_dark
+                        )
                 );
             }
 
-            // Badge visibility (unchanged)
+            // ================= BADGE =================
             if (item.isHighSpend()) {
                 vh.txtBadge.setVisibility(View.VISIBLE);
             } else {
                 vh.txtBadge.setVisibility(View.GONE);
             }
+
+            // ================= PREMIUM TOUCH =================
+            vh.itemView.setAlpha(0f);
+            vh.itemView.animate()
+                    .alpha(1f)
+                    .setDuration(250)
+                    .start();
         }
     }
 
