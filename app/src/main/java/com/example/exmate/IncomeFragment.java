@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -34,6 +35,8 @@ public class IncomeFragment extends Fragment {
     private EditText etIncomeAmount, etIncomeDate, etIncomeNote;
     private Spinner spIncomeSource, spPaymentMode;
     private Button btnSaveIncome;
+    private ProgressBar progressSaveIncome;
+
     private long selectedDateMillis = -1;
 
     private DatabaseReference incomeRef;
@@ -41,15 +44,19 @@ public class IncomeFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
+
         return inflater.inflate(R.layout.income_fragment, container, false);
     }
 
     @Override
-    public void onViewCreated(@NonNull View view,
-                              @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(
+            @NonNull View view,
+            @Nullable Bundle savedInstanceState) {
+
         super.onViewCreated(view, savedInstanceState);
 
         initViews(view);
@@ -62,49 +69,71 @@ public class IncomeFragment extends Fragment {
         btnSaveIncome.setOnClickListener(v -> validateAndSave());
     }
 
+    // ========= INIT =========
     private void initViews(View view) {
-        etIncomeAmount = view.findViewById(R.id.etIncomeAmount);
-        etIncomeDate   = view.findViewById(R.id.etIncomeDate);
-        etIncomeNote   = view.findViewById(R.id.etIncomeNote);
-        spIncomeSource = view.findViewById(R.id.spIncomeSource);
-        spPaymentMode  = view.findViewById(R.id.spPaymentMode);
-        btnSaveIncome  = view.findViewById(R.id.btnSaveIncome);
+        etIncomeAmount      = view.findViewById(R.id.etIncomeAmount);
+        etIncomeDate        = view.findViewById(R.id.etIncomeDate);
+        etIncomeNote        = view.findViewById(R.id.etIncomeNote);
+        spIncomeSource      = view.findViewById(R.id.spIncomeSource);
+        spPaymentMode       = view.findViewById(R.id.spPaymentMode);
+        btnSaveIncome       = view.findViewById(R.id.btnSaveIncome);
+        progressSaveIncome  = view.findViewById(R.id.progressSaveIncome);
+
+        progressSaveIncome.setVisibility(View.GONE);
     }
 
+    // ========= FIREBASE =========
     private void setupFirebase() {
         userId = FirebaseAuth.getInstance().getUid();
-        if (userId != null) {
-            incomeRef = FirebaseDatabase.getInstance()
-                    .getReference("users")
-                    .child(userId)
-                    .child("incomes");
+
+        if (userId == null) {
+            Toast.makeText(requireContext(),
+                    "Session expired. Please login again.",
+                    Toast.LENGTH_SHORT).show();
+            return;
         }
+
+        incomeRef = FirebaseDatabase.getInstance()
+                .getReference("users")
+                .child(userId)
+                .child("incomes");
     }
 
+    // ========= SPINNERS (PREMIUM) =========
     private void setupSourceSpinner() {
-        String[] sources = {"Salary", "Business", "Freelance", "Investment",
-                "Rental Income", "Bonus", "Gift", "Other"};
+        String[] sources = {
+                "Salary", "Business", "Freelance", "Investment",
+                "Rental Income", "Bonus", "Gift", "Other"
+        };
 
-        spIncomeSource.setAdapter(new ArrayAdapter<>(
-                requireContext(),
-                android.R.layout.simple_spinner_dropdown_item,
-                sources
-        ));
+        ArrayAdapter<String> adapter =
+                new ArrayAdapter<>(
+                        requireContext(),
+                        R.layout.spinner_item_premium,
+                        sources
+                );
+        adapter.setDropDownViewResource(R.layout.spinner_item_premium);
+        spIncomeSource.setAdapter(adapter);
     }
 
     private void setupPaymentSpinner() {
         String[] modes = {"Cash", "UPI", "Bank Transfer", "Card", "Cheque"};
 
-        spPaymentMode.setAdapter(new ArrayAdapter<>(
-                requireContext(),
-                android.R.layout.simple_spinner_dropdown_item,
-                modes
-        ));
+        ArrayAdapter<String> adapter =
+                new ArrayAdapter<>(
+                        requireContext(),
+                        R.layout.spinner_item_premium,
+                        modes
+                );
+        adapter.setDropDownViewResource(R.layout.spinner_item_premium);
+        spPaymentMode.setAdapter(adapter);
     }
 
+    // ========= DATE PICKER =========
     private void setupDatePicker() {
         etIncomeDate.setOnClickListener(v -> {
             Calendar c = Calendar.getInstance();
+
             new DatePickerDialog(
                     requireContext(),
                     (picker, y, m, d) -> {
@@ -122,7 +151,9 @@ public class IncomeFragment extends Fragment {
         });
     }
 
+    // ========= SAVE =========
     private void validateAndSave() {
+
         if (incomeRef == null) return;
 
         String amountStr = etIncomeAmount.getText().toString().trim();
@@ -135,7 +166,7 @@ public class IncomeFragment extends Fragment {
         try {
             amount = Double.parseDouble(amountStr);
             if (amount <= 0) {
-                etIncomeAmount.setError("Amount must be more than 0");
+                etIncomeAmount.setError("Amount must be > 0");
                 return;
             }
         } catch (Exception e) {
@@ -148,6 +179,10 @@ public class IncomeFragment extends Fragment {
             return;
         }
 
+        // 🔒 SHOW LOADER
+        btnSaveIncome.setEnabled(false);
+        progressSaveIncome.setVisibility(View.VISIBLE);
+
         Map<String, Object> map = new HashMap<>();
         map.put("amount", amount);
         map.put("time", selectedDateMillis);
@@ -157,42 +192,72 @@ public class IncomeFragment extends Fragment {
 
         incomeRef.push().setValue(map)
                 .addOnSuccessListener(unused -> {
-                    showTransactionNotification("Income Added",
-                            "₹" + amount + " added from " + spIncomeSource.getSelectedItem());
 
-                    // 🌟 Reset fields
-                    etIncomeAmount.setText("");
-                    etIncomeDate.setText("");
-                    etIncomeNote.setText("");
-                    spIncomeSource.setSelection(0);
-                    spPaymentMode.setSelection(0);
-                    selectedDateMillis = -1;
+                    hideLoader();
 
-                    // 🔄 Refresh Dashboard
-                    requireActivity().setResult(101);
+                    showTransactionNotification(
+                            "Income Added",
+                            "₹" + amount + " • " +
+                                    spIncomeSource.getSelectedItem().toString()
+                    );
 
-                    Toast.makeText(getContext(), "Income Saved!", Toast.LENGTH_SHORT).show();
-                    requireActivity().onBackPressed();
+                    resetFields();
+
+                    Toast.makeText(requireContext(),
+                            "Income saved successfully",
+                            Toast.LENGTH_SHORT).show();
+
+                    requireActivity()
+                            .getSupportFragmentManager()
+                            .popBackStack();
+                })
+                .addOnFailureListener(e -> {
+                    hideLoader();
+                    Toast.makeText(requireContext(),
+                            "Failed: " + e.getMessage(),
+                            Toast.LENGTH_SHORT).show();
                 });
     }
 
+    private void hideLoader() {
+        progressSaveIncome.setVisibility(View.GONE);
+        btnSaveIncome.setEnabled(true);
+    }
+
+    private void resetFields() {
+        etIncomeAmount.setText("");
+        etIncomeDate.setText("");
+        etIncomeNote.setText("");
+        spIncomeSource.setSelection(0);
+        spPaymentMode.setSelection(0);
+        selectedDateMillis = -1;
+    }
+
+    // ========= NOTIFICATION =========
     private void createTransactionChannel() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             android.app.NotificationChannel channel =
-                    new android.app.NotificationChannel("transaction_alert",
+                    new android.app.NotificationChannel(
+                            "transaction_alert",
                             "Transaction Alerts",
-                            android.app.NotificationManager.IMPORTANCE_HIGH);
+                            NotificationManager.IMPORTANCE_HIGH
+                    );
 
-            NotificationManager manager =
-                    requireContext().getSystemService(NotificationManager.class);
-            manager.createNotificationChannel(channel);
+            requireContext()
+                    .getSystemService(NotificationManager.class)
+                    .createNotificationChannel(channel);
         }
     }
 
     private void showTransactionNotification(String title, String msg) {
-        Intent intent = new Intent(getContext(), UserDashboardActivity.class);
+
+        Intent intent = new Intent(requireContext(), UserDashboardActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
         PendingIntent pending = PendingIntent.getActivity(
-                getContext(), 0, intent,
+                requireContext(),
+                0,
+                intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
 
@@ -203,12 +268,11 @@ public class IncomeFragment extends Fragment {
                         .setContentText(msg)
                         .setAutoCancel(true)
                         .setContentIntent(pending)
+                        .setPriority(NotificationCompat.PRIORITY_HIGH)
                         .build();
 
-        NotificationManager manager =
-                (NotificationManager) requireContext()
-                        .getSystemService(Context.NOTIFICATION_SERVICE);
-
-        manager.notify((int) System.currentTimeMillis(), notification);
+        ((NotificationManager) requireContext()
+                .getSystemService(Context.NOTIFICATION_SERVICE))
+                .notify((int) System.currentTimeMillis(), notification);
     }
 }

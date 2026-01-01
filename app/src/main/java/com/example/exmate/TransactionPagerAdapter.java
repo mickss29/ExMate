@@ -16,11 +16,11 @@ public class TransactionPagerAdapter extends FragmentStateAdapter {
     public Fragment createFragment(int position) {
         switch (position) {
             case 0:
-                return new AddExpenseActivity();
+                return new ExpenseFragment();   // ✅ Fragment
             case 1:
-                return new AddIncomeActivity();
+                return new IncomeFragment();    // ✅ Fragment
             default:
-                return new AddExpenseActivity(); // fallback
+                return new ExpenseFragment();   // safe fallback
         }
     }
 

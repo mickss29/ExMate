@@ -40,8 +40,7 @@
         <!-- 👤 USER SIDE -->
         <activity android:name=".UserDashboardActivity" android:exported="false" />
         <activity android:name=".UserReportsActivity" android:exported="false" />
-        <activity android:name=".AddIncomeActivity" android:exported="false" />
-        <activity android:name=".AddExpenseActivity" android:exported="false" />
+
         <activity android:name=".UserDetailsActivity" android:exported="false" />
         <activity android:name=".UserProfile" android:exported="false" />
         <activity android:name=".EditProfileActivity" android:exported="false" />

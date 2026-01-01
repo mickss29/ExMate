@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -34,6 +35,7 @@ public class ExpenseFragment extends Fragment {
     private EditText etExpenseAmount, etExpenseDate, etExpenseNote;
     private Spinner spExpenseCategory, spExpensePaymentMode;
     private Button btnSaveExpense;
+    private ProgressBar progressSave;
 
     private DatabaseReference expenseRef;
     private String userId;
@@ -41,15 +43,19 @@ public class ExpenseFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
+
         return inflater.inflate(R.layout.expense_fragment, container, false);
     }
 
     @Override
-    public void onViewCreated(@NonNull View view,
-                              @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(
+            @NonNull View view,
+            @Nullable Bundle savedInstanceState) {
+
         super.onViewCreated(view, savedInstanceState);
 
         initViews(view);
@@ -64,20 +70,29 @@ public class ExpenseFragment extends Fragment {
 
     // ========= INIT =========
     private void initViews(View view) {
-        etExpenseAmount       = view.findViewById(R.id.etExpenseAmount);
-        etExpenseDate         = view.findViewById(R.id.etExpenseDate);
-        etExpenseNote         = view.findViewById(R.id.etExpenseNote);
-        spExpenseCategory     = view.findViewById(R.id.spExpenseCategory);
-        spExpensePaymentMode  = view.findViewById(R.id.spExpensePaymentMode);
-        btnSaveExpense        = view.findViewById(R.id.btnSaveExpense);
+        etExpenseAmount      = view.findViewById(R.id.etExpenseAmount);
+        etExpenseDate        = view.findViewById(R.id.etExpenseDate);
+        etExpenseNote        = view.findViewById(R.id.etExpenseNote);
+        spExpenseCategory    = view.findViewById(R.id.spExpenseCategory);
+        spExpensePaymentMode = view.findViewById(R.id.spExpensePaymentMode);
+        btnSaveExpense       = view.findViewById(R.id.btnSaveExpense);
+        progressSave         = view.findViewById(R.id.progressSave);
+
+        // loader hidden by default
+        progressSave.setVisibility(View.GONE);
     }
 
+    // ========= FIREBASE =========
     private void setupFirebase() {
         userId = FirebaseAuth.getInstance().getUid();
+
         if (userId == null) {
-            Toast.makeText(getContext(), "User not logged in!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(),
+                    "Session expired. Please login again.",
+                    Toast.LENGTH_SHORT).show();
             return;
         }
+
         expenseRef = FirebaseDatabase.getInstance()
                 .getReference("users")
                 .child(userId)
@@ -90,21 +105,27 @@ public class ExpenseFragment extends Fragment {
                 "Food", "Transport", "Shopping", "Bills",
                 "Entertainment", "Health", "Education", "Other"
         };
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                requireContext(),
-                android.R.layout.simple_spinner_dropdown_item,
-                categories
-        );
+
+        ArrayAdapter<String> adapter =
+                new ArrayAdapter<>(
+                        requireContext(),
+                        R.layout.spinner_item_premium,
+                        categories
+                );
+        adapter.setDropDownViewResource(R.layout.spinner_item_premium);
         spExpenseCategory.setAdapter(adapter);
     }
 
     private void setupPaymentSpinner() {
         String[] modes = {"Cash", "UPI", "Bank Transfer", "Card", "Wallet"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                requireContext(),
-                android.R.layout.simple_spinner_dropdown_item,
-                modes
-        );
+
+        ArrayAdapter<String> adapter =
+                new ArrayAdapter<>(
+                        requireContext(),
+                        R.layout.spinner_item_premium,
+                        modes
+                );
+        adapter.setDropDownViewResource(R.layout.spinner_item_premium);
         spExpensePaymentMode.setAdapter(adapter);
     }
 
@@ -112,12 +133,14 @@ public class ExpenseFragment extends Fragment {
     private void setupDatePicker() {
         etExpenseDate.setOnClickListener(v -> {
             Calendar calendar = Calendar.getInstance();
+
             new DatePickerDialog(
                     requireContext(),
                     (picker, y, m, d) -> {
                         Calendar cal = Calendar.getInstance();
                         cal.set(y, m, d, 0, 0, 0);
                         cal.set(Calendar.MILLISECOND, 0);
+
                         selectedDateMillis = cal.getTimeInMillis();
                         etExpenseDate.setText(d + "/" + (m + 1) + "/" + y);
                     },
@@ -128,8 +151,9 @@ public class ExpenseFragment extends Fragment {
         });
     }
 
-    // ========= SAVE LOGIC + AUTO REFRESH + RESET =========
+    // ========= SAVE =========
     private void validateAndSave() {
+
         if (expenseRef == null) return;
 
         String amountStr = etExpenseAmount.getText().toString().trim();
@@ -155,6 +179,10 @@ public class ExpenseFragment extends Fragment {
             return;
         }
 
+        // 🔒 SHOW LOADER
+        btnSaveExpense.setEnabled(false);
+        progressSave.setVisibility(View.VISIBLE);
+
         Map<String, Object> data = new HashMap<>();
         data.put("amount", amount);
         data.put("time", selectedDateMillis);
@@ -164,22 +192,38 @@ public class ExpenseFragment extends Fragment {
 
         expenseRef.push().setValue(data)
                 .addOnSuccessListener(unused -> {
+
+                    hideLoader();
+
                     showTransactionNotification(
                             "Expense Added",
-                            "Expense of ₹" + amount + " added in " +
+                            "Expense of ₹" + amount + " in " +
                                     spExpenseCategory.getSelectedItem().toString()
                     );
 
-                    Toast.makeText(getContext(),
-                            "Expense added successfully", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(),
+                            "Expense added successfully",
+                            Toast.LENGTH_SHORT).show();
 
-                    // ⭐ reset fields after save
                     resetFields();
+
+                    requireActivity()
+                            .getSupportFragmentManager()
+                            .popBackStack();
                 })
-                .addOnFailureListener(e ->
-                        Toast.makeText(getContext(),
-                                "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                );
+                .addOnFailureListener(e -> {
+
+                    hideLoader();
+
+                    Toast.makeText(requireContext(),
+                            "Failed: " + e.getMessage(),
+                            Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void hideLoader() {
+        progressSave.setVisibility(View.GONE);
+        btnSaveExpense.setEnabled(true);
     }
 
     private void resetFields() {
@@ -198,19 +242,22 @@ public class ExpenseFragment extends Fragment {
                     new android.app.NotificationChannel(
                             "transaction_alert",
                             "Transaction Alerts",
-                            android.app.NotificationManager.IMPORTANCE_HIGH
+                            NotificationManager.IMPORTANCE_HIGH
                     );
 
-            NotificationManager manager =
-                    requireContext().getSystemService(NotificationManager.class);
-            manager.createNotificationChannel(channel);
+            requireContext()
+                    .getSystemService(NotificationManager.class)
+                    .createNotificationChannel(channel);
         }
     }
 
     private void showTransactionNotification(String title, String message) {
-        Intent intent = new Intent(getContext(), UserDashboardActivity.class);
+
+        Intent intent = new Intent(requireContext(), UserDashboardActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
         PendingIntent pending = PendingIntent.getActivity(
-                getContext(),
+                requireContext(),
                 0,
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
@@ -221,15 +268,13 @@ public class ExpenseFragment extends Fragment {
                         .setSmallIcon(R.drawable.ic_notification)
                         .setContentTitle("📉 " + title)
                         .setContentText(message)
+                        .setAutoCancel(true)
                         .setContentIntent(pending)
                         .setPriority(NotificationCompat.PRIORITY_HIGH)
-                        .setAutoCancel(true)
                         .build();
 
-        NotificationManager manager =
-                (NotificationManager) requireContext()
-                        .getSystemService(Context.NOTIFICATION_SERVICE);
-
-        manager.notify((int) System.currentTimeMillis(), notification);
+        ((NotificationManager) requireContext()
+                .getSystemService(Context.NOTIFICATION_SERVICE))
+                .notify((int) System.currentTimeMillis(), notification);
     }
 }
