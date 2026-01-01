@@ -578,47 +578,98 @@ public class ReportsFragment extends Fragment {
         }
 
         // =====================================================
-        // FINAL SMART BUDGET SUGGESTION (SAFE, NOT CUT)
-        // =====================================================
-        if (budgetMap.containsKey(topExpenseCat)) {
-            double budget = budgetMap.get(topExpenseCat);
-            if (budget > 0 && topExpenseVal > budget) {
+// MULTI CATEGORY BUDGET INSIGHTS (END OF PDF)
+// =====================================================
 
-                String suggestion =
-                        "🧠 Budget Insight\n\n" +
-                                "Category: " + topExpenseCat + "\n" +
-                                "Budget: ₹ " + String.format("%.0f", budget) + "\n" +
-                                "Spent: ₹ " + String.format("%.0f", topExpenseVal) + "\n" +
-                                "Over by: ₹ " + String.format("%.0f", (topExpenseVal - budget)) +
-                                " (" + String.format("%.0f", ((topExpenseVal - budget) / budget) * 100) + "%)\n\n" +
-                                "Suggestion: Reduce " + topExpenseCat +
-                                " spending next month to improve savings.";
-
-                if (yy > 720) {
-                    pdf.finishPage(page2);
-                    PdfDocument.PageInfo extra =
-                            new PdfDocument.PageInfo.Builder(595, 842, 3).create();
-                    page2 = pdf.startPage(extra);
-                    canvas = page2.getCanvas();
-                    yy = 60;
-                }
-
-                Paint boxPaint = new Paint();
-                boxPaint.setColor(0xFFE3F2FD);
-
-                Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-                textPaint.setTextSize(12);
-                textPaint.setColor(0xFF0D47A1);
-
-                int boxTop = yy;
-                canvas.drawRect(40, boxTop, 555, boxTop + 140, boxPaint);
-
-                int textY = boxTop + 22;
-                for (String lineText : suggestion.split("\n")) {
-                    canvas.drawText(lineText, 52, textY, textPaint);
-                    textY += 18;
-                }
+        List<String> insightLines = new ArrayList<>();
+        String dominantCategoryNote = "";
+        for (String cat : expenseMap.keySet()) {
+            double percent = (expenseMap.get(cat) / totalExpense) * 100;
+            if (percent > 70) {
+                dominantCategoryNote =
+                        "⚠ " + cat + " accounts for most of your expenses (" +
+                                String.format("%.1f", percent) +
+                                "%). This category needs immediate attention.";
+                break;
             }
+        }
+
+
+        for (String category : expenseMap.keySet()) {
+
+            if (!budgetMap.containsKey(category)) continue;
+
+            double spent = expenseMap.get(category);
+            double budget = budgetMap.get(category);
+
+            if (budget <= 0 || spent <= budget) continue;
+
+            double overAmount = spent - budget;
+
+            // 🔥 DECLARE IT HERE (THIS WAS MISSING)
+            double overPercentRaw = (overAmount / budget) * 100;
+
+            String percentText = overPercentRaw > 300
+                    ? "300%+"
+                    : String.format("%.0f", overPercentRaw) + "%";
+
+            insightLines.add(
+                    "• " + category +
+                            " exceeded budget by ₹ " +
+                            String.format("%.0f", overAmount) +
+                            " (" + percentText + ")\n" +
+                            "  " + getCategorySmartTip(category, overPercentRaw)
+            );
+        }
+
+// Draw insights only if any exist
+        if (!insightLines.isEmpty()) {
+
+            // Check space to prevent cutting
+            if (yy > 680) {
+                pdf.finishPage(page2);
+                PdfDocument.PageInfo extra =
+                        new PdfDocument.PageInfo.Builder(595, 842, 3).create();
+                page2 = pdf.startPage(extra);
+                canvas = page2.getCanvas();
+                yy = 60;
+            }
+
+            Paint boxPaint = new Paint();
+            boxPaint.setColor(0xFFE3F2FD); // soft blue
+
+            Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            textPaint.setTextSize(12);
+            textPaint.setColor(0xFF0D47A1);
+
+            int boxTop = yy;
+            int maxHeight = 300;
+            int calculatedHeight = 40 + (insightLines.size() * 22) + 40;
+            int boxHeight = Math.min(calculatedHeight, maxHeight);
+
+            canvas.drawRect(40, boxTop, 555, boxTop + boxHeight, boxPaint);
+
+            int textY = boxTop + 24;
+            canvas.drawText("🧠 Budget Insights", 52, textY, textPaint);
+            textY += 22;
+            if (!dominantCategoryNote.isEmpty()) {
+                canvas.drawText(dominantCategoryNote, 52, textY, textPaint);
+                textY += 22;
+            }
+
+
+            for (String insight : insightLines) {
+                canvas.drawText(insight, 52, textY, textPaint);
+                textY += 20;
+            }
+
+            textY += 10;
+            canvas.drawText(
+                    "Suggestion: Focus on high overspending categories to improve savings.",
+                    52, textY, textPaint
+            );
+
+            yy = boxTop + boxHeight + 20;
         }
 
         pdf.finishPage(page2);
@@ -831,14 +882,53 @@ public class ReportsFragment extends Fragment {
         if (budget <= 0 || spent <= budget) return "";
 
         double overAmount = spent - budget;
-        double overPercent = (overAmount / budget) * 100;
+        double overPercentRaw = (overAmount / budget) * 100;
+        String percentText = overPercentRaw > 300
+                ? "300%+"
+                : String.format("%.0f", overPercentRaw) + "%";
 
         return "🧠 Budget Alert: You exceeded your "
                 + category + " budget by ₹"
                 + String.format(Locale.getDefault(), "%.0f", overAmount)
-                + " (" + String.format(Locale.getDefault(), "%.0f", overPercent)
+                + " (" + percentText + ")"
                 + "%). Consider reducing spending next month.";
     }
+
+    private String getCategorySmartTip(String category, double overPercent) {
+
+        boolean extreme = overPercent > 200;
+
+        switch (category.toLowerCase(Locale.getDefault())) {
+
+            case "food":
+                return extreme
+                        ? "Tip: Food spending is extremely high. Reduce outside meals immediately and set weekly limits."
+                        : "Tip: Frequent outside meals add up. Try planning weekly meals.";
+
+            case "transport":
+            case "travel":
+                return extreme
+                        ? "Tip: Travel costs are far above normal. Avoid non-essential trips this month."
+                        : "Tip: Reduce unnecessary travel and prefer cost-effective options.";
+
+            case "bills":
+                return extreme
+                        ? "Tip: Bills are unusually high. Review subscriptions and energy usage urgently."
+                        : "Tip: Check for cheaper plans or reduce unnecessary usage.";
+
+            case "shopping":
+                return extreme
+                        ? "Tip: Shopping overspend is severe. Pause non-essential purchases this month."
+                        : "Tip: Avoid impulse purchases. Waiting 24 hours helps.";
+
+            default:
+                return extreme
+                        ? "Tip: This category needs strict control due to heavy overspending."
+                        : "Tip: Monitor this category closely to stay within budget.";
+        }
+    }
+
+
 
 
 
