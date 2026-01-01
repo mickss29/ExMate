@@ -186,40 +186,69 @@ public class HomeFragment extends Fragment {
     }
 
     private void loadIncome() {
-        userRef.child("incomes")
-                .get().addOnSuccessListener(snapshot -> {
-                    for (DataSnapshot snap : snapshot.getChildren()) {
-                        Double amount = snap.child("amount").getValue(Double.class);
-                        Long time = snap.child("time").getValue(Long.class);
-                        if (amount == null || time == null) continue;
+        userRef.child("incomes").get().addOnSuccessListener(snapshot -> {
+            for (DataSnapshot snap : snapshot.getChildren()) {
 
-                        totalIncome += amount;
-                        transactionList.add(new TransactionModel("Income", amount, time));
-                    }
+                Double amount = snap.child("amount").getValue(Double.class);
+                Long time = snap.child("time").getValue(Long.class);
+                String source = snap.child("source").getValue(String.class); // ✅ FIX
 
-                    tvIncome.setText("Income  ₹" + moneyFormat.format(totalIncome));
-                    updateBalances();
-                    finalizeList();
-                });
+                if (amount == null || time == null) continue;
+
+                totalIncome += amount;
+
+                transactionList.add(
+                        new TransactionModel(
+                                "Income",
+                                amount,
+                                time,
+                                source != null ? source : "Income"
+                        )
+                );
+            }
+
+            tvIncome.setText("Income  ₹" + moneyFormat.format(totalIncome));
+            updateBalances();
+            finalizeList();
+        });
     }
+
 
     private void loadExpense() {
         userRef.child("expenses")
-                .get().addOnSuccessListener(snapshot -> {
+                .get()
+                .addOnSuccessListener(snapshot -> {
+
                     for (DataSnapshot snap : snapshot.getChildren()) {
+
                         Double amount = snap.child("amount").getValue(Double.class);
                         Long time = snap.child("time").getValue(Long.class);
+                        String category = snap.child("category").getValue(String.class); // ✅ FIX
+
                         if (amount == null || time == null) continue;
 
                         totalExpense += amount;
-                        transactionList.add(new TransactionModel("Expense", amount, time));
+
+                        transactionList.add(
+                                new TransactionModel(
+                                        "Expense",
+                                        amount,
+                                        time,
+                                        category != null ? category : "Expense",
+                                        true
+                                )
+                        );
                     }
 
-                    tvExpense.setText("Expenses  ₹" + moneyFormat.format(totalExpense));
+                    tvExpense.setText(
+                            "Expenses  ₹" + moneyFormat.format(totalExpense)
+                    );
+
                     updateBalances();
                     finalizeList();
                 });
     }
+
 
     // =========================================================================================
     // BALANCE
