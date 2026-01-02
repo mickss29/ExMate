@@ -1,43 +1,189 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:background="?attr/colorSurface">
+    android:background="#0B101A">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="12dp"
-        android:orientation="vertical">
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-        <TextView
-            android:text="Monthly Budget"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:textColor="?attr/colorOnSurface"
-            android:layout_marginBottom="12dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-
-        <!-- BUDGET LIST -->
-        <include layout="@layout/item_budget_row_food"/>
-        <include layout="@layout/item_budget_row_transport"/>
-        <include layout="@layout/item_budget_row_shopping"/>
-        <include layout="@layout/item_budget_row_bills"/>
-        <include layout="@layout/item_budget_row_entertainment"/>
-        <include layout="@layout/item_budget_row_health"/>
-        <include layout="@layout/item_budget_row_education"/>
-        <include layout="@layout/item_budget_row_other"/>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSaveBudget"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:text="Save Budget"
-            android:layout_marginTop="16dp"
-            app:cornerRadius="14dp"/>
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="18dp">
 
-    </LinearLayout>
-</ScrollView>
+            <!-- ===== TOGGLE ===== -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="#0E1A2B"
+                app:cardCornerRadius="26dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="6dp">
+
+                    <TextView
+                        android:id="@+id/tabMonthly"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="Monthly"
+                        android:textStyle="bold"
+                        android:textColor="#0E1A2B"
+                        android:background="#FFFFFF"/>
+
+                    <TextView
+                        android:id="@+id/tabYearly"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="Yearly"
+                        android:textStyle="bold"
+                        android:textColor="#CBD5E1"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ===== HERO ===== -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                app:cardBackgroundColor="#0E1A2B"
+                app:cardCornerRadius="28dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="26dp">
+
+                    <TextView
+                        android:text="Set monthly budget"
+                        android:textColor="#FFFFFF"
+                        android:textSize="18sp"
+                        android:textStyle="bold"/>
+
+                    <TextView
+                        android:layout_marginTop="6dp"
+                        android:text="Setting a budget typically reduces expenses by around 10%"
+                        android:textColor="#94A3B8"
+                        android:textSize="13sp"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ===== BUDGET FOR ===== -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                app:cardBackgroundColor="#0E1A2B"
+                app:cardCornerRadius="26dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="22dp">
+
+                    <TextView
+                        android:text="Budget for"
+                        android:textColor="#94A3B8"
+                        android:textSize="12sp"/>
+
+                    <TextView
+                        android:id="@+id/txtBudgetFor"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="January 2026"
+                        android:textColor="#FFFFFF"
+                        android:textSize="16sp"
+                        android:padding="12dp"
+                        android:background="@drawable/bg_input_dark_rounded"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ===== TOTAL BUDGET ===== -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                app:cardBackgroundColor="#0E1A2B"
+                app:cardCornerRadius="26dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="22dp">
+
+                    <TextView
+                        android:text="What’s your total budget limit?"
+                        android:textColor="#94A3B8"
+                        android:textSize="12sp"/>
+
+                    <EditText
+                        android:id="@+id/etTotalBudget"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:hint="₹ Enter your total budget"
+                        android:inputType="number"
+                        android:textColor="#FFFFFF"
+                        android:textColorHint="#64748B"
+                        android:padding="12dp"
+                        android:background="@drawable/bg_input_dark_rounded"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ===== CATEGORIES (GRID – MAIN FIX) ===== -->
+            <TextView
+                android:layout_marginTop="22dp"
+                android:text="Budget Categories"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:text="Tap categories to include in budget"
+                android:textColor="#94A3B8"
+                android:textSize="12sp"
+                android:layout_marginBottom="10dp"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerBudgetCategories"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:nestedScrollingEnabled="false"/>
+
+
+            <!-- ===== SAVE ===== -->
+            <Button
+                android:id="@+id/btnSaveBudget"
+                android:layout_width="match_parent"
+                android:layout_height="58dp"
+                android:layout_marginTop="32dp"
+                android:text="Save Budget"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#1E88E5"/>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

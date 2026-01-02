@@ -4,162 +4,169 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0B101A"
-    android:fitsSystemWindows="true"
-    android:paddingTop="100dp"
-    android:paddingBottom="40dp">
+    android:fillViewport="true"
+    android:clipToPadding="false"
+    android:background="#F2F0EF">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingStart="20dp"
-        android:paddingEnd="20dp">
+        android:padding="18dp">
 
-        <!-- ===== GLASS CARD ===== -->
+        <!-- ===== HERO CARD ===== -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardBackgroundColor="#121A2A"
-            app:cardCornerRadius="22dp"
-            app:cardElevation="12dp"
-            app:strokeColor="#1F2A44"
-            app:strokeWidth="1dp"
-            android:padding="20dp">
+            app:cardBackgroundColor="#0E1A2B"
+            app:cardCornerRadius="28dp"
+            app:cardElevation="10dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:padding="26dp"
+                android:gravity="center_horizontal">
 
-                <!-- 💸 TITLE -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Add Expense"
-                    android:textColor="@android:color/white"
-                    android:textSize="22sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="18dp"/>
-
-                <!-- 💰 AMOUNT (HERO FIELD) -->
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Amount"
-                    android:textColor="@android:color/white"
-                    android:textSize="14sp"
-                    android:layout_marginBottom="6dp"/>
+                    android:textColor="#CBD5E1"
+                    android:textSize="13sp"/>
 
                 <EditText
                     android:id="@+id/etExpenseAmount"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
                     android:hint="₹ 0.00"
+                    android:gravity="center"
                     android:inputType="numberDecimal"
-                    android:textColor="@android:color/white"
-                    android:textColorHint="@color/premiumHintColor"
-                    android:textSize="20sp"
+                    android:textColor="#F7F9FC"
+                    android:textColorHint="#64748B"
+                    android:textSize="32sp"
                     android:textStyle="bold"
-                    android:backgroundTint="@color/premiumInputTint"
+                    android:backgroundTint="#EF4444"
                     android:padding="16dp"/>
 
-                <!-- 🏷 CATEGORY -->
                 <TextView
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Enter your expense amount"
+                    android:textColor="#94A3B8"
+                    android:textSize="12sp"/>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ===== DETAILS CARD ===== -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            app:cardBackgroundColor="#FFFFFF"
+            app:cardCornerRadius="26dp"
+            app:cardElevation="6dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="22dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Category"
-                    android:textColor="@android:color/white"
-                    android:textSize="14sp"
-                    android:layout_marginTop="22dp"
-                    android:layout_marginBottom="6dp"/>
+                    android:textColor="#64748B"
+                    android:textSize="12sp"/>
 
                 <Spinner
                     android:id="@+id/spExpenseCategory"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/premium_spinner_bg"
-                    android:popupBackground="#121A2A"/>
+                    android:layout_marginTop="6dp"/>
 
-
-
-                <!-- 💳 PAYMENT MODE -->
-                <TextView
+                <View
                     android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="18dp"
+                    android:background="#E5E7EB"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
                     android:text="Payment Mode"
-                    android:textColor="@android:color/white"
-                    android:textSize="14sp"
-                    android:layout_marginTop="22dp"
-                    android:layout_marginBottom="6dp"/>
+                    android:textColor="#64748B"
+                    android:textSize="12sp"/>
+
                 <Spinner
                     android:id="@+id/spExpensePaymentMode"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/premium_spinner_bg"
-                    android:popupBackground="#121A2A"/>
+                    android:layout_marginTop="6dp"/>
 
-
-
-                <!-- 📆 DATE -->
-                <TextView
+                <View
                     android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="18dp"
+                    android:background="#E5E7EB"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
                     android:text="Date"
-                    android:textColor="@android:color/white"
-                    android:textSize="14sp"
-                    android:layout_marginTop="22dp"
-                    android:layout_marginBottom="6dp"/>
+                    android:textColor="#64748B"
+                    android:textSize="12sp"/>
 
                 <EditText
                     android:id="@+id/etExpenseDate"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
                     android:hint="Select date"
                     android:focusable="false"
                     android:clickable="true"
-                    android:textColor="@android:color/white"
-                    android:textColorHint="@color/premiumHintColor"
-                    android:backgroundTint="@color/premiumInputTint"
-                    android:padding="16dp"/>
+                    android:textColor="#0E1A2B"
+                    android:textColorHint="#94A3B8"/>
 
-                <!-- 📝 NOTE -->
                 <TextView
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
                     android:text="Note (optional)"
-                    android:textColor="@android:color/white"
-                    android:textSize="14sp"
-                    android:layout_marginTop="22dp"
-                    android:layout_marginBottom="6dp"/>
+                    android:textColor="#94A3B8"
+                    android:textSize="12sp"/>
 
                 <EditText
                     android:id="@+id/etExpenseNote"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
                     android:hint="Message, remarks, etc."
-                    android:textColor="@android:color/white"
-                    android:textColorHint="@color/premiumHintColor"
-                    android:backgroundTint="@color/premiumInputTint"
-                    android:padding="16dp"/>
-
+                    android:textColor="#0E1A2B"
+                    android:textColorHint="#94A3B8"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- ===== ACTION BUTTONS ===== -->
+        <!-- ===== SAVE ===== -->
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp">
 
             <Button
                 android:id="@+id/btnSaveExpense"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="56dp"
                 android:text="Save Expense"
                 android:textStyle="bold"
-                android:textColor="@android:color/white"
-                android:background="@drawable/btn_press_anim"
-                android:padding="18dp"/>
+                android:textColor="#FFFFFF"
+                android:background="@drawable/btn_press_anim"/>
 
             <ProgressBar
                 android:id="@+id/progressSave"
@@ -168,7 +175,6 @@
                 android:layout_gravity="center"
                 android:visibility="gone"/>
         </FrameLayout>
-
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

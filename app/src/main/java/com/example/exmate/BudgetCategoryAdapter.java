@@ -1,86 +1,81 @@
 package com.example.exmate;
 
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.List;
 
-public class BudgetCategoryAdapter extends RecyclerView.Adapter<BudgetCategoryAdapter.ViewHolder> {
+public class BudgetCategoryAdapter
+        extends RecyclerView.Adapter<BudgetCategoryAdapter.CategoryViewHolder> {
 
-    private final Context context;
-    private ArrayList<CategoryModel> list;
+    private final List<BudgetCategoryModel> categoryList;
 
-    public BudgetCategoryAdapter(Context context, ArrayList<CategoryModel> list) {
-        this.context = context;
-        this.list = list;
+    public BudgetCategoryAdapter(List<BudgetCategoryModel> categoryList) {
+        this.categoryList = categoryList;
     }
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context)
-                .inflate(R.layout.budget_category_item, parent, false);   // <-- FIXED LAYOUT
-        return new ViewHolder(view);
+    public CategoryViewHolder onCreateViewHolder(
+            @NonNull ViewGroup parent,
+            int viewType) {
+
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_budget_category, parent, false);
+
+        return new CategoryViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        CategoryModel model = list.get(position);
+    public void onBindViewHolder(
+            @NonNull CategoryViewHolder holder,
+            int position) {
 
-        // --- Basic values ---
-        holder.tvName.setText(model.name);
-        holder.tvLimit.setText("₹" + model.limit);
-        holder.tvSpent.setText("₹" + model.spent);
-        holder.tvRemaining.setText("₹" + (model.limit - model.spent));
+        BudgetCategoryModel model = categoryList.get(position);
 
-        int percent = model.limit > 0 ? (int) ((model.spent * 100) / model.limit) : 0;
-        holder.tvPercent.setText(percent + "% used");
-        holder.progressBar.setProgress(percent);
+        holder.txtCategoryName.setText(model.getName());
+        holder.imgCategory.setImageResource(model.getIconRes());
 
-        // --- Icon ---
-        int iconId = context.getResources().getIdentifier(
-                model.icon, "drawable", context.getPackageName()
-        );
-        holder.ivIcon.setImageResource(
-                iconId != 0 ? iconId : R.drawable.ic_category_default
-        );
+        // ✅ Selection UI (simple + safe)
+        holder.itemView.setAlpha(model.isSelected() ? 1f : 0.6f);
+
+        holder.itemView.setOnClickListener(v -> {
+            model.setSelected(!model.isSelected());
+            notifyItemChanged(position);
+        });
     }
 
     @Override
     public int getItemCount() {
-        return list != null ? list.size() : 0;
+        return categoryList.size();
     }
 
-    // --- smooth list update ---
-    public void updateList(ArrayList<CategoryModel> newList) {
-        this.list = newList;
-        notifyDataSetChanged();   // we can upgrade to DiffUtil later
-    }
+    // ================= VIEW HOLDER =================
+    static class CategoryViewHolder extends RecyclerView.ViewHolder {
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+        ImageView imgCategory;
+        TextView txtCategoryName;
 
-        ImageView ivIcon;
-        TextView tvName, tvLimit, tvSpent, tvRemaining, tvPercent;
-        ProgressBar progressBar;
-
-        public ViewHolder(@NonNull View itemView) {
+        public CategoryViewHolder(@NonNull View itemView) {
             super(itemView);
-
-            ivIcon      = itemView.findViewById(R.id.ivIcon);
-            tvName      = itemView.findViewById(R.id.tvCategoryName);
-            tvLimit     = itemView.findViewById(R.id.tvLimit);
-            tvSpent     = itemView.findViewById(R.id.tvSpent);
-            tvRemaining = itemView.findViewById(R.id.tvRemaining);
-            tvPercent   = itemView.findViewById(R.id.tvPercent);
-            progressBar = itemView.findViewById(R.id.progressBar);
+            imgCategory = itemView.findViewById(R.id.imgCategory);
+            txtCategoryName = itemView.findViewById(R.id.txtCategoryName);
         }
+    }
+
+    // ================= HELPER =================
+    public List<BudgetCategoryModel> getSelectedCategories() {
+        List<BudgetCategoryModel> selected = new ArrayList<>();
+        for (BudgetCategoryModel m : categoryList) {
+            if (m.isSelected()) selected.add(m);
+        }
+        return selected;
     }
 }

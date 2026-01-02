@@ -2,7 +2,6 @@ package com.example.exmate;
 
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -22,27 +21,36 @@ public class AddTransactionActivity extends AppCompatActivity {
         setContentView(R.layout.activity_add_transaction);
 
         toolbarAdd = findViewById(R.id.toolbarAdd);
-        tabLayout = findViewById(R.id.tabLayout);
-        viewPager = findViewById(R.id.viewPager);
+        tabLayout  = findViewById(R.id.tabLayout);
+        viewPager  = findViewById(R.id.viewPager);
 
         setSupportActionBar(toolbarAdd);
-        toolbarAdd.setNavigationOnClickListener(v -> onBackPressed());
+        toolbarAdd.setNavigationOnClickListener(v -> finish());
 
+        // ✅ ViewPager Adapter
         TransactionPagerAdapter adapter = new TransactionPagerAdapter(this);
         viewPager.setAdapter(adapter);
 
+        // 🔥 VERY IMPORTANT
+        viewPager.setOffscreenPageLimit(2);
+
+        // ✅ Tabs
         new TabLayoutMediator(tabLayout, viewPager,
                 (tab, position) -> {
                     if (position == 0) tab.setText("Expense");
                     if (position == 1) tab.setText("Income");
                 }).attach();
 
-        viewPager.setOffscreenPageLimit(2);
+        // ✅ Default tab = Expense
+        viewPager.setCurrentItem(0, false);
+    }
 
-        // 🆕 open correct tab if coming from HomeFragment
-        int openTab = getIntent().getIntExtra("openTab", -1);
-        if (openTab != -1) {
-            viewPager.setCurrentItem(openTab, false);
-        }
+    // ===== OPTIONAL (future use) =====
+    public void switchToIncome() {
+        viewPager.setCurrentItem(1, true);
+    }
+
+    public void switchToExpense() {
+        viewPager.setCurrentItem(0, true);
     }
 }

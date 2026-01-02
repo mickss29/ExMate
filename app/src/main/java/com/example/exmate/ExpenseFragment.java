@@ -1,15 +1,15 @@
 package com.example.exmate;
 
 import android.app.DatePickerDialog;
-import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -19,15 +19,17 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.app.NotificationCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class ExpenseFragment extends Fragment {
@@ -65,10 +67,17 @@ public class ExpenseFragment extends Fragment {
         setupDatePicker();
         createTransactionChannel();
 
-        btnSaveExpense.setOnClickListener(v -> validateAndSave());
+        setupDefaultDate();
+        setupAmountWatcher();
+        focusAmountField();
+
+        btnSaveExpense.setOnClickListener(v -> {
+            v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
+            validateAndSave();
+        });
     }
 
-    // ========= INIT =========
+    // ================= INIT =================
     private void initViews(View view) {
         etExpenseAmount      = view.findViewById(R.id.etExpenseAmount);
         etExpenseDate        = view.findViewById(R.id.etExpenseDate);
@@ -78,11 +87,11 @@ public class ExpenseFragment extends Fragment {
         btnSaveExpense       = view.findViewById(R.id.btnSaveExpense);
         progressSave         = view.findViewById(R.id.progressSave);
 
-        // loader hidden by default
         progressSave.setVisibility(View.GONE);
+        btnSaveExpense.setEnabled(false);
     }
 
-    // ========= FIREBASE =========
+    // ================= FIREBASE =================
     private void setupFirebase() {
         userId = FirebaseAuth.getInstance().getUid();
 
@@ -99,7 +108,7 @@ public class ExpenseFragment extends Fragment {
                 .child("expenses");
     }
 
-    // ========= SPINNERS =========
+    // ================= SPINNERS =================
     private void setupCategorySpinner() {
         String[] categories = {
                 "Food", "Transport", "Shopping", "Bills",
@@ -107,11 +116,10 @@ public class ExpenseFragment extends Fragment {
         };
 
         ArrayAdapter<String> adapter =
-                new ArrayAdapter<>(
-                        requireContext(),
+                new ArrayAdapter<>(requireContext(),
                         R.layout.spinner_item_premium,
-                        categories
-                );
+                        categories);
+
         adapter.setDropDownViewResource(R.layout.spinner_item_premium);
         spExpenseCategory.setAdapter(adapter);
     }
@@ -120,16 +128,15 @@ public class ExpenseFragment extends Fragment {
         String[] modes = {"Cash", "UPI", "Bank Transfer", "Card", "Wallet"};
 
         ArrayAdapter<String> adapter =
-                new ArrayAdapter<>(
-                        requireContext(),
+                new ArrayAdapter<>(requireContext(),
                         R.layout.spinner_item_premium,
-                        modes
-                );
+                        modes);
+
         adapter.setDropDownViewResource(R.layout.spinner_item_premium);
         spExpensePaymentMode.setAdapter(adapter);
     }
 
-    // ========= DATE PICKER =========
+    // ================= DATE PICKER =================
     private void setupDatePicker() {
         etExpenseDate.setOnClickListener(v -> {
             Calendar calendar = Calendar.getInstance();
@@ -151,7 +158,46 @@ public class ExpenseFragment extends Fragment {
         });
     }
 
-    // ========= SAVE =========
+    // ================= UX HELPERS =================
+    private void setupDefaultDate() {
+        Date now = new Date();
+        selectedDateMillis = now.getTime();
+        etExpenseDate.setText(
+                new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                        .format(now)
+        );
+    }
+
+    private void setupAmountWatcher() {
+        etExpenseAmount.addTextChangedListener(new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {
+                try {
+                    double val = Double.parseDouble(s.toString());
+                    btnSaveExpense.setEnabled(val > 0);
+                } catch (Exception e) {
+                    btnSaveExpense.setEnabled(false);
+                }
+            }
+        });
+    }
+
+    private void focusAmountField() {
+        etExpenseAmount.requestFocus();
+        etExpenseAmount.postDelayed(() -> {
+            InputMethodManager imm =
+                    (InputMethodManager) requireContext()
+                            .getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.showSoftInput(etExpenseAmount, InputMethodManager.SHOW_IMPLICIT);
+            }
+        }, 200);
+    }
+
+    // ================= SAVE =================
     private void validateAndSave() {
 
         if (expenseRef == null) return;
@@ -166,7 +212,7 @@ public class ExpenseFragment extends Fragment {
         try {
             amount = Double.parseDouble(amountStr);
             if (amount <= 0) {
-                etExpenseAmount.setError("Amount must be greater than 0");
+                etExpenseAmount.setError("Amount must be > 0");
                 return;
             }
         } catch (Exception e) {
@@ -174,12 +220,6 @@ public class ExpenseFragment extends Fragment {
             return;
         }
 
-        if (selectedDateMillis == -1) {
-            etExpenseDate.setError("Select date");
-            return;
-        }
-
-        // 🔒 SHOW LOADER
         btnSaveExpense.setEnabled(false);
         progressSave.setVisibility(View.VISIBLE);
 
@@ -192,29 +232,14 @@ public class ExpenseFragment extends Fragment {
 
         expenseRef.push().setValue(data)
                 .addOnSuccessListener(unused -> {
-
                     hideLoader();
-
-                    showTransactionNotification(
-                            "Expense Added",
-                            "Expense of ₹" + amount + " in " +
-                                    spExpenseCategory.getSelectedItem().toString()
-                    );
-
+                    resetFields();
                     Toast.makeText(requireContext(),
                             "Expense added successfully",
                             Toast.LENGTH_SHORT).show();
-
-                    resetFields();
-
-                    requireActivity()
-                            .getSupportFragmentManager()
-                            .popBackStack();
                 })
                 .addOnFailureListener(e -> {
-
                     hideLoader();
-
                     Toast.makeText(requireContext(),
                             "Failed: " + e.getMessage(),
                             Toast.LENGTH_SHORT).show();
@@ -228,16 +253,15 @@ public class ExpenseFragment extends Fragment {
 
     private void resetFields() {
         etExpenseAmount.setText("");
-        etExpenseDate.setText("");
         etExpenseNote.setText("");
-        selectedDateMillis = -1;
         spExpenseCategory.setSelection(0);
         spExpensePaymentMode.setSelection(0);
+        setupDefaultDate();
     }
 
-    // ========= NOTIFICATION =========
+    // ================= NOTIFICATION CHANNEL =================
     private void createTransactionChannel() {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             android.app.NotificationChannel channel =
                     new android.app.NotificationChannel(
                             "transaction_alert",
@@ -249,32 +273,5 @@ public class ExpenseFragment extends Fragment {
                     .getSystemService(NotificationManager.class)
                     .createNotificationChannel(channel);
         }
-    }
-
-    private void showTransactionNotification(String title, String message) {
-
-        Intent intent = new Intent(requireContext(), UserDashboardActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
-        PendingIntent pending = PendingIntent.getActivity(
-                requireContext(),
-                0,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        );
-
-        Notification notification =
-                new NotificationCompat.Builder(requireContext(), "transaction_alert")
-                        .setSmallIcon(R.drawable.ic_notification)
-                        .setContentTitle("📉 " + title)
-                        .setContentText(message)
-                        .setAutoCancel(true)
-                        .setContentIntent(pending)
-                        .setPriority(NotificationCompat.PRIORITY_HIGH)
-                        .build();
-
-        ((NotificationManager) requireContext()
-                .getSystemService(Context.NOTIFICATION_SERVICE))
-                .notify((int) System.currentTimeMillis(), notification);
     }
 }

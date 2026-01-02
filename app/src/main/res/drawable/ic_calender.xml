@@ -4,31 +4,18 @@
     android:viewportWidth="24"
     android:viewportHeight="24">
 
+    <!-- Calendar body -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M4,5h16a2,2 0 0,1 2,2v13a2,2 0 0,1 -2,2H4a2,2 0 0,1 -2,-2V7a2,2 0 0,1 2,-2z"/>
+
+    <!-- Rings -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="
-            M7,2
-            V4
-            H17
-            V2
-            H19
-            V4
-            H20
-            C21.1,4 22,4.9 22,6
-            V20
-            C22,21.1 21.1,22 20,22
-            H4
-            C2.9,22 2,21.1 2,20
-            V6
-            C2,4.9 2.9,4 4,4
-            H5
-            V2
-            H7
-            Z
-            M4,10
-            V20
-            H20
-            V10
-            H4
-            Z"/>
+        android:pathData="M7,3h2v4H7zM15,3h2v4h-2z"/>
+
+    <!-- Divider -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M4,9h16v1H4z"/>
 </vector>

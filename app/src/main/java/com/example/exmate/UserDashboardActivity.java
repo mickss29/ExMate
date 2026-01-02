@@ -75,11 +75,13 @@ public class UserDashboardActivity extends AppCompatActivity {
                 return true;
             }
 
-            // ⭐ NOW ADD BUTTON DIRECTLY OPENS SCREEN
             if (id == R.id.nav_add) {
-                startActivity(new Intent(this, AddTransactionActivity.class));
-                return false; // tab highlight nahi change hoga
-            }
+                startActivity(
+                        new Intent(this, AddTransactionActivity.class)
+                );
+                return true;
+
+        }
 
             if (id == R.id.nav_reports) {
                 loadFragment(new ReportsFragment());

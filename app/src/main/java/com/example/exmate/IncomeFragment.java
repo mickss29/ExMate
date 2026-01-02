@@ -1,15 +1,15 @@
 package com.example.exmate;
 
 import android.app.DatePickerDialog;
-import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -19,15 +19,17 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.app.NotificationCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class IncomeFragment extends Fragment {
@@ -38,7 +40,6 @@ public class IncomeFragment extends Fragment {
     private ProgressBar progressSaveIncome;
 
     private long selectedDateMillis = -1;
-
     private DatabaseReference incomeRef;
     private String userId;
 
@@ -66,23 +67,31 @@ public class IncomeFragment extends Fragment {
         setupDatePicker();
         createTransactionChannel();
 
-        btnSaveIncome.setOnClickListener(v -> validateAndSave());
+        setupDefaultDate();
+        setupAmountWatcher();
+        focusAmountField();
+
+        btnSaveIncome.setOnClickListener(v -> {
+            v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
+            validateAndSave();
+        });
     }
 
-    // ========= INIT =========
+    // ================= INIT =================
     private void initViews(View view) {
-        etIncomeAmount      = view.findViewById(R.id.etIncomeAmount);
-        etIncomeDate        = view.findViewById(R.id.etIncomeDate);
-        etIncomeNote        = view.findViewById(R.id.etIncomeNote);
-        spIncomeSource      = view.findViewById(R.id.spIncomeSource);
-        spPaymentMode       = view.findViewById(R.id.spPaymentMode);
-        btnSaveIncome       = view.findViewById(R.id.btnSaveIncome);
-        progressSaveIncome  = view.findViewById(R.id.progressSaveIncome);
+        etIncomeAmount     = view.findViewById(R.id.etIncomeAmount);
+        etIncomeDate       = view.findViewById(R.id.etIncomeDate);
+        etIncomeNote       = view.findViewById(R.id.etIncomeNote);
+        spIncomeSource     = view.findViewById(R.id.spIncomeSource);
+        spPaymentMode      = view.findViewById(R.id.spPaymentMode);
+        btnSaveIncome      = view.findViewById(R.id.btnSaveIncome);
+        progressSaveIncome = view.findViewById(R.id.progressSaveIncome);
 
         progressSaveIncome.setVisibility(View.GONE);
+        btnSaveIncome.setEnabled(false);
     }
 
-    // ========= FIREBASE =========
+    // ================= FIREBASE =================
     private void setupFirebase() {
         userId = FirebaseAuth.getInstance().getUid();
 
@@ -99,7 +108,7 @@ public class IncomeFragment extends Fragment {
                 .child("incomes");
     }
 
-    // ========= SPINNERS (PREMIUM) =========
+    // ================= SPINNERS =================
     private void setupSourceSpinner() {
         String[] sources = {
                 "Salary", "Business", "Freelance", "Investment",
@@ -107,11 +116,10 @@ public class IncomeFragment extends Fragment {
         };
 
         ArrayAdapter<String> adapter =
-                new ArrayAdapter<>(
-                        requireContext(),
+                new ArrayAdapter<>(requireContext(),
                         R.layout.spinner_item_premium,
-                        sources
-                );
+                        sources);
+
         adapter.setDropDownViewResource(R.layout.spinner_item_premium);
         spIncomeSource.setAdapter(adapter);
     }
@@ -120,16 +128,15 @@ public class IncomeFragment extends Fragment {
         String[] modes = {"Cash", "UPI", "Bank Transfer", "Card", "Cheque"};
 
         ArrayAdapter<String> adapter =
-                new ArrayAdapter<>(
-                        requireContext(),
+                new ArrayAdapter<>(requireContext(),
                         R.layout.spinner_item_premium,
-                        modes
-                );
+                        modes);
+
         adapter.setDropDownViewResource(R.layout.spinner_item_premium);
         spPaymentMode.setAdapter(adapter);
     }
 
-    // ========= DATE PICKER =========
+    // ================= DATE PICKER =================
     private void setupDatePicker() {
         etIncomeDate.setOnClickListener(v -> {
             Calendar c = Calendar.getInstance();
@@ -151,7 +158,46 @@ public class IncomeFragment extends Fragment {
         });
     }
 
-    // ========= SAVE =========
+    // ================= UX HELPERS =================
+    private void setupDefaultDate() {
+        Date now = new Date();
+        selectedDateMillis = now.getTime();
+        etIncomeDate.setText(
+                new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                        .format(now)
+        );
+    }
+
+    private void setupAmountWatcher() {
+        etIncomeAmount.addTextChangedListener(new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {
+                try {
+                    double val = Double.parseDouble(s.toString());
+                    btnSaveIncome.setEnabled(val > 0);
+                } catch (Exception e) {
+                    btnSaveIncome.setEnabled(false);
+                }
+            }
+        });
+    }
+
+    private void focusAmountField() {
+        etIncomeAmount.requestFocus();
+        etIncomeAmount.postDelayed(() -> {
+            InputMethodManager imm =
+                    (InputMethodManager) requireContext()
+                            .getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.showSoftInput(etIncomeAmount, InputMethodManager.SHOW_IMPLICIT);
+            }
+        }, 200);
+    }
+
+    // ================= SAVE =================
     private void validateAndSave() {
 
         if (incomeRef == null) return;
@@ -174,12 +220,6 @@ public class IncomeFragment extends Fragment {
             return;
         }
 
-        if (selectedDateMillis == -1) {
-            etIncomeDate.setError("Select date");
-            return;
-        }
-
-        // 🔒 SHOW LOADER
         btnSaveIncome.setEnabled(false);
         progressSaveIncome.setVisibility(View.VISIBLE);
 
@@ -192,24 +232,11 @@ public class IncomeFragment extends Fragment {
 
         incomeRef.push().setValue(map)
                 .addOnSuccessListener(unused -> {
-
                     hideLoader();
-
-                    showTransactionNotification(
-                            "Income Added",
-                            "₹" + amount + " • " +
-                                    spIncomeSource.getSelectedItem().toString()
-                    );
-
                     resetFields();
-
                     Toast.makeText(requireContext(),
                             "Income saved successfully",
                             Toast.LENGTH_SHORT).show();
-
-                    requireActivity()
-                            .getSupportFragmentManager()
-                            .popBackStack();
                 })
                 .addOnFailureListener(e -> {
                     hideLoader();
@@ -226,16 +253,15 @@ public class IncomeFragment extends Fragment {
 
     private void resetFields() {
         etIncomeAmount.setText("");
-        etIncomeDate.setText("");
         etIncomeNote.setText("");
         spIncomeSource.setSelection(0);
         spPaymentMode.setSelection(0);
-        selectedDateMillis = -1;
+        setupDefaultDate();
     }
 
-    // ========= NOTIFICATION =========
+    // ================= NOTIFICATION =================
     private void createTransactionChannel() {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             android.app.NotificationChannel channel =
                     new android.app.NotificationChannel(
                             "transaction_alert",
@@ -247,32 +273,5 @@ public class IncomeFragment extends Fragment {
                     .getSystemService(NotificationManager.class)
                     .createNotificationChannel(channel);
         }
-    }
-
-    private void showTransactionNotification(String title, String msg) {
-
-        Intent intent = new Intent(requireContext(), UserDashboardActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
-        PendingIntent pending = PendingIntent.getActivity(
-                requireContext(),
-                0,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        );
-
-        Notification notification =
-                new NotificationCompat.Builder(requireContext(), "transaction_alert")
-                        .setSmallIcon(R.drawable.ic_notification)
-                        .setContentTitle("💵 " + title)
-                        .setContentText(msg)
-                        .setAutoCancel(true)
-                        .setContentIntent(pending)
-                        .setPriority(NotificationCompat.PRIORITY_HIGH)
-                        .build();
-
-        ((NotificationManager) requireContext()
-                .getSystemService(Context.NOTIFICATION_SERVICE))
-                .notify((int) System.currentTimeMillis(), notification);
     }
 }

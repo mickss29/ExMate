@@ -14,18 +14,16 @@ public class TransactionPagerAdapter extends FragmentStateAdapter {
     @NonNull
     @Override
     public Fragment createFragment(int position) {
-        switch (position) {
-            case 0:
-                return new ExpenseFragment();   // ✅ Fragment
-            case 1:
-                return new IncomeFragment();    // ✅ Fragment
-            default:
-                return new ExpenseFragment();   // safe fallback
+
+        if (position == 0) {
+            return new ExpenseFragment(); // DEFAULT
+        } else {
+            return new IncomeFragment();
         }
     }
 
     @Override
     public int getItemCount() {
-        return 2; // Expense + Income
+        return 2; // 🔥 MUST BE 2
     }
 }
