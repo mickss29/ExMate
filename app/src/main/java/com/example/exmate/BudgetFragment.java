@@ -3,6 +3,7 @@ package com.example.exmate;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -14,11 +15,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -27,11 +32,33 @@ import java.util.Map;
 
 public class BudgetFragment extends Fragment {
 
+    // ===== UI =====
+    private EditText etTotalBudget;
     private TextView tvTotal;
-    private List<BudgetCategoryModel> categories = new ArrayList<>();
+    private Button btnUpdateBudget;
+    private RecyclerView recyclerView;
+
+    // ===== DATA =====
+    private BudgetCategoryAdapter adapter;
+    private final List<BudgetCategoryModel> categories = new ArrayList<>();
+    private boolean isEdit = false;
 
     public BudgetFragment() {
         super(R.layout.fragment_budget_add);
+    }
+
+    // ===== MASTER CATEGORY LIST =====
+    private List<String> getAllCategories() {
+        return Arrays.asList(
+                "Food",
+                "Education",
+                "Entertainment",
+                "Health",
+                "Shopping",
+                "Transport",
+                "Rent",
+                "Others"
+        );
     }
 
     @Override
@@ -39,53 +66,54 @@ public class BudgetFragment extends Fragment {
             @NonNull View view,
             @Nullable Bundle savedInstanceState) {
 
+        // Bind views
+        etTotalBudget = view.findViewById(R.id.etTotalBudget);
         tvTotal = view.findViewById(R.id.tvTotalBudget);
+        btnUpdateBudget = view.findViewById(R.id.btnUpdateBudget);
 
-        RecyclerView rv = view.findViewById(R.id.rvCategories);
-        rv.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView = view.findViewById(R.id.recyclerBudgetCategories);
+        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        // Default categories
-        String[] defaults = {
-                "Education","Food","Entertainment",
-                "Health","Shopping","Transport","Rent","Others"
-        };
+        adapter = new BudgetCategoryAdapter(categories, this::updateTotal);
+        recyclerView.setAdapter(adapter);
 
-        for (String c : defaults)
-            categories.add(new BudgetCategoryModel(c));
+        // Always build all categories first
+        buildDefaultCategories();
 
-        BudgetCategoryAdapter adapter =
-                new BudgetCategoryAdapter(categories, this::updateTotal);
-
-        rv.setAdapter(adapter);
-
-        view.findViewById(R.id.btnAddCategory)
-                .setOnClickListener(v -> {
-                    categories.add(new BudgetCategoryModel("Custom"));
-                    adapter.notifyItemInserted(categories.size() - 1);
-                });
-
-        view.findViewById(R.id.btnSaveBudget)
-                .setOnClickListener(v -> saveBudget());
-    }
-
-    private void updateTotal() {
-        int sum = 0;
-
-        for (BudgetCategoryModel m : categories) {
-            sum += m.getAmount(); // ✅ FIXED
+        // Check edit mode
+        if (getArguments() != null) {
+            isEdit = getArguments().getBoolean("isEdit", false);
         }
 
+        if (isEdit) {
+            loadExistingBudget();
+        }
+
+        btnUpdateBudget.setOnClickListener(v -> saveOrUpdateBudget());
+    }
+
+    // ===== TOTAL CALC =====
+    private void updateTotal() {
+        int sum = 0;
+        for (BudgetCategoryModel m : categories) {
+            sum += m.getAmount();
+        }
         tvTotal.setText("Total Budget: ₹" + sum);
     }
 
-    private void saveBudget() {
+    // ===== SAVE / UPDATE =====
+    private void saveOrUpdateBudget() {
 
         String uid = FirebaseAuth.getInstance().getUid();
         if (uid == null) return;
 
-        String key = new SimpleDateFormat(
-                "yyyy-MM", Locale.getDefault())
-                .format(new Date());
+        if (TextUtils.isEmpty(etTotalBudget.getText().toString())) {
+            etTotalBudget.setError("Enter total budget");
+            return;
+        }
+
+        int totalBudget =
+                Integer.parseInt(etTotalBudget.getText().toString().trim());
 
         DatabaseReference ref =
                 FirebaseDatabase.getInstance()
@@ -93,32 +121,93 @@ public class BudgetFragment extends Fragment {
                         .child(uid)
                         .child("budgets")
                         .child("monthly")
-                        .child(key);
+                        .child(getCurrentMonthKey());
 
         Map<String, Object> data = new HashMap<>();
-        Map<String, Integer> map = new HashMap<>();
+        Map<String, Integer> catMap = new HashMap<>();
 
-        int total = 0;
-
+        // ✅ SAVE ALL CATEGORIES (IMPORTANT FIX)
         for (BudgetCategoryModel m : categories) {
-
-            if (m.getAmount() > 0) { // ✅ FIXED
-                map.put(m.getName(), m.getAmount());
-                total += m.getAmount();
-            }
+            catMap.put(m.getName(), m.getAmount());
         }
 
+        data.put("totalBudget", totalBudget);
+        data.put("categories", catMap);
 
-        data.put("totalBudget", total);
-        data.put("categories", map);
+        ref.setValue(data)
+                .addOnSuccessListener(unused -> {
+                    Toast.makeText(
+                            requireContext(),
+                            isEdit ? "Budget updated" : "Budget saved",
+                            Toast.LENGTH_SHORT
+                    ).show();
 
-        ref.setValue(data).addOnSuccessListener(a ->
-                requireActivity()
-                        .getSupportFragmentManager()
-                        .beginTransaction()
-                        .replace(
-                                R.id.fragmentContainer,
-                                new BudgetAnalysisFragment())
-                        .commit());
+                    requireActivity()
+                            .getSupportFragmentManager()
+                            .popBackStack();
+                });
+    }
+
+    // ===== LOAD EXISTING (EDIT MODE) =====
+    private void loadExistingBudget() {
+
+        String uid = FirebaseAuth.getInstance().getUid();
+        if (uid == null) return;
+
+        DatabaseReference ref =
+                FirebaseDatabase.getInstance()
+                        .getReference("users")
+                        .child(uid)
+                        .child("budgets")
+                        .child("monthly")
+                        .child(getCurrentMonthKey());
+
+        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                if (!snapshot.exists()) return;
+
+                Integer total =
+                        snapshot.child("totalBudget")
+                                .getValue(Integer.class);
+
+                if (total != null) {
+                    etTotalBudget.setText(String.valueOf(total));
+                }
+
+                DataSnapshot catSnap = snapshot.child("categories");
+
+                for (BudgetCategoryModel m : categories) {
+                    Integer val =
+                            catSnap.child(m.getName())
+                                    .getValue(Integer.class);
+                    if (val != null) {
+                        m.setAmount(val);
+                    }
+                }
+
+                adapter.notifyDataSetChanged();
+                updateTotal();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
+        });
+    }
+
+    // ===== HELPERS =====
+    private void buildDefaultCategories() {
+        categories.clear();
+        for (String name : getAllCategories()) {
+            categories.add(new BudgetCategoryModel(name, 0));
+        }
+    }
+
+    private String getCurrentMonthKey() {
+        return new SimpleDateFormat(
+                "yyyy-MM",
+                Locale.getDefault()
+        ).format(new Date());
     }
 }

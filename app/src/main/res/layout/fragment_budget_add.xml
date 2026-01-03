@@ -59,6 +59,26 @@
             android:textColor="#FFFFFF"
             android:backgroundTint="#1E88E5"
             android:layout_marginTop="10dp"/>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerBudgetCategories"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:nestedScrollingEnabled="false"/>
+        <EditText
+            android:id="@+id/etTotalBudget"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter total budget"
+            android:inputType="number"
+            android:padding="12dp"/>
+        <Button
+            android:id="@+id/btnUpdateBudget"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="Update Budget"
+            android:textStyle="bold"/>
+
 
     </LinearLayout>
 

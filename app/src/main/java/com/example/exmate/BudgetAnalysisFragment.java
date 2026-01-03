@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.*;
 
@@ -41,6 +42,8 @@ public class BudgetAnalysisFragment extends Fragment {
             tvTotalSpent, tvAvailableBudget;
 
     private int totalBudget = 0;
+
+
     private int allocatedBudget = 0;
     private int totalSpent = 0;
     private PieChart pieChartBudget;
@@ -75,8 +78,27 @@ public class BudgetAnalysisFragment extends Fragment {
         rvBudgetCategories = view.findViewById(R.id.rvBudgetCategories);
         rvBudgetCategories.setLayoutManager(new LinearLayoutManager(requireContext()));
 
+
         adapter = new BudgetCategoryAdapter(categoryList);
         rvBudgetCategories.setAdapter(adapter);
+        FloatingActionButton fab =
+                view.findViewById(R.id.fabEditBudget);
+
+        fab.setOnClickListener(v -> {
+            Bundle b = new Bundle();
+            b.putBoolean("isEdit", true);
+
+            BudgetFragment fragment = new BudgetFragment();
+            fragment.setArguments(b);
+
+            requireActivity()
+                    .getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragmentContainer, fragment)
+                    .addToBackStack(null)
+                    .commit();
+        });
+
 
         loadCategoriesAndExpenses();
 
@@ -383,6 +405,23 @@ public class BudgetAnalysisFragment extends Fragment {
                 new java.text.SimpleDateFormat("yyyy-MM",
                         java.util.Locale.getDefault());
         return sdf.format(new java.util.Date());
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadCategoriesAndExpenses();
+    }
+    private List<String> getAllCategories() {
+        return Arrays.asList(
+                "Food",
+                "Education",
+                "Entertainment",
+                "Health",
+                "Shopping",
+                "Transport",
+                "Rent",
+                "Others"
+        );
     }
 
 
