@@ -1,10 +1,11 @@
 package com.example.exmate;
 
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -16,38 +17,101 @@ public class BudgetCategoryAdapter
         extends RecyclerView.Adapter<BudgetCategoryAdapter.Holder> {
 
     private final List<BudgetCategoryModel> list;
+    private final Runnable onChange; // nullable
 
+    // ✅ Constructor 1 (USED in BudgetAnalysisFragment)
     public BudgetCategoryAdapter(List<BudgetCategoryModel> list) {
         this.list = list;
+        this.onChange = null;
+    }
+
+    // ✅ Constructor 2 (USED in BudgetFragment – add/edit)
+    public BudgetCategoryAdapter(
+            List<BudgetCategoryModel> list,
+            Runnable onChange
+    ) {
+        this.list = list;
+        this.onChange = onChange;
     }
 
     @NonNull
     @Override
     public Holder onCreateViewHolder(
-            @NonNull ViewGroup parent, int viewType) {
+            @NonNull ViewGroup parent,
+            int viewType
+    ) {
 
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_budget_category, parent, false);
-        return new Holder(view);
+        View v = LayoutInflater.from(parent.getContext())
+                .inflate(
+                        R.layout.item_budget_category_analysis,
+                        parent,
+                        false
+                );
+        return new Holder(v);
     }
 
     @Override
     public void onBindViewHolder(
-            @NonNull Holder holder, int position) {
+            @NonNull Holder h,
+            int position
+    ) {
 
         BudgetCategoryModel model = list.get(position);
 
-        holder.tvName.setText(model.getName());
+        String name = model.getName();
+        int budget = model.getAmount();
+        int spent = model.getSpent();
 
-        // 🔥 VERY IMPORTANT: remove old listener before setChecked
-        holder.cb.setOnCheckedChangeListener(null);
-        holder.cb.setChecked(model.isSelected());
+        h.tvCategoryName.setText(name);
+        h.tvCategoryBudget.setText("Budget: ₹" + budget);
 
-        holder.cb.setOnCheckedChangeListener(
-                (buttonView, isChecked) -> {
-                    model.setSelected(isChecked);
-                }
-        );
+        int percent = 0;
+        if (budget > 0) {
+            percent = (spent * 100) / budget;
+        }
+
+        h.progressCategory.setProgress(Math.min(percent, 100));
+
+        if (percent < 80) {
+            h.tvCategoryStatus.setText(
+                    "You are ₹" + (budget - spent) + " under your limit"
+            );
+            h.tvCategoryStatus.setTextColor(
+                    Color.parseColor("#2E7D32")
+            );
+            h.progressCategory.setProgressTintList(
+                    ColorStateList.valueOf(
+                            Color.parseColor("#4CAF50")
+                    )
+            );
+        } else if (percent < 100) {
+            h.tvCategoryStatus.setText("Warning: Near your limit");
+            h.tvCategoryStatus.setTextColor(
+                    Color.parseColor("#EF6C00")
+            );
+            h.progressCategory.setProgressTintList(
+                    ColorStateList.valueOf(
+                            Color.parseColor("#FB8C00")
+                    )
+            );
+        } else {
+            h.tvCategoryStatus.setText(
+                    "Over budget by ₹" + (spent - budget)
+            );
+            h.tvCategoryStatus.setTextColor(
+                    Color.parseColor("#C62828")
+            );
+            h.progressCategory.setProgressTintList(
+                    ColorStateList.valueOf(
+                            Color.parseColor("#E53935")
+                    )
+            );
+        }
+
+        // 🔔 Notify parent if needed (BudgetFragment)
+        if (onChange != null) {
+            onChange.run();
+        }
     }
 
     @Override
@@ -55,17 +119,24 @@ public class BudgetCategoryAdapter
         return list.size();
     }
 
+    // ================= VIEW HOLDER =================
     static class Holder extends RecyclerView.ViewHolder {
 
-        TextView tvName;
-        CheckBox cb;
-        ImageView iv;
+        TextView tvCategoryName;
+        TextView tvCategoryBudget;
+        TextView tvCategoryStatus;
+        ProgressBar progressCategory;
 
-        Holder(@NonNull View v) {
-            super(v);
-            tvName = v.findViewById(R.id.tvCategoryName);
-            cb = v.findViewById(R.id.cbCategory);
-            iv = v.findViewById(R.id.ivCategoryIcon);
+        Holder(@NonNull View itemView) {
+            super(itemView);
+            tvCategoryName =
+                    itemView.findViewById(R.id.tvCategoryName);
+            tvCategoryBudget =
+                    itemView.findViewById(R.id.tvCategoryBudget);
+            tvCategoryStatus =
+                    itemView.findViewById(R.id.tvCategoryStatus);
+            progressCategory =
+                    itemView.findViewById(R.id.progressCategory);
         }
     }
 }

@@ -77,7 +77,8 @@ public class UserDashboardActivity extends AppCompatActivity {
             }
 
             if (id == R.id.nav_budget) {
-                loadFragment(new BudgetFragment());
+                loadFragment(new BudgetHomeFragment());
+
                 return true;
             }
 

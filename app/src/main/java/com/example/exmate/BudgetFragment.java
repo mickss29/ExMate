@@ -1,53 +1,37 @@
 package com.example.exmate;
 
-import android.app.DatePickerDialog;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.text.Editable;
 import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.view.View;
-import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import java.text.DateFormatSymbols;
-import java.util.Calendar;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 public class BudgetFragment extends Fragment {
 
-    // ===== Period =====
-    private Button btnMonthly, btnYearly;
-    private TextView tvSelectedMonth;
-
-    // ===== Budget =====
-    private EditText etTotalBudget;
-    private CheckBox cbCarryForward;
-
-    // ===== Buttons =====
-    private Button btnSaveBudget, btnSaveCategoryBudget;
-
-    // ===== Summary =====
-    private LinearLayout cardBudgetSummary;
-    private TextView tvSummaryMonth, tvSummaryAmount, tvSummaryCarry;
-
-    // ===== Categories =====
-    private LinearLayout layoutCategoryBudgets;
-    private TextView tvRemainingBudget;
-
-    // ===== State =====
-    private boolean isMonthly = true;
-    private int selectedYear, selectedMonth;
+    private TextView tvTotal;
+    private List<BudgetCategoryModel> categories = new ArrayList<>();
 
     public BudgetFragment() {
-        super(R.layout.budget_fragment);
+        super(R.layout.fragment_budget_add);
     }
 
     @Override
@@ -55,212 +39,86 @@ public class BudgetFragment extends Fragment {
             @NonNull View view,
             @Nullable Bundle savedInstanceState) {
 
-        // ===== Bind Views =====
-        btnMonthly = view.findViewById(R.id.btnMonthly);
-        btnYearly = view.findViewById(R.id.btnYearly);
-        tvSelectedMonth = view.findViewById(R.id.tvSelectedMonth);
+        tvTotal = view.findViewById(R.id.tvTotalBudget);
 
-        etTotalBudget = view.findViewById(R.id.etTotalBudget);
-        cbCarryForward = view.findViewById(R.id.cbCarryForward);
+        RecyclerView rv = view.findViewById(R.id.rvCategories);
+        rv.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        btnSaveBudget = view.findViewById(R.id.btnSaveBudget);
-        btnSaveCategoryBudget = view.findViewById(R.id.btnSaveCategoryBudget);
+        // Default categories
+        String[] defaults = {
+                "Education","Food","Entertainment",
+                "Health","Shopping","Transport","Rent","Others"
+        };
 
-        cardBudgetSummary = view.findViewById(R.id.cardBudgetSummary);
-        tvSummaryMonth = view.findViewById(R.id.tvSummaryMonth);
-        tvSummaryAmount = view.findViewById(R.id.tvSummaryAmount);
-        tvSummaryCarry = view.findViewById(R.id.tvSummaryCarry);
+        for (String c : defaults)
+            categories.add(new BudgetCategoryModel(c));
 
-        layoutCategoryBudgets = view.findViewById(R.id.layoutCategoryBudgets);
-        tvRemainingBudget = view.findViewById(R.id.tvRemainingBudget);
+        BudgetCategoryAdapter adapter =
+                new BudgetCategoryAdapter(categories, this::updateTotal);
 
-        // ===== Init =====
-        initDefaultDate();
-        attachCategoryWatchers();
+        rv.setAdapter(adapter);
 
-        // ===== Clicks =====
-        btnMonthly.setOnClickListener(v -> selectMonthly());
-        btnYearly.setOnClickListener(v -> selectYearly());
-        tvSelectedMonth.setOnClickListener(v -> openPicker());
+        view.findViewById(R.id.btnAddCategory)
+                .setOnClickListener(v -> {
+                    categories.add(new BudgetCategoryModel("Custom"));
+                    adapter.notifyItemInserted(categories.size() - 1);
+                });
 
-        btnSaveBudget.setOnClickListener(v -> saveMainBudget());
-
-        // ⭐ FINAL ACTION
-        btnSaveCategoryBudget.setOnClickListener(
-                v -> openBudgetAnalysisScreen()
-        );
+        view.findViewById(R.id.btnSaveBudget)
+                .setOnClickListener(v -> saveBudget());
     }
 
-    // ================= DATE =================
+    private void updateTotal() {
+        int sum = 0;
 
-    private void initDefaultDate() {
-        Calendar cal = Calendar.getInstance();
-        selectedYear = cal.get(Calendar.YEAR);
-        selectedMonth = cal.get(Calendar.MONTH);
-        updateDateText();
-    }
-
-    private void updateDateText() {
-        if (isMonthly) {
-            String month =
-                    new DateFormatSymbols().getMonths()[selectedMonth];
-            tvSelectedMonth.setText(month + " " + selectedYear);
-        } else {
-            tvSelectedMonth.setText("Year " + selectedYear);
-        }
-    }
-
-    private void selectMonthly() {
-        isMonthly = true;
-        btnMonthly.setBackgroundTintList(
-                android.content.res.ColorStateList.valueOf(0xFF1E88E5));
-        btnYearly.setBackgroundTintList(
-                android.content.res.ColorStateList.valueOf(0xFF1F2A38));
-        updateDateText();
-    }
-
-    private void selectYearly() {
-        isMonthly = false;
-        btnYearly.setBackgroundTintList(
-                android.content.res.ColorStateList.valueOf(0xFF1E88E5));
-        btnMonthly.setBackgroundTintList(
-                android.content.res.ColorStateList.valueOf(0xFF1F2A38));
-        updateDateText();
-    }
-
-    private void openPicker() {
-        DatePickerDialog dialog =
-                new DatePickerDialog(
-                        requireContext(),
-                        (view, year, month, day) -> {
-                            selectedYear = year;
-                            selectedMonth = month;
-                            updateDateText();
-                        },
-                        selectedYear,
-                        selectedMonth,
-                        1
-                );
-        dialog.show();
-    }
-
-    // ================= CATEGORY WATCH =================
-
-    private void attachCategoryWatchers() {
-        for (int i = 0; i < layoutCategoryBudgets.getChildCount(); i++) {
-
-            View row = layoutCategoryBudgets.getChildAt(i);
-            if (!(row instanceof LinearLayout)) continue;
-
-            LinearLayout line = (LinearLayout) row;
-            if (line.getChildCount() < 2) continue;
-
-            View v = line.getChildAt(1);
-            if (v instanceof EditText) {
-                ((EditText) v).addTextChangedListener(new CategoryWatcher());
-            }
-        }
-    }
-
-    private class CategoryWatcher implements TextWatcher {
-        @Override public void beforeTextChanged(CharSequence s,int a,int b,int c){}
-        @Override public void onTextChanged(CharSequence s,int a,int b,int c){
-            updateRemaining();
-        }
-        @Override public void afterTextChanged(Editable s){}
-    }
-
-    private void updateRemaining() {
-
-        String totalStr = etTotalBudget.getText().toString().trim();
-        if (TextUtils.isEmpty(totalStr)) {
-            tvRemainingBudget.setText("Remaining: ₹ 0");
-            tvRemainingBudget.setTextColor(Color.GRAY);
-            resetRowColors();
-            return;
+        for (BudgetCategoryModel m : categories) {
+            sum += m.getAmount(); // ✅ FIXED
         }
 
-        int total = Integer.parseInt(totalStr);
-        int used = 0;
+        tvTotal.setText("Total Budget: ₹" + sum);
+    }
 
-        for (int i = 0; i < layoutCategoryBudgets.getChildCount(); i++) {
+    private void saveBudget() {
 
-            View row = layoutCategoryBudgets.getChildAt(i);
-            if (!(row instanceof LinearLayout)) continue;
+        String uid = FirebaseAuth.getInstance().getUid();
+        if (uid == null) return;
 
-            LinearLayout line = (LinearLayout) row;
-            View v = line.getChildAt(1);
+        String key = new SimpleDateFormat(
+                "yyyy-MM", Locale.getDefault())
+                .format(new Date());
 
-            if (v instanceof EditText) {
-                String val = ((EditText) v).getText().toString().trim();
-                if (!val.isEmpty()) used += Integer.parseInt(val);
+        DatabaseReference ref =
+                FirebaseDatabase.getInstance()
+                        .getReference("users")
+                        .child(uid)
+                        .child("budgets")
+                        .child("monthly")
+                        .child(key);
+
+        Map<String, Object> data = new HashMap<>();
+        Map<String, Integer> map = new HashMap<>();
+
+        int total = 0;
+
+        for (BudgetCategoryModel m : categories) {
+
+            if (m.getAmount() > 0) { // ✅ FIXED
+                map.put(m.getName(), m.getAmount());
+                total += m.getAmount();
             }
         }
 
-        int remaining = total - used;
-        tvRemainingBudget.setText("Remaining: ₹ " + remaining);
 
-        if (remaining < 0) {
-            tvRemainingBudget.setTextColor(Color.RED);
-            highlightRows();
-        } else {
-            tvRemainingBudget.setTextColor(Color.parseColor("#90CAF9"));
-            resetRowColors();
-        }
-    }
+        data.put("totalBudget", total);
+        data.put("categories", map);
 
-    private void highlightRows() {
-        for (int i = 0; i < layoutCategoryBudgets.getChildCount(); i++) {
-            View row = layoutCategoryBudgets.getChildAt(i);
-            if (row instanceof LinearLayout) {
-                row.setBackgroundColor(Color.parseColor("#33FF5252"));
-            }
-        }
-    }
-
-    private void resetRowColors() {
-        for (int i = 0; i < layoutCategoryBudgets.getChildCount(); i++) {
-            View row = layoutCategoryBudgets.getChildAt(i);
-            if (row instanceof LinearLayout) {
-                row.setBackgroundColor(Color.TRANSPARENT);
-            }
-        }
-    }
-
-    // ================= SAVE MAIN =================
-
-    private void saveMainBudget() {
-
-        if (TextUtils.isEmpty(etTotalBudget.getText().toString())) {
-            etTotalBudget.setError("Enter total budget");
-            return;
-        }
-
-        cardBudgetSummary.setVisibility(View.VISIBLE);
-        tvSummaryMonth.setText(tvSelectedMonth.getText().toString());
-        tvSummaryAmount.setText("₹ " + etTotalBudget.getText().toString());
-        tvSummaryCarry.setText(
-                "Carry forward: " +
-                        (cbCarryForward.isChecked() ? "Yes" : "No"));
-
-        Toast.makeText(
-                requireContext(),
-                "Budget saved",
-                Toast.LENGTH_SHORT
-        ).show();
-    }
-
-    // ================= NAVIGATION =================
-
-    private void openBudgetAnalysisScreen() {
-        requireActivity()
-                .getSupportFragmentManager()
-                .beginTransaction()
-                .replace(
-                        R.id.fragmentContainer,
-                        new BudgetAnalysisFragment()
-                )
-                .addToBackStack(null)
-                .commit();
+        ref.setValue(data).addOnSuccessListener(a ->
+                requireActivity()
+                        .getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(
+                                R.id.fragmentContainer,
+                                new BudgetAnalysisFragment())
+                        .commit());
     }
 }

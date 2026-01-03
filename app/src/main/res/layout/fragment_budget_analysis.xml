@@ -1,225 +1,232 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F4F5F7"
-    android:fillViewport="true">
+    android:background="#F4F6FB">
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
-        <!-- ================= SUMMARY CARD ================= -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp"
-            android:background="@drawable/bg_card_white"
-            android:elevation="6dp">
+            android:padding="16dp">
 
-            <!-- Title -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Spent in January"
-                android:textStyle="bold"
-                android:textColor="#607D8B"
-                android:layout_gravity="center_horizontal"/>
-
-            <!-- Chart + Numbers -->
-            <LinearLayout
+            <!-- ================= TOP CARD ================= -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="16dp">
+                app:cardCornerRadius="24dp"
+                app:cardElevation="6dp"
+                app:cardBackgroundColor="#FFFFFF">
 
-                <!-- Donut Placeholder -->
-                <FrameLayout
-                    android:layout_width="140dp"
-                    android:layout_height="140dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="18dp">
 
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Spent in January"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="#6B7280"
+                        android:layout_gravity="center_horizontal"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="16dp">
+
+                        <com.github.mikephil.charting.charts.PieChart
+                            android:id="@+id/pieChartBudget"
+                            android:layout_width="140dp"
+                            android:layout_height="140dp" />
+
+
+                        <!-- SUMMARY -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:paddingStart="20dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Total Budget"
+                                android:textColor="#6B7280"/>
+
+                            <TextView
+                                android:id="@+id/tvTotalBudget"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="₹ 150000"
+                                android:textSize="16sp"
+                                android:textStyle="bold"/>
+
+                            <TextView
+                                android:layout_marginTop="10dp"
+                                android:text="Total Spent"
+                                android:textColor="#6B7280"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+
+                            <TextView
+                                android:id="@+id/tvTotalSpent"
+                                android:text="₹ 1500 (From Budget)"
+                                android:textColor="#EF4444"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+
+                            <TextView
+                                android:layout_marginTop="10dp"
+                                android:text="Available Budget"
+                                android:textColor="#6B7280"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+
+
+                            <TextView
+                                android:id="@+id/tvAvailableBudget"
+                                android:text="₹ 148500"
+                                android:textColor="#16A34A"
+                                android:textStyle="bold"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+                            <TextView
+                                android:id="@+id/tvUnallocatedBudget"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Unallocated\n₹0"
+                                android:textSize="13sp"
+                                android:textColor="#6B7280"
+                                android:layout_marginTop="8dp"/>
+
+
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- DIVIDER -->
                     <View
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@drawable/bg_donut_placeholder"/>
+                        android:layout_height="1dp"
+                        android:layout_marginVertical="14dp"
+                        android:background="#E5E7EB"/>
 
-                    <TextView
+                    <!-- INCOME / EXPENSE / SAVINGS -->
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:gravity="center"
-                        android:text="100%\nLeft"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        android:textColor="#2E7D32"/>
-                </FrameLayout>
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:weightSum="3">
 
-                <!-- Budget Values -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:paddingStart="16dp">
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center">
 
-                    <TextView
-                        android:text="Total Budget"
-                        android:textColor="#90A4AE"/>
+                            <TextView
+                                android:text="Income"
+                                android:textColor="#6B7280"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
 
-                    <TextView
-                        android:id="@+id/tvTotalBudget"
-                        android:text="₹ 50000"
-                        android:textStyle="bold"/>
+                            <TextView
+                                android:text="₹ 0"
+                                android:textColor="#16A34A"
+                                android:textStyle="bold"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+                        </LinearLayout>
 
-                    <TextView
-                        android:layout_marginTop="8dp"
-                        android:text="Unallocated Budget"
-                        android:textColor="#90A4AE"/>
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center">
 
-                    <TextView
-                        android:id="@+id/tvUnallocatedBudget"
-                        android:text="₹ 45000"
-                        android:textStyle="bold"/>
+                            <TextView
+                                android:text="Expenses"
+                                android:textColor="#6B7280"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
 
-                    <TextView
-                        android:layout_marginTop="8dp"
-                        android:text="Total Spent"
-                        android:textColor="#90A4AE"/>
+                            <TextView
+                                android:text="₹ 1500"
+                                android:textColor="#EF4444"
+                                android:textStyle="bold"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+                        </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/tvTotalSpent"
-                        android:text="₹ 0 (From Budget)"/>
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center">
 
-                    <TextView
-                        android:layout_marginTop="8dp"
-                        android:text="Available Budget"
-                        android:textColor="#90A4AE"/>
+                            <TextView
+                                android:text="Left for Savings"
+                                android:textColor="#6B7280"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
 
-                    <TextView
-                        android:id="@+id/tvAvailableBudget"
-                        android:text="₹ 50000"
-                        android:textStyle="bold"/>
+                            <TextView
+                                android:text="₹ 148500"
+                                android:textColor="#7C3AED"
+                                android:textStyle="bold"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+                        </LinearLayout>
+                    </LinearLayout>
+
                 </LinearLayout>
-            </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-            <!-- Divider -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginVertical="16dp"
-                android:background="#E0E0E0"/>
-
-            <!-- Quick Stats -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="Income\n₹ 353"
-                    android:textColor="#2E7D32"/>
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="Expenses\n₹ 0"
-                    android:textColor="#EF6C00"/>
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="Left for Savings\n₹ 353"
-                    android:textColor="#2E7D32"/>
-            </LinearLayout>
-
-            <!-- History -->
+            <!-- ================= CATEGORY TITLE ================= -->
             <TextView
-                android:layout_marginTop="16dp"
-                android:text="💡 View Budget History"
-                android:textColor="@color/premium_blue"
-                android:textStyle="bold"/>
-        </LinearLayout>
-
-        <!-- ================= BUDGETED CATEGORIES ================= -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="24dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_weight="1"
+                android:layout_marginTop="22dp"
                 android:text="Budgeted Categories"
-                android:textSize="18sp"
-                android:textStyle="bold"/>
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#111827"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
 
-            <TextView
-                android:text="1 categories"
-                android:textColor="#90A4AE"/>
-        </LinearLayout>
-
-        <!-- Category Card -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:padding="16dp"
-            android:orientation="vertical"
-            android:background="@drawable/bg_card_white">
-
-            <LinearLayout
+            <!-- ================= CATEGORY LIST ================= -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvBudgetCategories"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:layout_marginTop="10dp"
+                android:nestedScrollingEnabled="false"/>
 
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:text="Food"
-                    android:textStyle="bold"/>
-
-                <TextView
-                    android:text="₹ 0"/>
-            </LinearLayout>
-
-            <TextView
-                android:layout_marginTop="6dp"
-                android:text="Budget: ₹5000"
-                android:textColor="#607D8B"/>
-
-            <TextView
-                android:layout_marginTop="4dp"
-                android:text="✔ You are ₹5000 under your limit"
-                android:textColor="#2E7D32"/>
         </LinearLayout>
+    </ScrollView>
 
-        <!-- ================= TRENDS ================= -->
-        <TextView
-            android:layout_marginTop="24dp"
-            android:text="Budget Trends"
-            android:textSize="18sp"
-            android:textStyle="bold"/>
+    <!-- FLOATING EDIT BUTTON -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabEditBudget"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_margin="20dp"
+        android:src="@drawable/ic_edit"
+        app:backgroundTint="#7C3AED"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:padding="24dp"
-            android:gravity="center"
-            android:background="@drawable/bg_card_white">
-
-            <TextView
-                android:text="No data available"
-                android:textColor="#90A4AE"/>
-        </LinearLayout>
-
-    </LinearLayout>
-</ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

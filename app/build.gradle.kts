@@ -1,11 +1,11 @@
 plugins {
     alias(libs.plugins.android.application)
-    id("com.google.gms.google-services")   // ✅ REQUIRED
+    id("com.google.gms.google-services")
 }
 
 android {
     namespace = "com.example.exmate"
-    compileSdk = 36   // ❌ FIXED (your syntax was wrong)
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.exmate"
@@ -43,7 +43,7 @@ dependencies {
     implementation(libs.cardview)
     implementation(libs.viewpager2)
 
-    // Material (ONLY ONE)
+    // Material
     implementation("com.google.android.material:material:1.12.0")
 
     // Fragment
@@ -58,9 +58,12 @@ dependencies {
     implementation("com.google.firebase:firebase-database")
     implementation("com.google.firebase:firebase-storage:20.3.0")
 
-    // Security
+    // Security (✅ CORRECT)
     implementation("androidx.biometric:biometric:1.1.0")
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
+
+    // Charts (Donut)
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 
     // Testing
     testImplementation(libs.junit)
