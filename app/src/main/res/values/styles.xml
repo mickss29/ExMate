@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <style name="ChipExMate.Base" parent="Widget.MaterialComponents.Chip.Choice">
         <item name="android:textColor">#E0E0E0</item>
         <item name="chipCornerRadius">18dp</item>
@@ -8,6 +9,7 @@
         <item name="android:paddingHorizontal">14dp</item>
         <item name="android:paddingVertical">6dp</item>
     </style>
+
     <style name="PinDot">
         <item name="android:layout_width">14dp</item>
         <item name="android:layout_height">14dp</item>
@@ -15,20 +17,17 @@
         <item name="android:background">@drawable/bg_pin_dot_empty</item>
     </style>
 
-    <!-- 🔵 ALL -->
     <style name="ChipExMate.All" parent="ChipExMate.Base">
         <item name="chipBackgroundColor">@color/chip_all_bg</item>
         <item name="chipStrokeColor">@color/chip_all_border</item>
     </style>
 
-    <!-- 🟢 INCOME -->
     <style name="ChipExMate.Income" parent="ChipExMate.Base">
         <item name="android:textColor">#A5D6A7</item>
         <item name="chipBackgroundColor">@color/chip_income_bg</item>
         <item name="chipStrokeColor">@color/chip_income_border</item>
     </style>
 
-    <!-- 🔴 EXPENSE -->
     <style name="ChipExMate.Expense" parent="ChipExMate.Base">
         <item name="android:textColor">#EF9A9A</item>
         <item name="chipBackgroundColor">@color/chip_expense_bg</item>
@@ -37,10 +36,8 @@
 
     <style name="TopPanelRoundedBottomOnly">
         <item name="cornerFamily">rounded</item>
-        <!-- top straight -->
         <item name="cornerSizeTopLeft">0dp</item>
         <item name="cornerSizeTopRight">0dp</item>
-        <!-- bottom rounded big -->
         <item name="cornerSizeBottomLeft">30dp</item>
         <item name="cornerSizeBottomRight">30dp</item>
     </style>

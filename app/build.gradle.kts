@@ -34,32 +34,33 @@ android {
 }
 
 dependencies {
-    implementation("com.airbnb.android:lottie:6.4.0")
-    // AndroidX
+
+    // Core UI
     implementation(libs.appcompat)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     implementation(libs.recyclerview)
     implementation(libs.cardview)
     implementation(libs.viewpager2)
-    implementation(libs.fragment)
-    implementation(libs.legacy.support.v4)
-    implementation("com.google.android.material:material:1.11.0")
-    implementation ("androidx.fragment:fragment:1.6.2")
 
-
-
-    // Material (KEEP ONLY ONE)
+    // Material (ONLY ONE)
     implementation("com.google.android.material:material:1.12.0")
 
-    // 🔥 FIREBASE (CORRECT)
+    // Fragment
+    implementation("androidx.fragment:fragment:1.6.2")
+
+    // Animations
+    implementation("com.airbnb.android:lottie:6.4.0")
+
+    // Firebase
     implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-database")
     implementation("com.google.firebase:firebase-storage:20.3.0")
+
+    // Security
     implementation("androidx.biometric:biometric:1.1.0")
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
-
 
     // Testing
     testImplementation(libs.junit)

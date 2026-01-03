@@ -1,138 +1,238 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0B101A"
-    android:padding="18dp"
+    android:background="#0E1621"
     android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="16dp">
 
-
-        <!-- ===================== SCREEN HEADER ===================== -->
+        <!-- ================= TITLE ================= -->
         <TextView
-            android:id="@+id/tvBudgetHeader"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Monthly Budget"
-            android:textColor="#0A0F1C"
-            android:textStyle="bold"
+            android:text="Create Budget"
             android:textSize="22sp"
-            android:gravity="start"
-            android:paddingVertical="6dp" />
+            android:textStyle="bold"
+            android:textColor="@android:color/white" />
 
-
-        <!-- ===================== TOTAL BUDGET CARD ===================== -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cardBudgetSummary"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:padding="21dp"
-            app:cardCornerRadius="19dp"
-            app:cardElevation="10dp"
-            app:strokeWidth="1dp"
-            app:strokeColor="#CBD5E1"
-            app:cardBackgroundColor="#0E1A2B">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/tvMonthName"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="January 2025"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textColor="#FFFFFF" />
-
-                <TextView
-                    android:id="@+id/tvSpentBudget"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="₹0"
-                    android:textStyle="bold"
-                    android:textColor="@color/black"
-                    android:textSize="18sp"/>
-
-                <TextView
-                    android:id="@+id/tvPercentage"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="0% used"
-                    android:textColor="@color/black"
-                    android:textSize="14sp"/>
-
-
-                <TextView
-                    android:id="@+id/tvTotalBudget"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="₹ 0.00"
-                    android:textSize="28sp"
-                    android:textStyle="bold"
-                    android:textColor="#FFFFFF"
-                    android:layout_marginTop="6dp" />
-
-                <TextView
-                    android:id="@+id/tvRemainingBudget"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Remaining: ₹ 0.00"
-                    android:textSize="15sp"
-                    android:textColor="#C2C9D6"
-                    android:layout_marginTop="4dp" />
-
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-
-        <!-- ===================== ADD CATEGORY BUTTON ===================== -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnAddCategory"
+        <!-- ================= PERIOD TYPE ================= -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Add Category"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"
-            android:backgroundTint="#0EA5E9"
-            app:cornerRadius="20dp" />
+            android:orientation="horizontal">
 
+            <Button
+                android:id="@+id/btnMonthly"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="Monthly"
+                android:backgroundTint="#1E88E5"
+                android:textColor="@android:color/white" />
 
-        <!-- ===================== CATEGORY TITLE ===================== -->
+            <Button
+                android:id="@+id/btnYearly"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="Yearly"
+                android:backgroundTint="#1F2A38"
+                android:textColor="@android:color/white" />
+        </LinearLayout>
+
+        <!-- ================= MONTH / YEAR ================= -->
         <TextView
-            android:id="@+id/tvCategorySectionHeader"
+            android:id="@+id/tvSelectedMonth"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="16dp"
+            android:gravity="center_vertical"
+            android:padding="12dp"
+            android:text="January 2026"
+            android:textColor="@android:color/white"
+            android:background="#1F2A38" />
+
+        <!-- ================= TOTAL BUDGET ================= -->
+        <TextView
+            android:layout_marginTop="20dp"
+            android:text="Total Budget"
+            android:textColor="#B0BEC5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <EditText
+            android:id="@+id/etTotalBudget"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:hint="Enter amount"
+            android:inputType="number"
+            android:textColor="@android:color/white"
+            android:textColorHint="#78909C"
+            android:background="#1F2A38"
+            android:padding="12dp" />
+
+        <!-- ================= CARRY FORWARD ================= -->
+        <CheckBox
+            android:id="@+id/cbCarryForward"
+            android:layout_marginTop="12dp"
+            android:text="Carry forward unused budget"
+            android:textColor="@android:color/white"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <!-- ================= SAVE BUDGET ================= -->
+        <Button
+            android:id="@+id/btnSaveBudget"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="24dp"
+            android:text="SAVE BUDGET"
+            android:backgroundTint="#1E88E5"
+            android:textColor="@android:color/white" />
+
+        <!-- ================= SUMMARY CARD ================= -->
+        <LinearLayout
+            android:id="@+id/cardBudgetSummary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Budget Categories"
-            android:textColor="#0A0F1C"
-            android:textStyle="bold"
+            android:layout_marginTop="24dp"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:background="#162434"
+            android:visibility="gone">
+
+            <TextView
+                android:text="Budget Summary"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/tvSummaryMonth"
+                android:text="January 2026"
+                android:textColor="#B0BEC5"
+                android:layout_marginTop="4dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/tvSummaryAmount"
+                android:text="₹ 0"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:layout_marginTop="12dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/tvSummaryCarry"
+                android:text="Carry forward: No"
+                android:textColor="#90CAF9"
+                android:layout_marginTop="6dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- ================= CATEGORY WISE ================= -->
+        <TextView
+            android:layout_marginTop="24dp"
+            android:text="Category-wise Budget"
             android:textSize="18sp"
-            android:layout_marginTop="24dp" />
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
-
-        <!-- ===================== CATEGORY LIST ===================== -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvCategories"
+        <!-- CATEGORY ROWS ONLY -->
+        <LinearLayout
+            android:id="@+id/layoutCategoryBudgets"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:clipToPadding="false"
-            android:nestedScrollingEnabled="false" />
+            android:orientation="vertical"
+            android:layout_marginTop="8dp">
 
+            <!-- Food -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="8dp">
 
-        <!-- Extra Padding at bottom so last item not hidden behind nav -->
-        <View
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Food"
+                    android:textColor="@android:color/white" />
+
+                <EditText
+                    android:layout_width="100dp"
+                    android:layout_height="40dp"
+                    android:hint="₹"
+                    android:inputType="number"
+                    android:textColor="@android:color/white"
+                    android:textColorHint="#78909C"
+                    android:background="#1F2A38"
+                    android:padding="8dp" />
+            </LinearLayout>
+
+            <!-- Transport -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="8dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Transport"
+                    android:textColor="@android:color/white" />
+
+                <EditText
+                    android:layout_width="100dp"
+                    android:layout_height="40dp"
+                    android:hint="₹"
+                    android:inputType="number"
+                    android:textColor="@android:color/white"
+                    android:textColorHint="#78909C"
+                    android:background="#1F2A38"
+                    android:padding="8dp" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- ================= REMAINING & SAVE CATEGORY ================= -->
+        <TextView
+            android:id="@+id/tvRemainingBudget"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Remaining: ₹ 0"
+            android:textColor="#90CAF9"
+            android:layout_marginTop="6dp"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/btnSaveCategoryBudget"
             android:layout_width="match_parent"
-            android:layout_height="100dp" />
+            android:layout_height="52dp"
+            android:layout_marginTop="24dp"
+            android:text="SAVE CATEGORY BUDGET"
+            android:backgroundTint="#512DA8"
+            android:textColor="@android:color/white" />
 
     </LinearLayout>
-</androidx.core.widget.NestedScrollView>
+</ScrollView>

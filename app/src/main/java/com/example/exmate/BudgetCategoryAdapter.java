@@ -3,79 +3,69 @@ package com.example.exmate;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class BudgetCategoryAdapter
-        extends RecyclerView.Adapter<BudgetCategoryAdapter.CategoryViewHolder> {
+        extends RecyclerView.Adapter<BudgetCategoryAdapter.Holder> {
 
-    private final List<BudgetCategoryModel> categoryList;
+    private final List<BudgetCategoryModel> list;
 
-    public BudgetCategoryAdapter(List<BudgetCategoryModel> categoryList) {
-        this.categoryList = categoryList;
+    public BudgetCategoryAdapter(List<BudgetCategoryModel> list) {
+        this.list = list;
     }
 
     @NonNull
     @Override
-    public CategoryViewHolder onCreateViewHolder(
-            @NonNull ViewGroup parent,
-            int viewType) {
+    public Holder onCreateViewHolder(
+            @NonNull ViewGroup parent, int viewType) {
 
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_budget_category, parent, false);
-
-        return new CategoryViewHolder(view);
+        return new Holder(view);
     }
 
     @Override
     public void onBindViewHolder(
-            @NonNull CategoryViewHolder holder,
-            int position) {
+            @NonNull Holder holder, int position) {
 
-        BudgetCategoryModel model = categoryList.get(position);
+        BudgetCategoryModel model = list.get(position);
 
-        holder.txtCategoryName.setText(model.getName());
-        holder.imgCategory.setImageResource(model.getIconRes());
+        holder.tvName.setText(model.getName());
 
-        // ✅ Selection UI (simple + safe)
-        holder.itemView.setAlpha(model.isSelected() ? 1f : 0.6f);
+        // 🔥 VERY IMPORTANT: remove old listener before setChecked
+        holder.cb.setOnCheckedChangeListener(null);
+        holder.cb.setChecked(model.isSelected());
 
-        holder.itemView.setOnClickListener(v -> {
-            model.setSelected(!model.isSelected());
-            notifyItemChanged(position);
-        });
+        holder.cb.setOnCheckedChangeListener(
+                (buttonView, isChecked) -> {
+                    model.setSelected(isChecked);
+                }
+        );
     }
 
     @Override
     public int getItemCount() {
-        return categoryList.size();
+        return list.size();
     }
 
-    // ================= VIEW HOLDER =================
-    static class CategoryViewHolder extends RecyclerView.ViewHolder {
+    static class Holder extends RecyclerView.ViewHolder {
 
-        ImageView imgCategory;
-        TextView txtCategoryName;
+        TextView tvName;
+        CheckBox cb;
+        ImageView iv;
 
-        public CategoryViewHolder(@NonNull View itemView) {
-            super(itemView);
-            imgCategory = itemView.findViewById(R.id.imgCategory);
-            txtCategoryName = itemView.findViewById(R.id.txtCategoryName);
+        Holder(@NonNull View v) {
+            super(v);
+            tvName = v.findViewById(R.id.tvCategoryName);
+            cb = v.findViewById(R.id.cbCategory);
+            iv = v.findViewById(R.id.ivCategoryIcon);
         }
-    }
-
-    // ================= HELPER =================
-    public List<BudgetCategoryModel> getSelectedCategories() {
-        List<BudgetCategoryModel> selected = new ArrayList<>();
-        for (BudgetCategoryModel m : categoryList) {
-            if (m.isSelected()) selected.add(m);
-        }
-        return selected;
     }
 }

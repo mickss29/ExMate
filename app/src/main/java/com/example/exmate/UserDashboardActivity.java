@@ -16,6 +16,9 @@ public class UserDashboardActivity extends AppCompatActivity {
 
     private BottomNavigationView bottomNav;
 
+    // 🔒 Guard flag to prevent AppLock loop
+    private boolean isLockScreenOpened = false;
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -26,9 +29,12 @@ public class UserDashboardActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        if (AppLockManager.isEnabled(this)
+        // ✅ LOOP-SAFE AppLock
+        if (!isLockScreenOpened
+                && AppLockManager.isEnabled(this)
                 && AppLockManager.shouldAutoLock(this)) {
 
+            isLockScreenOpened = true; // prevent loop
             AppLockManager.setUnlocked(this, false);
             startActivity(new Intent(this, AppLockActivity.class));
         }
@@ -76,12 +82,9 @@ public class UserDashboardActivity extends AppCompatActivity {
             }
 
             if (id == R.id.nav_add) {
-                startActivity(
-                        new Intent(this, AddTransactionActivity.class)
-                );
+                startActivity(new Intent(this, AddTransactionActivity.class));
                 return true;
-
-        }
+            }
 
             if (id == R.id.nav_reports) {
                 loadFragment(new ReportsFragment());
@@ -106,7 +109,7 @@ public class UserDashboardActivity extends AppCompatActivity {
                 .commit();
     }
 
-    // ================== SCHEDULERS / NOTIFS — UNTOUCHED ==================
+    // ================== NOTIFICATIONS (UNCHANGED) ==================
 
     private void createDailyReminderChannel() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -127,8 +130,8 @@ public class UserDashboardActivity extends AppCompatActivity {
     }
 
     private void scheduleDailyReminder() {
-        android.app.AlarmManager alarmManager =
-                (android.app.AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        AlarmManager alarmManager =
+                (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 
         Intent intent = new Intent(this, DailyReminderReceiver.class);
 
@@ -175,8 +178,8 @@ public class UserDashboardActivity extends AppCompatActivity {
     }
 
     private void scheduleDailySummary() {
-        android.app.AlarmManager alarmManager =
-                (android.app.AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        AlarmManager alarmManager =
+                (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 
         Intent intent = new Intent(this, DailySummaryReceiver.class);
 
@@ -223,8 +226,8 @@ public class UserDashboardActivity extends AppCompatActivity {
     }
 
     private void scheduleMorningGreeting() {
-        android.app.AlarmManager alarmManager =
-                (android.app.AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        AlarmManager alarmManager =
+                (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 
         Intent intent = new Intent(this, MorningGreetingReceiver.class);
 

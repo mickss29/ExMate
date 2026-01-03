@@ -1,41 +1,53 @@
 package com.example.exmate;
 
+import android.app.DatePickerDialog;
+import android.graphics.Color;
 import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.text.DateFormatSymbols;
+import java.util.Calendar;
 
 public class BudgetFragment extends Fragment {
 
-    private RecyclerView recyclerCategories;
-    private BudgetCategoryAdapter categoryAdapter;
-    private List<BudgetCategoryModel> categoryList;
+    // ===== Period =====
+    private Button btnMonthly, btnYearly;
+    private TextView tvSelectedMonth;
 
+    // ===== Budget =====
     private EditText etTotalBudget;
-    private Button btnSaveBudget;
-    private TextView tabMonthly, tabYearly, txtBudgetFor;
+    private CheckBox cbCarryForward;
 
-    @Nullable
-    @Override
-    public View onCreateView(
-            @NonNull LayoutInflater inflater,
-            @Nullable ViewGroup container,
-            @Nullable Bundle savedInstanceState) {
+    // ===== Buttons =====
+    private Button btnSaveBudget, btnSaveCategoryBudget;
 
-        return inflater.inflate(R.layout.fragment_budget, container, false);
+    // ===== Summary =====
+    private LinearLayout cardBudgetSummary;
+    private TextView tvSummaryMonth, tvSummaryAmount, tvSummaryCarry;
+
+    // ===== Categories =====
+    private LinearLayout layoutCategoryBudgets;
+    private TextView tvRemainingBudget;
+
+    // ===== State =====
+    private boolean isMonthly = true;
+    private int selectedYear, selectedMonth;
+
+    public BudgetFragment() {
+        super(R.layout.budget_fragment);
     }
 
     @Override
@@ -43,96 +55,212 @@ public class BudgetFragment extends Fragment {
             @NonNull View view,
             @Nullable Bundle savedInstanceState) {
 
-        super.onViewCreated(view, savedInstanceState);
+        // ===== Bind Views =====
+        btnMonthly = view.findViewById(R.id.btnMonthly);
+        btnYearly = view.findViewById(R.id.btnYearly);
+        tvSelectedMonth = view.findViewById(R.id.tvSelectedMonth);
 
-        initViews(view);
-        setupCategoryGrid();
-        setupToggle();
-        setupSave();
-    }
-
-    // ================= INIT =================
-    private void initViews(View view) {
-        recyclerCategories = view.findViewById(R.id.recyclerBudgetCategories);
         etTotalBudget = view.findViewById(R.id.etTotalBudget);
+        cbCarryForward = view.findViewById(R.id.cbCarryForward);
+
         btnSaveBudget = view.findViewById(R.id.btnSaveBudget);
+        btnSaveCategoryBudget = view.findViewById(R.id.btnSaveCategoryBudget);
 
-        tabMonthly = view.findViewById(R.id.tabMonthly);
-        tabYearly = view.findViewById(R.id.tabYearly);
-        txtBudgetFor = view.findViewById(R.id.txtBudgetFor);
+        cardBudgetSummary = view.findViewById(R.id.cardBudgetSummary);
+        tvSummaryMonth = view.findViewById(R.id.tvSummaryMonth);
+        tvSummaryAmount = view.findViewById(R.id.tvSummaryAmount);
+        tvSummaryCarry = view.findViewById(R.id.tvSummaryCarry);
+
+        layoutCategoryBudgets = view.findViewById(R.id.layoutCategoryBudgets);
+        tvRemainingBudget = view.findViewById(R.id.tvRemainingBudget);
+
+        // ===== Init =====
+        initDefaultDate();
+        attachCategoryWatchers();
+
+        // ===== Clicks =====
+        btnMonthly.setOnClickListener(v -> selectMonthly());
+        btnYearly.setOnClickListener(v -> selectYearly());
+        tvSelectedMonth.setOnClickListener(v -> openPicker());
+
+        btnSaveBudget.setOnClickListener(v -> saveMainBudget());
+
+        // ⭐ FINAL ACTION
+        btnSaveCategoryBudget.setOnClickListener(
+                v -> openBudgetAnalysisScreen()
+        );
     }
 
-    // ================= CATEGORY GRID =================
-    private void setupCategoryGrid() {
+    // ================= DATE =================
 
-        categoryList = new ArrayList<>();
-
-        categoryList.add(new BudgetCategoryModel("Food", R.drawable.ic_food));
-        categoryList.add(new BudgetCategoryModel("Transport", R.drawable.ic_transport));
-        categoryList.add(new BudgetCategoryModel("Shopping", R.drawable.ic_shopping));
-        categoryList.add(new BudgetCategoryModel("Bills", R.drawable.ic_bills));
-        categoryList.add(new BudgetCategoryModel("Entertainment", R.drawable.ic_entertainment));
-        categoryList.add(new BudgetCategoryModel("Health", R.drawable.ic_health));
-        categoryList.add(new BudgetCategoryModel("Education", R.drawable.ic_education));
-        categoryList.add(new BudgetCategoryModel("Travel", R.drawable.ic_transport));
-        categoryList.add(new BudgetCategoryModel("Other", R.drawable.ic_category_default));
-
-        categoryAdapter = new BudgetCategoryAdapter(categoryList);
-
-        recyclerCategories.setLayoutManager(new GridLayoutManager(requireContext(), 3));
-        recyclerCategories.setAdapter(categoryAdapter);
-        recyclerCategories.setNestedScrollingEnabled(false);
+    private void initDefaultDate() {
+        Calendar cal = Calendar.getInstance();
+        selectedYear = cal.get(Calendar.YEAR);
+        selectedMonth = cal.get(Calendar.MONTH);
+        updateDateText();
     }
 
-    // ================= MONTHLY / YEARLY =================
-    private void setupToggle() {
-
-        tabMonthly.setOnClickListener(v -> {
-            tabMonthly.setBackgroundResource(R.drawable.bg_tab_active);
-            tabYearly.setBackground(null);
-
-            tabMonthly.setTextColor(getResources().getColor(R.color.black));
-            tabYearly.setTextColor(getResources().getColor(R.color.white));
-
-            txtBudgetFor.setText("January 2026");
-        });
-
-        tabYearly.setOnClickListener(v -> {
-            tabYearly.setBackgroundResource(R.drawable.bg_tab_active);
-            tabMonthly.setBackground(null);
-
-            tabYearly.setTextColor(getResources().getColor(R.color.black));
-            tabMonthly.setTextColor(getResources().getColor(R.color.white));
-
-            txtBudgetFor.setText("Year 2026");
-        });
+    private void updateDateText() {
+        if (isMonthly) {
+            String month =
+                    new DateFormatSymbols().getMonths()[selectedMonth];
+            tvSelectedMonth.setText(month + " " + selectedYear);
+        } else {
+            tvSelectedMonth.setText("Year " + selectedYear);
+        }
     }
 
-    // ================= SAVE =================
-    private void setupSave() {
+    private void selectMonthly() {
+        isMonthly = true;
+        btnMonthly.setBackgroundTintList(
+                android.content.res.ColorStateList.valueOf(0xFF1E88E5));
+        btnYearly.setBackgroundTintList(
+                android.content.res.ColorStateList.valueOf(0xFF1F2A38));
+        updateDateText();
+    }
 
-        btnSaveBudget.setOnClickListener(v -> {
+    private void selectYearly() {
+        isMonthly = false;
+        btnYearly.setBackgroundTintList(
+                android.content.res.ColorStateList.valueOf(0xFF1E88E5));
+        btnMonthly.setBackgroundTintList(
+                android.content.res.ColorStateList.valueOf(0xFF1F2A38));
+        updateDateText();
+    }
 
-            String budgetStr = etTotalBudget.getText().toString().trim();
-            if (budgetStr.isEmpty()) {
-                etTotalBudget.setError("Enter budget amount");
-                return;
+    private void openPicker() {
+        DatePickerDialog dialog =
+                new DatePickerDialog(
+                        requireContext(),
+                        (view, year, month, day) -> {
+                            selectedYear = year;
+                            selectedMonth = month;
+                            updateDateText();
+                        },
+                        selectedYear,
+                        selectedMonth,
+                        1
+                );
+        dialog.show();
+    }
+
+    // ================= CATEGORY WATCH =================
+
+    private void attachCategoryWatchers() {
+        for (int i = 0; i < layoutCategoryBudgets.getChildCount(); i++) {
+
+            View row = layoutCategoryBudgets.getChildAt(i);
+            if (!(row instanceof LinearLayout)) continue;
+
+            LinearLayout line = (LinearLayout) row;
+            if (line.getChildCount() < 2) continue;
+
+            View v = line.getChildAt(1);
+            if (v instanceof EditText) {
+                ((EditText) v).addTextChangedListener(new CategoryWatcher());
             }
+        }
+    }
 
-            List<BudgetCategoryModel> selected =
-                    categoryAdapter.getSelectedCategories();
+    private class CategoryWatcher implements TextWatcher {
+        @Override public void beforeTextChanged(CharSequence s,int a,int b,int c){}
+        @Override public void onTextChanged(CharSequence s,int a,int b,int c){
+            updateRemaining();
+        }
+        @Override public void afterTextChanged(Editable s){}
+    }
 
-            if (selected.isEmpty()) {
-                Toast.makeText(requireContext(),
-                        "Select at least one category",
-                        Toast.LENGTH_SHORT).show();
-                return;
+    private void updateRemaining() {
+
+        String totalStr = etTotalBudget.getText().toString().trim();
+        if (TextUtils.isEmpty(totalStr)) {
+            tvRemainingBudget.setText("Remaining: ₹ 0");
+            tvRemainingBudget.setTextColor(Color.GRAY);
+            resetRowColors();
+            return;
+        }
+
+        int total = Integer.parseInt(totalStr);
+        int used = 0;
+
+        for (int i = 0; i < layoutCategoryBudgets.getChildCount(); i++) {
+
+            View row = layoutCategoryBudgets.getChildAt(i);
+            if (!(row instanceof LinearLayout)) continue;
+
+            LinearLayout line = (LinearLayout) row;
+            View v = line.getChildAt(1);
+
+            if (v instanceof EditText) {
+                String val = ((EditText) v).getText().toString().trim();
+                if (!val.isEmpty()) used += Integer.parseInt(val);
             }
+        }
 
-            // 🔥 For now just confirm (Firebase later)
-            Toast.makeText(requireContext(),
-                    "Budget saved (" + selected.size() + " categories)",
-                    Toast.LENGTH_SHORT).show();
-        });
+        int remaining = total - used;
+        tvRemainingBudget.setText("Remaining: ₹ " + remaining);
+
+        if (remaining < 0) {
+            tvRemainingBudget.setTextColor(Color.RED);
+            highlightRows();
+        } else {
+            tvRemainingBudget.setTextColor(Color.parseColor("#90CAF9"));
+            resetRowColors();
+        }
+    }
+
+    private void highlightRows() {
+        for (int i = 0; i < layoutCategoryBudgets.getChildCount(); i++) {
+            View row = layoutCategoryBudgets.getChildAt(i);
+            if (row instanceof LinearLayout) {
+                row.setBackgroundColor(Color.parseColor("#33FF5252"));
+            }
+        }
+    }
+
+    private void resetRowColors() {
+        for (int i = 0; i < layoutCategoryBudgets.getChildCount(); i++) {
+            View row = layoutCategoryBudgets.getChildAt(i);
+            if (row instanceof LinearLayout) {
+                row.setBackgroundColor(Color.TRANSPARENT);
+            }
+        }
+    }
+
+    // ================= SAVE MAIN =================
+
+    private void saveMainBudget() {
+
+        if (TextUtils.isEmpty(etTotalBudget.getText().toString())) {
+            etTotalBudget.setError("Enter total budget");
+            return;
+        }
+
+        cardBudgetSummary.setVisibility(View.VISIBLE);
+        tvSummaryMonth.setText(tvSelectedMonth.getText().toString());
+        tvSummaryAmount.setText("₹ " + etTotalBudget.getText().toString());
+        tvSummaryCarry.setText(
+                "Carry forward: " +
+                        (cbCarryForward.isChecked() ? "Yes" : "No"));
+
+        Toast.makeText(
+                requireContext(),
+                "Budget saved",
+                Toast.LENGTH_SHORT
+        ).show();
+    }
+
+    // ================= NAVIGATION =================
+
+    private void openBudgetAnalysisScreen() {
+        requireActivity()
+                .getSupportFragmentManager()
+                .beginTransaction()
+                .replace(
+                        R.id.fragmentContainer,
+                        new BudgetAnalysisFragment()
+                )
+                .addToBackStack(null)
+                .commit();
     }
 }
