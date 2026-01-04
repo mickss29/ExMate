@@ -1,7 +1,11 @@
 package com.example.exmate;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.os.Build;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,7 +57,7 @@ public class BudgetCategoryAdapter
         h.tvName.setText(m.getName());
         h.tvBudget.setText("Budget: ₹" + budget);
 
-        // ===== SAFE % CALCULATION (FLOAT BASED) =====
+        // ===== SAFE % CALCULATION =====
         int percent;
         if (budget <= 0) {
             percent = 0;
@@ -70,8 +74,7 @@ public class BudgetCategoryAdapter
             int left = budget - spent;
             h.tvStatus.setText(
                     "You are ₹" + left + " under your limit");
-            h.tvStatus.setTextColor(
-                    Color.parseColor("#16A34A"));
+            h.tvStatus.setTextColor(Color.parseColor("#16A34A"));
 
             h.progressBar.getProgressDrawable()
                     .setColorFilter(
@@ -82,8 +85,7 @@ public class BudgetCategoryAdapter
         } else if (spent == budget) {
 
             h.tvStatus.setText("You have used full budget");
-            h.tvStatus.setTextColor(
-                    Color.parseColor("#F59E0B"));
+            h.tvStatus.setTextColor(Color.parseColor("#F59E0B"));
 
             h.progressBar.getProgressDrawable()
                     .setColorFilter(
@@ -96,18 +98,37 @@ public class BudgetCategoryAdapter
             int over = spent - budget;
             h.tvStatus.setText(
                     "Over budget by ₹" + over);
-            h.tvStatus.setTextColor(
-                    Color.parseColor("#DC2626"));
+            h.tvStatus.setTextColor(Color.parseColor("#DC2626"));
 
             h.progressBar.getProgressDrawable()
                     .setColorFilter(
                             Color.parseColor("#DC2626"),
                             PorterDuff.Mode.SRC_IN
                     );
+
+            // ===== 🔔 HAPTIC FEEDBACK (SUBTLE) =====
+            triggerHaptic(h.itemView.getContext());
         }
 
         h.btnAction.setOnClickListener(v ->
                 listener.onClick(m));
+    }
+
+    // ===== HAPTIC METHOD =====
+    private void triggerHaptic(Context context) {
+
+        Vibrator vibrator =
+                (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+
+        if (vibrator == null || !vibrator.hasVibrator()) return;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(
+                    VibrationEffect.createOneShot(
+                            40, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            vibrator.vibrate(40);
+        }
     }
 
     @Override

@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.*;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.*;
@@ -42,6 +43,10 @@ public class BudgetFragment extends Fragment {
 
 
     private RecyclerView rvCategories;
+    private ImageView btnPrevMonth, btnNextMonth;
+
+    private Calendar calendar = Calendar.getInstance();
+
 
 
 
@@ -58,6 +63,9 @@ public class BudgetFragment extends Fragment {
         tvSpent = view.findViewById(R.id.tvSpent);
         tvAvailable = view.findViewById(R.id.tvAvailable);
         pieChart = view.findViewById(R.id.pieChart);
+        btnPrevMonth = view.findViewById(R.id.btnPrevMonth);
+        btnNextMonth = view.findViewById(R.id.btnNextMonth);
+        tvMonthTitle = view.findViewById(R.id.tvMonthTitle);
 
         recyclerView = view.findViewById(R.id.rvCategories);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -88,6 +96,16 @@ public class BudgetFragment extends Fragment {
 
         monthKey = new SimpleDateFormat("yyyy-MM", Locale.getDefault())
                 .format(new Date());
+        btnPrevMonth.setOnClickListener(v -> {
+            calendar.add(Calendar.MONTH, -1);
+            updateMonth();
+        });
+
+        btnNextMonth.setOnClickListener(v -> {
+            calendar.add(Calendar.MONTH, 1);
+            updateMonth();
+        });
+
 
 // ✅ ONLY load budgets here
 // expenses will be loaded AFTER budgets finish loading
@@ -218,6 +236,11 @@ public class BudgetFragment extends Fragment {
         if (pieChart != null) {
             updatePieChart(totalBudget, totalSpent);
         }
+        animateAmount(tvTotalBudget, 0, totalBudget);
+        animateAmount(tvSpent, 0, totalSpent);
+        animateAmount(tvAvailable, 0, Math.max(totalBudget - totalSpent, 0));
+
+
     }
 
 
@@ -252,11 +275,14 @@ public class BudgetFragment extends Fragment {
     }
     private void updatePieChart(int totalBudget, int totalSpent) {
 
+        if (pieChart == null) return;
+
         int remaining = Math.max(totalBudget - totalSpent, 0);
 
-        float percentLeft = totalBudget == 0 ? 0 :
+        float percentLeft = totalBudget == 0 ? 0f :
                 (remaining * 100f) / totalBudget;
 
+        // ===== ENTRIES =====
         List<com.github.mikephil.charting.data.PieEntry> entries =
                 new ArrayList<>();
 
@@ -271,39 +297,63 @@ public class BudgetFragment extends Fragment {
         dataSet.setSliceSpace(3f);
         dataSet.setDrawValues(false);
 
-        // 🎨 COLORS
-        dataSet.setColors(
-                android.graphics.Color.parseColor("#16A34A"), // Green
-                android.graphics.Color.parseColor("#E5E7EB")  // Light grey
-        );
+        // ===== COLOR LOGIC =====
+        int leftColor;
+        int spentColor = android.graphics.Color.parseColor("#E5E7EB");
+
+        if (percentLeft > 40) {
+            leftColor = android.graphics.Color.parseColor("#16A34A"); // green
+        } else if (percentLeft > 15) {
+            leftColor = android.graphics.Color.parseColor("#F59E0B"); // orange
+        } else {
+            leftColor = android.graphics.Color.parseColor("#DC2626"); // red
+        }
+
+        dataSet.setColors(leftColor, spentColor);
 
         com.github.mikephil.charting.data.PieData data =
                 new com.github.mikephil.charting.data.PieData(dataSet);
 
         pieChart.setData(data);
 
-        // ===== CENTER TEXT =====
-        pieChart.setDrawCenterText(true);
-        pieChart.setCenterText(
-                Math.round(percentLeft) + "%\nLeft");
-        pieChart.setCenterTextSize(18f);
-        pieChart.setCenterTextColor(
-                android.graphics.Color.parseColor("#16A34A"));
-
         // ===== DONUT STYLE =====
-        pieChart.setHoleRadius(70f);
-        pieChart.setTransparentCircleRadius(74f);
+        pieChart.setDrawCenterText(true);
+        pieChart.setHoleRadius(72f);
+        pieChart.setTransparentCircleRadius(76f);
         pieChart.setDrawEntryLabels(false);
         pieChart.getDescription().setEnabled(false);
         pieChart.getLegend().setEnabled(false);
         pieChart.setRotationEnabled(false);
 
-        // ===== SMOOTH ANIMATION =====
-        pieChart.animateY(900,
-                com.github.mikephil.charting.animation.Easing.EaseInOutQuad);
+        // ===== CENTER TEXT BASE =====
+        pieChart.setCenterText("0%\nLeft");
+        pieChart.setCenterTextSize(18f);
+        pieChart.setCenterTextColor(leftColor);
+
+        // ===== CENTER TEXT ANIMATION =====
+        android.animation.ValueAnimator animator =
+                android.animation.ValueAnimator.ofFloat(0f, percentLeft);
+
+        animator.setDuration(900);
+        animator.setInterpolator(
+                new android.view.animation.DecelerateInterpolator());
+
+        animator.addUpdateListener(a -> {
+            int value = Math.round((float) a.getAnimatedValue());
+            pieChart.setCenterText(value + "%\nLeft");
+        });
+
+        animator.start();
+
+        // ===== CHART ANIMATION =====
+        pieChart.animateY(
+                900,
+                com.github.mikephil.charting.animation.Easing.EaseInOutCubic
+        );
 
         pieChart.invalidate();
     }
+
     private String getMonthTitle() {
         java.text.SimpleDateFormat sdf =
                 new java.text.SimpleDateFormat("MMMM", java.util.Locale.getDefault());
@@ -332,6 +382,41 @@ public class BudgetFragment extends Fragment {
             return "";
         }
     }
+    private void animateAmount(TextView tv, int from, int to) {
+
+        if (tv == null) return;   // 🔥 IMPORTANT FIX
+
+        android.animation.ValueAnimator animator =
+                android.animation.ValueAnimator.ofInt(from, to);
+
+        animator.setDuration(700);
+        animator.setInterpolator(
+                new android.view.animation.DecelerateInterpolator());
+
+        animator.addUpdateListener(animation -> {
+            if (tv != null) { // extra safety during lifecycle
+                int value = (int) animation.getAnimatedValue();
+                tv.setText("₹" + value);
+            }
+        });
+
+        animator.start();
+    }
+
+
+
+    private void updateMonth() {
+        SimpleDateFormat titleFormat =
+                new SimpleDateFormat("MMMM yyyy", Locale.getDefault());
+        tvMonthTitle.setText(titleFormat.format(calendar.getTime()));
+
+        monthKey = new SimpleDateFormat(
+                "yyyy-MM", Locale.getDefault())
+                .format(calendar.getTime());
+
+        loadBudgets(); // reload data for selected month
+    }
+
 
 
 }
