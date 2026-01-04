@@ -79,7 +79,7 @@
                 android:layout_height="48dp"
                 android:hint="Enter amount"
                 android:inputType="number"
-                android:textColor="#0E1A2B"
+                android:textColor="#FFFFFF"
                 android:textColorHint="#64748B"
                 android:padding="12dp"
                 android:background="#1C2533"/>
