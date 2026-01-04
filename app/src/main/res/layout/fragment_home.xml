@@ -266,7 +266,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="22dp"
-                app:cardBackgroundColor="#FFFFFF"
+                app:cardBackgroundColor="#0E1A2B"
                 app:cardCornerRadius="26dp"
                 app:cardElevation="8dp">
 
@@ -307,13 +307,13 @@
                             android:layout_height="wrap_content"
                             android:text="January Budget"
                             android:textStyle="bold"
-                            android:textColor="#0E1A2B"/>
+                            android:textColor="#FFFFFF"/>
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="₹40,000 left of ₹50,000"
-                            android:textColor="#64748B"
+                            android:textColor="#FFFFFF"
                             android:layout_marginTop="4dp"/>
 
                         <LinearLayout

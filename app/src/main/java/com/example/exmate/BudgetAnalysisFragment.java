@@ -1,10 +1,8 @@
 package com.example.exmate;
 
-import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -13,46 +11,42 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.*;
-
-import java.text.SimpleDateFormat;
-import java.util.*;
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
-import com.github.mikephil.charting.formatter.PercentFormatter;
-import com.github.mikephil.charting.utils.ColorTemplate;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.*;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-
-
 
 public class BudgetAnalysisFragment extends Fragment {
 
-    private TextView tvTotalBudget, tvUnallocatedBudget,
-            tvTotalSpent, tvAvailableBudget;
-
-    private int totalBudget = 0;
-
-
-    private int allocatedBudget = 0;
-    private int totalSpent = 0;
+    // ===== UI =====
+    private TextView tvTotalBudget;
+    private TextView tvTotalSpent;
+    private TextView tvAvailableBudget;
+    private TextView tvUnallocatedBudget;
     private PieChart pieChartBudget;
     private RecyclerView rvBudgetCategories;
+
+    // ===== DATA =====
     private BudgetCategoryAdapter adapter;
     private final List<BudgetCategoryModel> categoryList = new ArrayList<>();
 
-
-
+    private int totalBudget = 0;
+    private int totalSpent = 0;
 
     public BudgetAnalysisFragment() {
         super(R.layout.fragment_budget_analysis);
@@ -63,11 +57,13 @@ public class BudgetAnalysisFragment extends Fragment {
             @NonNull View view,
             @Nullable Bundle savedInstanceState) {
 
+        // ===== Bind views =====
         tvTotalBudget = view.findViewById(R.id.tvTotalBudget);
-        tvUnallocatedBudget = view.findViewById(R.id.tvUnallocatedBudget);
         tvTotalSpent = view.findViewById(R.id.tvTotalSpent);
         tvAvailableBudget = view.findViewById(R.id.tvAvailableBudget);
+        tvUnallocatedBudget = view.findViewById(R.id.tvUnallocatedBudget);
         pieChartBudget = view.findViewById(R.id.pieChartBudget);
+
         rvBudgetCategories = view.findViewById(R.id.rvBudgetCategories);
         rvBudgetCategories.setLayoutManager(
                 new LinearLayoutManager(requireContext())
@@ -75,88 +71,87 @@ public class BudgetAnalysisFragment extends Fragment {
 
         adapter = new BudgetCategoryAdapter(categoryList);
         rvBudgetCategories.setAdapter(adapter);
-        rvBudgetCategories = view.findViewById(R.id.rvBudgetCategories);
-        rvBudgetCategories.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-
-        adapter = new BudgetCategoryAdapter(categoryList);
-        rvBudgetCategories.setAdapter(adapter);
+        // ===== FAB (EDIT BUDGET) =====
         FloatingActionButton fab =
                 view.findViewById(R.id.fabEditBudget);
 
         fab.setOnClickListener(v -> {
+
+            // 🔒 lifecycle safety
+            if (!isAdded()) return;
+
             Bundle b = new Bundle();
             b.putBoolean("isEdit", true);
 
             BudgetFragment fragment = new BudgetFragment();
             fragment.setArguments(b);
 
-            requireActivity()
-                    .getSupportFragmentManager()
+            getParentFragmentManager()
                     .beginTransaction()
                     .replace(R.id.fragmentContainer, fragment)
-                    .addToBackStack(null)
+                    .addToBackStack("edit_budget")
                     .commit();
         });
 
-
-        loadCategoriesAndExpenses();
-
-
-
-
-        loadBudgetAndExpenses();
-        loadDummyCategories();
-
+        loadBudgetAndCategories();
     }
 
-    private void loadBudgetAndExpenses() {
+    // ================= LOAD BUDGET + CATEGORIES =================
+
+    private void loadBudgetAndCategories() {
 
         String uid = FirebaseAuth.getInstance().getUid();
         if (uid == null) return;
 
-        String monthKey = new SimpleDateFormat(
-                "yyyy-MM", Locale.getDefault())
-                .format(new Date());
-
-        DatabaseReference userRef =
+        DatabaseReference ref =
                 FirebaseDatabase.getInstance()
                         .getReference("users")
-                        .child(uid);
+                        .child(uid)
+                        .child("budgets")
+                        .child("monthly")
+                        .child(getCurrentMonthKey());
 
-        // ===== LOAD BUDGET =====
-        userRef.child("budgets")
-                .child("monthly")
-                .child(monthKey)
-                .addListenerForSingleValueEvent(
-                        new ValueEventListener() {
-                            @Override
-                            public void onDataChange(
-                                    @NonNull DataSnapshot snap) {
+        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
 
-                                if (!snap.exists()) return;
+                if (!snapshot.exists()) return;
 
-                                totalBudget =
-                                        snap.child("totalBudget")
-                                                .getValue(Integer.class);
+                Integer tb =
+                        snapshot.child("totalBudget")
+                                .getValue(Integer.class);
 
-                                allocatedBudget = 0;
-                                for (DataSnapshot c :
-                                        snap.child("categories")
-                                                .getChildren()) {
-                                    Integer val =
-                                            c.getValue(Integer.class);
-                                    if (val != null)
-                                        allocatedBudget += val;
-                                }
+                totalBudget = tb != null ? tb : 0;
 
+                categoryList.clear();
+                Map<String, BudgetCategoryModel> map = new HashMap<>();
 
-                            }
+                for (DataSnapshot ds :
+                        snapshot.child("categories").getChildren()) {
 
-                            @Override public void onCancelled(
-                                    @NonNull DatabaseError error) {}
-                        });
+                    String name = ds.getKey();
+                    Integer amt = ds.getValue(Integer.class);
+
+                    if (name == null || amt == null) continue;
+
+                    BudgetCategoryModel model =
+                            new BudgetCategoryModel(name, amt);
+
+                    map.put(name, model);
+                    categoryList.add(model);
+                }
+
+                loadExpenses(map);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+            }
+        });
     }
+
+    // ================= LOAD EXPENSES =================
 
     private void loadExpenses(
             Map<String, BudgetCategoryModel> categoryMap) {
@@ -176,9 +171,10 @@ public class BudgetAnalysisFragment extends Fragment {
                     public void onDataChange(
                             @NonNull DataSnapshot snapshot) {
 
-                        int totalSpent = 0;
+                        totalSpent = 0;
 
-                        for (DataSnapshot ds : snapshot.getChildren()) {
+                        for (DataSnapshot ds :
+                                snapshot.getChildren()) {
 
                             String category =
                                     ds.child("category")
@@ -203,7 +199,7 @@ public class BudgetAnalysisFragment extends Fragment {
                         }
 
                         adapter.notifyDataSetChanged();
-                        updateTopSummary(totalSpent);
+                        updateTopSummary();
                     }
 
                     @Override
@@ -213,106 +209,64 @@ public class BudgetAnalysisFragment extends Fragment {
                 });
     }
 
-    private void updateUI() {
+    // ================= UPDATE TOP SUMMARY =================
 
-        int unallocated = totalBudget - allocatedBudget;
+    private void updateTopSummary() {
+
+        int allocated = 0;
+        for (BudgetCategoryModel m : categoryList) {
+            allocated += m.getAmount();
+        }
+
+        int unallocated = totalBudget - allocated;
         int available = totalBudget - totalSpent;
 
         tvTotalBudget.setText("₹ " + totalBudget);
-        tvUnallocatedBudget.setText("₹ " + unallocated);
         tvTotalSpent.setText("₹ " + totalSpent);
         tvAvailableBudget.setText("₹ " + available);
+        tvUnallocatedBudget.setText(
+                "Unallocated\n₹" + unallocated
+        );
+
         setupDonutChart(totalBudget, totalSpent);
-
     }
 
-    private long getMonthStart() {
-        Calendar c = Calendar.getInstance();
-        c.set(Calendar.DAY_OF_MONTH, 1);
-        c.set(Calendar.HOUR_OF_DAY, 0);
-        c.set(Calendar.MINUTE, 0);
-        c.set(Calendar.SECOND, 0);
-        return c.getTimeInMillis();
-    }
+    // ================= PIE CHART =================
 
-    private long getMonthEnd() {
-        Calendar c = Calendar.getInstance();
-        c.set(Calendar.DAY_OF_MONTH,
-                c.getActualMaximum(Calendar.DAY_OF_MONTH));
-        c.set(Calendar.HOUR_OF_DAY, 23);
-        c.set(Calendar.MINUTE, 59);
-        c.set(Calendar.SECOND, 59);
-        return c.getTimeInMillis();
-    }
-    private void updateOverallProgress(
-            int totalBudget,
-            int totalSpent,
-            ProgressBar progressOverall,
-            TextView tvCenterText
-    ) {
-
-        if (totalBudget <= 0) {
-            progressOverall.setProgress(0);
-            tvCenterText.setText("0%");
-            return;
-        }
-
-        int left = totalBudget - totalSpent;
-        int percentLeft = (left * 100) / totalBudget;
-
-        progressOverall.setProgress(percentLeft);
-        tvCenterText.setText(percentLeft + "% Left");
-
-        if (percentLeft < 20) {
-            progressOverall.setProgressTintList(
-                    ColorStateList.valueOf(Color.parseColor("#E53935"))
-            );
-        } else if (percentLeft < 50) {
-            progressOverall.setProgressTintList(
-                    ColorStateList.valueOf(Color.parseColor("#FB8C00"))
-            );
-        } else {
-            progressOverall.setProgressTintList(
-                    ColorStateList.valueOf(Color.parseColor("#4CAF50"))
-            );
-        }
-    }
     private void setupDonutChart(int totalBudget, int totalSpent) {
 
         pieChartBudget.setUsePercentValues(true);
         pieChartBudget.getDescription().setEnabled(false);
         pieChartBudget.setDrawHoleEnabled(true);
-        pieChartBudget.setHoleRadius(75f);
-        pieChartBudget.setTransparentCircleRadius(80f);
+        pieChartBudget.setHoleRadius(70f);
         pieChartBudget.setRotationEnabled(false);
 
         int remaining = Math.max(totalBudget - totalSpent, 0);
 
-        ArrayList<PieEntry> entries = new ArrayList<>();
+        List<PieEntry> entries = new ArrayList<>();
         entries.add(new PieEntry(remaining, "Left"));
         entries.add(new PieEntry(totalSpent, "Spent"));
 
         PieDataSet dataSet = new PieDataSet(entries, "");
         dataSet.setSliceSpace(3f);
-        dataSet.setSelectionShift(5f);
 
-        // ===== COLORS BASED ON USAGE =====
         int percentUsed =
-                totalBudget == 0 ? 0 : (totalSpent * 100) / totalBudget;
+                totalBudget == 0 ? 0 :
+                        (totalSpent * 100) / totalBudget;
 
         if (percentUsed < 80) {
             dataSet.setColors(
-                    Color.parseColor("#16A34A"), // green
-                    Color.parseColor("#E5E7EB")  // light gray
+                    Color.parseColor("#16A34A"),
+                    Color.parseColor("#E5E7EB")
             );
         } else if (percentUsed < 100) {
             dataSet.setColors(
-                    Color.parseColor("#F59E0B"), // orange
+                    Color.parseColor("#F59E0B"),
                     Color.parseColor("#E5E7EB")
             );
         } else {
             dataSet.setColors(
-                    Color.parseColor("#EF4444"), // red
+                    Color.parseColor("#EF4444"),
                     Color.parseColor("#E5E7EB")
             );
         }
@@ -321,108 +275,21 @@ public class BudgetAnalysisFragment extends Fragment {
         data.setDrawValues(false);
 
         pieChartBudget.setData(data);
-
-        // ===== CENTER TEXT =====
-        int percentLeft =
-                totalBudget == 0 ? 0 : (remaining * 100) / totalBudget;
-
-        pieChartBudget.setCenterText(
-                percentLeft + "%\nLeft"
-        );
-        pieChartBudget.setCenterTextSize(16f);
-        pieChartBudget.setCenterTextColor(Color.parseColor("#111827"));
-
-        pieChartBudget.invalidate(); // refresh
+        pieChartBudget.invalidate();
     }
-    private void loadDummyCategories() {
-        categoryList.clear();
 
-        categoryList.add(new BudgetCategoryModel("Food", 3000));
-        categoryList.add(new BudgetCategoryModel("Transport", 1500));
-        categoryList.add(new BudgetCategoryModel("Entertainment", 2000));
-        categoryList.add(new BudgetCategoryModel("Health", 1000));
-
-        adapter.notifyDataSetChanged();
-    }
-    private void loadCategoriesAndExpenses() {
-
-        String uid = FirebaseAuth.getInstance().getUid();
-        if (uid == null) return;
-
-        // 1️⃣ Load budget categories first (from budget data)
-        DatabaseReference budgetRef =
-                FirebaseDatabase.getInstance()
-                        .getReference("users")
-                        .child(uid)
-                        .child("budgets")
-                        .child("monthly")
-                        .child(getCurrentMonthKey())
-                        .child("categories");
-
-        budgetRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-
-                categoryList.clear();
-                Map<String, BudgetCategoryModel> map = new HashMap<>();
-
-                // Load categories + budget
-                for (DataSnapshot ds : snapshot.getChildren()) {
-                    String name = ds.getKey();
-                    int budget = ds.getValue(Integer.class);
-
-                    BudgetCategoryModel model =
-                            new BudgetCategoryModel(name, budget);
-                    map.put(name, model);
-                    categoryList.add(model);
-                }
-
-                // 2️⃣ Load expenses and map spent
-                loadExpenses(map);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {}
-        });
-    }
-    private void updateTopSummary(int totalSpent) {
-
-        int totalBudget = 0;
-        for (BudgetCategoryModel m : categoryList) {
-            totalBudget += m.getAmount();
-        }
-
-        int available = totalBudget - totalSpent;
-
-        tvTotalBudget.setText("₹ " + totalBudget);
-        tvTotalSpent.setText("₹ " + totalSpent);
-        tvAvailableBudget.setText("₹ " + available);
-
-        setupDonutChart(totalBudget, totalSpent);
-    }
     private String getCurrentMonthKey() {
-        java.text.SimpleDateFormat sdf =
-                new java.text.SimpleDateFormat("yyyy-MM",
-                        java.util.Locale.getDefault());
-        return sdf.format(new java.util.Date());
+        return new SimpleDateFormat(
+                "yyyy-MM",
+                Locale.getDefault()
+        ).format(new Date());
     }
+
     @Override
     public void onResume() {
         super.onResume();
-        loadCategoriesAndExpenses();
+        if (adapter.getItemCount() == 0) {
+            loadBudgetAndCategories();
+        }
     }
-    private List<String> getAllCategories() {
-        return Arrays.asList(
-                "Food",
-                "Education",
-                "Entertainment",
-                "Health",
-                "Shopping",
-                "Transport",
-                "Rent",
-                "Others"
-        );
-    }
-
-
 }

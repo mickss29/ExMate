@@ -1,54 +1,102 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_marginTop="10dp"
-    app:cardCornerRadius="18dp"
-    app:cardElevation="4dp"
-    app:cardBackgroundColor="#FFFFFF">
+    android:layout_marginTop="12dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="6dp"
+    app:cardBackgroundColor="#0E1A2B">
 
+    <!-- IMPORTANT: focusableInTouchMode -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="14dp">
+        android:padding="16dp"
+        android:focusableInTouchMode="true">
 
-        <TextView
-            android:id="@+id/tvCategoryName"
-            android:layout_width="wrap_content"
+        <!-- TOP ROW : CATEGORY + AMOUNT -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Food &amp; Beverages"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            android:textColor="#000000"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
+            <TextView
+                android:id="@+id/tvCategoryName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Food"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#F2F0EF"/>
+
+            <!-- ₹ + INPUT -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="₹"
+                    android:textSize="16sp"
+                    android:textColor="#111827"/>
+
+                <EditText
+                    android:id="@+id/etCategoryAmount"
+                    android:layout_width="80dp"
+                    android:layout_height="40dp"
+                    android:hint="0"
+                    android:inputType="number"
+                    android:gravity="end|center_vertical"
+                    android:textSize="14sp"
+                    android:textColor="#FFFFFF"
+                    android:textColorHint="#9CA3AF"
+                    android:background="@android:color/transparent"
+                    android:padding="6dp"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:clickable="true"
+                    android:cursorVisible="true"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- BUDGET LABEL -->
         <TextView
             android:id="@+id/tvCategoryBudget"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Budget: ₹30000"
-            android:textSize="13sp"
-            android:textColor="#757575"
-            android:layout_marginTop="4dp"/>
+            android:layout_marginTop="6dp"
+            android:text="Set budget for this category"
+            android:textSize="12sp"
+            android:textColor="#6B7280"/>
 
+        <!-- PROGRESS (USED IN ANALYSIS MODE) -->
         <ProgressBar
             android:id="@+id/progressCategory"
+            style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="match_parent"
             android:layout_height="6dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="10dp"
             android:max="100"
-            android:progress="25"
-            style="?android:attr/progressBarStyleHorizontal"/>
+            android:progress="0"/>
 
+        <!-- STATUS -->
         <TextView
             android:id="@+id/tvCategoryStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="You are ₹6000 under your limit"
+            android:layout_marginTop="8dp"
+            android:text="No spending yet"
             android:textSize="12sp"
-            android:textColor="#2E7D32"
-            android:layout_marginTop="6dp"/>
+            android:textColor="#10B981"/>
 
     </LinearLayout>
 

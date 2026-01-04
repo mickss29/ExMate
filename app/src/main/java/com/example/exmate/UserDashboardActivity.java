@@ -5,12 +5,22 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 public class UserDashboardActivity extends AppCompatActivity {
 
@@ -34,7 +44,7 @@ public class UserDashboardActivity extends AppCompatActivity {
                 && AppLockManager.isEnabled(this)
                 && AppLockManager.shouldAutoLock(this)) {
 
-            isLockScreenOpened = true; // prevent loop
+            isLockScreenOpened = true;
             AppLockManager.setUnlocked(this, false);
             startActivity(new Intent(this, AppLockActivity.class));
         }
@@ -53,6 +63,7 @@ public class UserDashboardActivity extends AppCompatActivity {
         }
 
         setupBottomNav();
+
         createDailyReminderChannel();
         scheduleDailyReminder();
         createDailySummaryChannel();
@@ -77,8 +88,7 @@ public class UserDashboardActivity extends AppCompatActivity {
             }
 
             if (id == R.id.nav_budget) {
-                loadFragment(new BudgetHomeFragment());
-
+                openBudgetFlow();   // 🔥 FIXED FLOW
                 return true;
             }
 
@@ -101,6 +111,50 @@ public class UserDashboardActivity extends AppCompatActivity {
         });
     }
 
+    // ================= BUDGET FLOW =================
+
+    private void openBudgetFlow() {
+
+        String uid = FirebaseAuth.getInstance().getUid();
+        if (uid == null) return;
+
+        DatabaseReference ref = FirebaseDatabase.getInstance()
+                .getReference("users")
+                .child(uid)
+                .child("budgets")
+                .child("monthly")
+                .child(getCurrentMonthKey());
+
+        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                Fragment target;
+
+                if (snapshot.exists()) {
+                    // ✅ Budget already added
+                    target = new BudgetAnalysisFragment();
+                } else {
+                    // ✅ First time user
+                    target = new BudgetFragment();
+                }
+
+                loadFragment(target);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+            }
+        });
+    }
+
+    private String getCurrentMonthKey() {
+        return new SimpleDateFormat(
+                "yyyy-MM",
+                Locale.getDefault()
+        ).format(new Date());
+    }
+
     // ================= FRAGMENT LOADER =================
 
     private void loadFragment(Fragment fragment) {
@@ -110,7 +164,7 @@ public class UserDashboardActivity extends AppCompatActivity {
                 .commit();
     }
 
-    // ================== NOTIFICATIONS (UNCHANGED) ==================
+    // ================== NOTIFICATIONS ==================
 
     private void createDailyReminderChannel() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {

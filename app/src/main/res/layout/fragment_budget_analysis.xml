@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F4F6FB">
+    android:background="#F2F0EF">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -23,7 +23,7 @@
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="24dp"
                 app:cardElevation="6dp"
-                app:cardBackgroundColor="#FFFFFF">
+                app:cardBackgroundColor="#0E1A2B">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -225,7 +225,7 @@
         android:layout_height="56dp"
         android:layout_margin="20dp"
         android:src="@drawable/ic_edit"
-        app:backgroundTint="#7C3AED"
+        app:backgroundTint="#0E1A2B"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
