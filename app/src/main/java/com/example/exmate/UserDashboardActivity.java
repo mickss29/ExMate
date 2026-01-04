@@ -133,7 +133,7 @@ public class UserDashboardActivity extends AppCompatActivity {
 
                 if (snapshot.exists()) {
                     // ✅ Budget already added
-                    target = new BudgetAnalysisFragment();
+                    target = new BudgetFragment();
                 } else {
                     // ✅ First time user
                     target = new BudgetFragment();

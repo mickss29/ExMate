@@ -67,7 +67,13 @@ public class SelectBudgetCategoryBottomSheet extends BottomSheetDialogFragment {
         categoryList.add(new BudgetCategoryModel("Entertainment", 0));
 
         recyclerView.setAdapter(
-                new BudgetCategoryAdapter(categoryList)
+                new BudgetCategoryAdapter(
+                        categoryList,
+                        model -> {
+                            // No action needed here
+                            // This bottom sheet is only for selection
+                        }
+                )
         );
 
         btnDone.setOnClickListener(v -> {

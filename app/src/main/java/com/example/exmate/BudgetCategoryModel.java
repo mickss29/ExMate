@@ -3,47 +3,57 @@ package com.example.exmate;
 public class BudgetCategoryModel {
 
     private String name;
-    private int amount;   // budget
-    private int spent;    // spent amount
+    private int budget;
+    private int spent;
+
+    // ✅ selection state (for bottom sheet)
     private boolean selected;
 
-    // Constructor 1
+    public BudgetCategoryModel() {}
+
     public BudgetCategoryModel(String name) {
         this.name = name;
-        this.amount = 0;
+        this.budget = 0;
         this.spent = 0;
         this.selected = false;
     }
 
-    // Constructor 2
-    public BudgetCategoryModel(String name, int amount) {
+    public BudgetCategoryModel(String name, int budget) {
         this.name = name;
-        this.amount = amount;
+        this.budget = budget;
         this.spent = 0;
         this.selected = false;
     }
 
-    // ===== GETTERS / SETTERS =====
+    // ===== GETTERS =====
+
     public String getName() {
         return name;
     }
 
-    public int getAmount() {
-        return amount;
+    public int getBudget() {
+        return budget;
     }
 
-    public void setAmount(int amount) {
-        this.amount = amount;
-    }
-
-    // ✅ THIS FIXES YOUR ERROR
     public int getSpent() {
         return spent;
+    }
+
+    public int getRemaining() {
+        return Math.max(budget - spent, 0);
+    }
+
+    // ===== SETTERS =====
+
+    public void setBudget(int budget) {
+        this.budget = budget;
     }
 
     public void setSpent(int spent) {
         this.spent = spent;
     }
+
+    // ===== SELECTION (IMPORTANT FIX) =====
 
     public boolean isSelected() {
         return selected;

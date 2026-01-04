@@ -1,13 +1,11 @@
 package com.example.exmate;
 
-import android.content.res.ColorStateList;
 import android.graphics.Color;
-import android.text.Editable;
-import android.text.TextWatcher;
+import android.graphics.PorterDuff;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -17,190 +15,77 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 public class BudgetCategoryAdapter
-        extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+        extends RecyclerView.Adapter<BudgetCategoryAdapter.Holder> {
 
-    // ===== MODES =====
-    public static final int MODE_EDIT = 1;
-    public static final int MODE_ANALYSIS = 2;
+    public interface OnBudgetClick {
+        void onClick(BudgetCategoryModel model);
+    }
 
     private final List<BudgetCategoryModel> list;
-    private final int mode;
-    private final Runnable onChange;
+    private final OnBudgetClick listener;
 
-    // ===== EDIT MODE =====
     public BudgetCategoryAdapter(
             List<BudgetCategoryModel> list,
-            Runnable onChange
-    ) {
+            OnBudgetClick listener) {
         this.list = list;
-        this.onChange = onChange;
-        this.mode = MODE_EDIT;
-    }
-
-    // ===== ANALYSIS MODE =====
-    public BudgetCategoryAdapter(List<BudgetCategoryModel> list) {
-        this.list = list;
-        this.onChange = null;
-        this.mode = MODE_ANALYSIS;
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        return mode;
+        this.listener = listener;
     }
 
     @NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(
-            @NonNull ViewGroup parent,
-            int viewType
-    ) {
+    public Holder onCreateViewHolder(
+            @NonNull ViewGroup parent, int viewType) {
 
-        LayoutInflater inflater =
-                LayoutInflater.from(parent.getContext());
-
-        if (viewType == MODE_EDIT) {
-            View v = inflater.inflate(
-                    R.layout.item_budget_category_analysis,
-                    parent,
-                    false
-            );
-            return new EditHolder(v);
-        } else {
-            View v = inflater.inflate(
-                    R.layout.item_budget_category_analysis,
-                    parent,
-                    false
-            );
-            return new AnalysisHolder(v);
-        }
+        View v = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_budget_category, parent, false);
+        return new Holder(v);
     }
 
     @Override
     public void onBindViewHolder(
-            @NonNull RecyclerView.ViewHolder holder,
-            int position
-    ) {
+            @NonNull Holder h, int pos) {
 
-        BudgetCategoryModel model = list.get(position);
+        BudgetCategoryModel m = list.get(pos);
 
-        if (holder instanceof EditHolder) {
-            bindEdit((EditHolder) holder, model);
+        h.tvName.setText(m.getName());
+        h.tvBudget.setText("Budget: ₹" + m.getBudget());
+
+        int budget = m.getBudget();
+        int spent = m.getSpent();
+
+        int percent = budget == 0 ? 0 :
+                Math.min((spent * 100) / budget, 100);
+
+        h.progressBar.setProgress(percent);
+
+        if (spent <= budget) {
+            int left = budget - spent;
+            h.tvStatus.setText(
+                    "You are ₹" + left + " under your limit");
+            h.tvStatus.setTextColor(
+                    Color.parseColor("#16A34A"));
+
+            h.progressBar.getProgressDrawable()
+                    .setColorFilter(
+                            Color.parseColor("#16A34A"),
+                            PorterDuff.Mode.SRC_IN
+                    );
         } else {
-            bindAnalysis((AnalysisHolder) holder, model);
-        }
-    }
+            int over = spent - budget;
+            h.tvStatus.setText(
+                    "Over budget by ₹" + over);
+            h.tvStatus.setTextColor(
+                    Color.parseColor("#DC2626"));
 
-    // ================= EDIT MODE =================
-    private void bindEdit(EditHolder h, BudgetCategoryModel model) {
-
-        // NAME
-        h.tvName.setText(model.getName());
-
-        // REMOVE OLD WATCHER (IMPORTANT)
-        if (h.etAmount.getTag() instanceof TextWatcher) {
-            h.etAmount.removeTextChangedListener(
-                    (TextWatcher) h.etAmount.getTag()
-            );
+            h.progressBar.getProgressDrawable()
+                    .setColorFilter(
+                            Color.parseColor("#DC2626"),
+                            PorterDuff.Mode.SRC_IN
+                    );
         }
 
-        // SET VALUE
-        if (model.getAmount() > 0) {
-            h.etAmount.setText(String.valueOf(model.getAmount()));
-        } else {
-            h.etAmount.setText("");
-        }
-
-        // CREATE NEW WATCHER
-        TextWatcher watcher = new TextWatcher() {
-            @Override
-            public void beforeTextChanged(
-                    CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(
-                    CharSequence s, int start, int before, int count) {
-
-                int val = 0;
-                if (!s.toString().isEmpty()) {
-                    try {
-                        val = Integer.parseInt(s.toString());
-                    } catch (NumberFormatException ignored) {}
-                }
-
-                model.setAmount(val);
-
-                if (onChange != null) {
-                    onChange.run();
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {}
-        };
-
-        // ADD & TAG WATCHER
-        h.etAmount.addTextChangedListener(watcher);
-        h.etAmount.setTag(watcher);
-    }
-
-    // ================= ANALYSIS MODE =================
-
-    private void bindAnalysis(
-            AnalysisHolder h,
-            BudgetCategoryModel model
-    ) {
-
-        int budget = model.getAmount();
-        int spent = model.getSpent();
-
-        h.tvCategoryName.setText(model.getName());
-        h.tvCategoryBudget.setText("Budget: ₹" + budget);
-
-        int percent =
-                budget == 0 ? 0 : (spent * 100) / budget;
-
-        h.progressCategory.setProgress(
-                Math.min(percent, 100)
-        );
-
-        if (percent < 80) {
-            h.tvCategoryStatus.setText(
-                    "You are ₹" + (budget - spent) + " under your limit"
-            );
-            h.tvCategoryStatus.setTextColor(
-                    Color.parseColor("#2E7D32")
-            );
-            h.progressCategory.setProgressTintList(
-                    ColorStateList.valueOf(
-                            Color.parseColor("#4CAF50")
-                    )
-            );
-        } else if (percent < 100) {
-            h.tvCategoryStatus.setText(
-                    "Warning: Near your limit"
-            );
-            h.tvCategoryStatus.setTextColor(
-                    Color.parseColor("#EF6C00")
-            );
-            h.progressCategory.setProgressTintList(
-                    ColorStateList.valueOf(
-                            Color.parseColor("#FB8C00")
-                    )
-            );
-        } else {
-            h.tvCategoryStatus.setText(
-                    "Over budget by ₹" + (spent - budget)
-            );
-            h.tvCategoryStatus.setTextColor(
-                    Color.parseColor("#C62828")
-            );
-            h.progressCategory.setProgressTintList(
-                    ColorStateList.valueOf(
-                            Color.parseColor("#E53935")
-                    )
-            );
-        }
+        h.btnAction.setOnClickListener(v ->
+                listener.onClick(m));
     }
 
     @Override
@@ -208,44 +93,20 @@ public class BudgetCategoryAdapter
         return list.size();
     }
 
-    // ================= VIEW HOLDERS =================
+    // ================= VIEW HOLDER =================
+    static class Holder extends RecyclerView.ViewHolder {
 
-    static class EditHolder extends RecyclerView.ViewHolder {
+        TextView tvName, tvBudget, tvStatus;
+        ProgressBar progressBar;
+        Button btnAction;
 
-        TextView tvName;
-        EditText etAmount;
-
-        EditHolder(@NonNull View itemView) {
-            super(itemView);
-            tvName = itemView.findViewById(R.id.tvCategoryName);
-            etAmount = itemView.findViewById(R.id.etCategoryAmount);
+        Holder(@NonNull View v) {
+            super(v);
+            tvName = v.findViewById(R.id.tvName);
+            tvBudget = v.findViewById(R.id.tvBudget);
+            tvStatus = v.findViewById(R.id.tvStatus);
+            progressBar = v.findViewById(R.id.progressBar);
+            btnAction = v.findViewById(R.id.btnAction);
         }
-    }
-
-    static class AnalysisHolder extends RecyclerView.ViewHolder {
-
-        TextView tvCategoryName;
-        TextView tvCategoryBudget;
-        TextView tvCategoryStatus;
-        ProgressBar progressCategory;
-
-        AnalysisHolder(@NonNull View itemView) {
-            super(itemView);
-            tvCategoryName =
-                    itemView.findViewById(R.id.tvCategoryName);
-            tvCategoryBudget =
-                    itemView.findViewById(R.id.tvCategoryBudget);
-            tvCategoryStatus =
-                    itemView.findViewById(R.id.tvCategoryStatus);
-            progressCategory =
-                    itemView.findViewById(R.id.progressCategory);
-        }
-    }
-
-    // ===== SIMPLE TEXT WATCHER =====
-    abstract static class SimpleTextWatcher implements TextWatcher {
-        @Override public void beforeTextChanged(
-                CharSequence s, int start, int count, int after) {}
-        @Override public void afterTextChanged(Editable s) {}
     }
 }

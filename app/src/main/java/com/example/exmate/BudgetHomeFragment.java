@@ -52,7 +52,8 @@ public class BudgetHomeFragment extends Fragment {
 
                         Fragment target =
                                 snapshot.exists()
-                                        ? new BudgetAnalysisFragment()
+                                        ? new BudgetFragment()
+
                                         : new BudgetEmptyFragment();
 
                         requireActivity()
