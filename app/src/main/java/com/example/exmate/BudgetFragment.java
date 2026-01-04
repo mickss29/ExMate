@@ -23,6 +23,8 @@ public class BudgetFragment extends Fragment {
     private TextView tvTotal, tvSpent, tvAvailable;
     private PieChart pieChart;
     private RecyclerView recyclerView;
+    private DatabaseReference rootRef;
+
 
     private final List<BudgetCategoryModel> categoryList = new ArrayList<>();
     private BudgetCategoryAdapter adapter;
@@ -40,6 +42,7 @@ public class BudgetFragment extends Fragment {
 
 
     private RecyclerView rvCategories;
+
 
 
     public BudgetFragment() {
@@ -70,6 +73,10 @@ public class BudgetFragment extends Fragment {
 
 // Month title
         tvMonthTitle.setText(getMonthTitle());
+        rootRef = FirebaseDatabase
+                .getInstance("https://exmate-users-default-rtdb.asia-southeast1.firebasedatabase.app")
+                .getReference();
+
 
 
         String uid = FirebaseAuth.getInstance().getUid();
@@ -82,8 +89,10 @@ public class BudgetFragment extends Fragment {
         monthKey = new SimpleDateFormat("yyyy-MM", Locale.getDefault())
                 .format(new Date());
 
+// ✅ ONLY load budgets here
+// expenses will be loaded AFTER budgets finish loading
         loadBudgets();
-        loadExpenses();
+
     }
 
     // ================= LOAD BUDGET =================
@@ -100,29 +109,20 @@ public class BudgetFragment extends Fragment {
                         categoryList.clear();
                         totalBudget = 0;
 
-                        if (snapshot.exists()) {
+                        DataSnapshot catSnap = snapshot.child("categories");
 
-                            for (DataSnapshot ds :
-                                    snapshot.child("categories").getChildren()) {
+                        for (DataSnapshot ds : catSnap.getChildren()) {
+                            String name = ds.getKey();
+                            Integer amt = ds.getValue(Integer.class);
+                            if (name == null || amt == null) continue;
 
-                                String name = ds.getKey();
-                                Integer amt = ds.getValue(Integer.class);
-
-                                if (name == null || amt == null) continue;
-
-                                BudgetCategoryModel model =
-                                        new BudgetCategoryModel(name);
-                                model.setBudget(amt);
-
-                                categoryList.add(model);
-                                totalBudget += amt;
-                            }
+                            categoryList.add(
+                                    new BudgetCategoryModel(name, amt));
+                            totalBudget += amt;
                         }
 
                         adapter.notifyDataSetChanged();
-                        updateSummary();
-                        updatePieChart(totalBudget, totalSpent);
-
+                        loadExpenses(); // 👈 IMPORTANT
                     }
 
                     @Override
@@ -130,47 +130,47 @@ public class BudgetFragment extends Fragment {
                 });
     }
 
+
+
     // ================= LOAD EXPENSES =================
 
     private void loadExpenses() {
 
         userRef.child("expenses")
-                .addValueEventListener(new ValueEventListener() {
+                .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
 
-                        android.util.Log.d("BUDGET_DEBUG",
-                                "Expenses count = " + snapshot.getChildrenCount());
-
                         totalSpent = 0;
 
-                        // Reset spent
                         for (BudgetCategoryModel m : categoryList) {
                             m.setSpent(0);
                         }
 
-                        for (DataSnapshot ds : snapshot.getChildren()) {
+                        java.text.SimpleDateFormat sdf =
+                                new java.text.SimpleDateFormat("yyyy-MM",
+                                        java.util.Locale.getDefault());
 
-                            android.util.Log.d("BUDGET_DEBUG",
-                                    "Expense raw = " + ds.getValue());
+                        for (DataSnapshot ds : snapshot.getChildren()) {
 
                             String category =
                                     ds.child("category").getValue(String.class);
-
                             Integer amount =
                                     ds.child("amount").getValue(Integer.class);
+                            Long time =
+                                    ds.child("time").getValue(Long.class);
 
-                            android.util.Log.d("BUDGET_DEBUG",
-                                    "category=" + category + " amount=" + amount);
+                            if (category == null || amount == null || time == null)
+                                continue;
 
-                            if (category == null || amount == null) continue;
+                            if (!sdf.format(new java.util.Date(time))
+                                    .equals(monthKey)) continue;
 
                             for (BudgetCategoryModel m : categoryList) {
-                                if (m.getName().equalsIgnoreCase(category.trim())) {
+                                if (m.getName()
+                                        .equalsIgnoreCase(category)) {
                                     m.setSpent(m.getSpent() + amount);
                                     totalSpent += amount;
-                                    android.util.Log.d("BUDGET_DEBUG",
-                                            "MATCHED -> " + m.getName());
                                     break;
                                 }
                             }
@@ -181,12 +181,12 @@ public class BudgetFragment extends Fragment {
                     }
 
                     @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        android.util.Log.e("BUDGET_DEBUG",
-                                "Error: " + error.getMessage());
-                    }
+                    public void onCancelled(@NonNull DatabaseError error) {}
                 });
     }
+
+
+
 
 
 

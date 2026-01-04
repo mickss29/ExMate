@@ -47,18 +47,26 @@ public class BudgetCategoryAdapter
 
         BudgetCategoryModel m = list.get(pos);
 
-        h.tvName.setText(m.getName());
-        h.tvBudget.setText("Budget: ₹" + m.getBudget());
-
         int budget = m.getBudget();
         int spent = m.getSpent();
 
-        int percent = budget == 0 ? 0 :
-                Math.min((spent * 100) / budget, 100);
+        h.tvName.setText(m.getName());
+        h.tvBudget.setText("Budget: ₹" + budget);
+
+        // ===== SAFE % CALCULATION (FLOAT BASED) =====
+        int percent;
+        if (budget <= 0) {
+            percent = 0;
+        } else {
+            percent = Math.round((spent * 100f) / budget);
+            percent = Math.min(percent, 100);
+        }
 
         h.progressBar.setProgress(percent);
 
-        if (spent <= budget) {
+        // ===== STATUS + COLOR =====
+        if (spent < budget) {
+
             int left = budget - spent;
             h.tvStatus.setText(
                     "You are ₹" + left + " under your limit");
@@ -70,7 +78,21 @@ public class BudgetCategoryAdapter
                             Color.parseColor("#16A34A"),
                             PorterDuff.Mode.SRC_IN
                     );
+
+        } else if (spent == budget) {
+
+            h.tvStatus.setText("You have used full budget");
+            h.tvStatus.setTextColor(
+                    Color.parseColor("#F59E0B"));
+
+            h.progressBar.getProgressDrawable()
+                    .setColorFilter(
+                            Color.parseColor("#F59E0B"),
+                            PorterDuff.Mode.SRC_IN
+                    );
+
         } else {
+
             int over = spent - budget;
             h.tvStatus.setText(
                     "Over budget by ₹" + over);
