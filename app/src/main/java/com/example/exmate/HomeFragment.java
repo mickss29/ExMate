@@ -1,6 +1,7 @@
 package com.example.exmate;
 
 import android.animation.ValueAnimator;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -34,12 +35,21 @@ import java.util.List;
 
 public class HomeFragment extends Fragment {
 
+    // ================= NAVIGATION CALLBACK =================
+    public interface HomeNavigationListener {
+        void openReports();
+        void openBudget();
+    }
+
+    private HomeNavigationListener navigationListener;
+
     // ================= UI =================
     private RecyclerView rvRecent;
     private TextView tvIncome, tvExpense;
     private TextView tvCurrentBalance, tvTotalBalance;
     private TextView tvUserName, btnViewAll;
     private MaterialCardView cardAddIncome, cardAddExpense;
+    private MaterialCardView cardBudgetSummary;
 
     // ================= FIREBASE =================
     private DatabaseReference userRef;
@@ -55,11 +65,11 @@ public class HomeFragment extends Fragment {
 
     private final DecimalFormat moneyFormat = new DecimalFormat("#,##0.##");
 
-    // ============= REALTIME LISTENER ===============
+    // ================= REALTIME LISTENER =================
     private final ValueEventListener realTimeListener = new ValueEventListener() {
         @Override
         public void onDataChange(@NonNull DataSnapshot snapshot) {
-            loadDashboardData();   // ⭐ realtime refresh
+            loadDashboardData();
         }
 
         @Override
@@ -68,11 +78,20 @@ public class HomeFragment extends Fragment {
 
     // =========================================================================================
 
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (context instanceof HomeNavigationListener) {
+            navigationListener = (HomeNavigationListener) context;
+        }
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
+
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
         initViews(view);
@@ -85,14 +104,12 @@ public class HomeFragment extends Fragment {
         return view;
     }
 
-    // ⭐ AUTO-LISTEN START
     @Override
     public void onStart() {
         super.onStart();
         attachRealTimeListeners();
     }
 
-    // ⭐ CLEAN UP listener
     @Override
     public void onStop() {
         super.onStop();
@@ -114,6 +131,9 @@ public class HomeFragment extends Fragment {
         btnViewAll = view.findViewById(R.id.btnViewAll);
         cardAddIncome = view.findViewById(R.id.cardAddIncome);
         cardAddExpense = view.findViewById(R.id.cardAddExpense);
+
+        // 🔹 Budget summary card
+        cardBudgetSummary = view.findViewById(R.id.cardBudgetSummary);
     }
 
     private void setupFirebase() {
@@ -133,7 +153,8 @@ public class HomeFragment extends Fragment {
     }
 
     // =========================================================================================
-    // USER NAME DISPLAY
+    // USER PROFILE
+
     private void loadUserProfile() {
         if (userRef == null) return;
 
@@ -147,8 +168,7 @@ public class HomeFragment extends Fragment {
                 }
 
                 if (!TextUtils.isEmpty(name)) {
-                    name = capitalize(name);
-                    tvUserName.setText(name);
+                    tvUserName.setText(capitalize(name));
                     fadeIn(tvUserName);
                 } else {
                     tvUserName.setText("Welcome 👋");
@@ -171,7 +191,8 @@ public class HomeFragment extends Fragment {
     }
 
     // =========================================================================================
-    // LOAD MAIN DATA
+    // DASHBOARD DATA
+
     private void loadDashboardData() {
         if (adapter == null || userRef == null) return;
 
@@ -191,7 +212,7 @@ public class HomeFragment extends Fragment {
 
                 Double amount = snap.child("amount").getValue(Double.class);
                 Long time = snap.child("time").getValue(Long.class);
-                String source = snap.child("source").getValue(String.class); // ✅ FIX
+                String source = snap.child("source").getValue(String.class);
 
                 if (amount == null || time == null) continue;
 
@@ -213,45 +234,38 @@ public class HomeFragment extends Fragment {
         });
     }
 
-
     private void loadExpense() {
-        userRef.child("expenses")
-                .get()
-                .addOnSuccessListener(snapshot -> {
+        userRef.child("expenses").get().addOnSuccessListener(snapshot -> {
+            for (DataSnapshot snap : snapshot.getChildren()) {
 
-                    for (DataSnapshot snap : snapshot.getChildren()) {
+                Double amount = snap.child("amount").getValue(Double.class);
+                Long time = snap.child("time").getValue(Long.class);
+                String category = snap.child("category").getValue(String.class);
 
-                        Double amount = snap.child("amount").getValue(Double.class);
-                        Long time = snap.child("time").getValue(Long.class);
-                        String category = snap.child("category").getValue(String.class); // ✅ FIX
+                if (amount == null || time == null) continue;
 
-                        if (amount == null || time == null) continue;
+                totalExpense += amount;
 
-                        totalExpense += amount;
+                transactionList.add(
+                        new TransactionModel(
+                                "Expense",
+                                amount,
+                                time,
+                                category != null ? category : "Expense",
+                                true
+                        )
+                );
+            }
 
-                        transactionList.add(
-                                new TransactionModel(
-                                        "Expense",
-                                        amount,
-                                        time,
-                                        category != null ? category : "Expense",
-                                        true
-                                )
-                        );
-                    }
-
-                    tvExpense.setText(
-                            "Expenses  ₹" + moneyFormat.format(totalExpense)
-                    );
-
-                    updateBalances();
-                    finalizeList();
-                });
+            tvExpense.setText("Expenses  ₹" + moneyFormat.format(totalExpense));
+            updateBalances();
+            finalizeList();
+        });
     }
-
 
     // =========================================================================================
     // BALANCE
+
     private void updateBalances() {
         double newBalance = totalIncome - totalExpense;
 
@@ -284,6 +298,7 @@ public class HomeFragment extends Fragment {
 
     // =========================================================================================
     // RECENT LIST
+
     private void setupRecentList() {
         adapter = new RecentTransactionAdapter(transactionList);
         rvRecent.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -291,8 +306,10 @@ public class HomeFragment extends Fragment {
     }
 
     // =========================================================================================
-    // CARD CLICKS
+    // CLICKS (UPDATED SAFELY)
+
     private void setupCardClicks() {
+
         cardAddIncome.setOnClickListener(v -> {
             Intent intent = new Intent(getContext(), AddTransactionActivity.class);
             intent.putExtra("openTab", 1);
@@ -304,10 +321,27 @@ public class HomeFragment extends Fragment {
             intent.putExtra("openTab", 0);
             startActivity(intent);
         });
+
+        // 🔹 View All → Reports tab
+        btnViewAll.setOnClickListener(v -> {
+            if (navigationListener != null) {
+                navigationListener.openReports();
+            }
+        });
+
+        // 🔹 Budget summary → Budget tab
+        if (cardBudgetSummary != null) {
+            cardBudgetSummary.setOnClickListener(v -> {
+                if (navigationListener != null) {
+                    navigationListener.openBudget();
+                }
+            });
+        }
     }
 
     // =========================================================================================
     // ANIMATION
+
     private void playEntryAnimation() {
         if (getContext() == null) return;
 

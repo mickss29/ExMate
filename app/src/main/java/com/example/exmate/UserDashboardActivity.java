@@ -22,11 +22,12 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-public class UserDashboardActivity extends AppCompatActivity {
+public class UserDashboardActivity extends AppCompatActivity
+        implements HomeFragment.HomeNavigationListener {
 
     private BottomNavigationView bottomNav;
 
-    // 🔒 Guard flag to prevent AppLock loop
+    // 🔒 AppLock guard
     private boolean isLockScreenOpened = false;
 
     @Override
@@ -39,7 +40,6 @@ public class UserDashboardActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        // ✅ LOOP-SAFE AppLock
         if (!isLockScreenOpened
                 && AppLockManager.isEnabled(this)
                 && AppLockManager.shouldAutoLock(this)) {
@@ -57,7 +57,6 @@ public class UserDashboardActivity extends AppCompatActivity {
 
         bottomNav = findViewById(R.id.bottomNav);
 
-        // Default fragment
         if (savedInstanceState == null) {
             loadFragment(new HomeFragment());
         }
@@ -70,6 +69,18 @@ public class UserDashboardActivity extends AppCompatActivity {
         scheduleDailySummary();
         createMorningGreetingChannel();
         scheduleMorningGreeting();
+    }
+
+    // ================= HOME CALLBACKS =================
+
+    @Override
+    public void openReports() {
+        bottomNav.setSelectedItemId(R.id.nav_reports);
+    }
+
+    @Override
+    public void openBudget() {
+        bottomNav.setSelectedItemId(R.id.nav_budget);
     }
 
     // ================= BOTTOM NAV =================
@@ -88,7 +99,7 @@ public class UserDashboardActivity extends AppCompatActivity {
             }
 
             if (id == R.id.nav_budget) {
-                openBudgetFlow();   // 🔥 FIXED FLOW
+                openBudgetFlow();
                 return true;
             }
 
@@ -129,22 +140,12 @@ public class UserDashboardActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
 
-                Fragment target;
-
-                if (snapshot.exists()) {
-                    // ✅ Budget already added
-                    target = new BudgetFragment();
-                } else {
-                    // ✅ First time user
-                    target = new BudgetFragment();
-                }
-
+                Fragment target = new BudgetFragment();
                 loadFragment(target);
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-            }
+            public void onCancelled(@NonNull DatabaseError error) {}
         });
     }
 
@@ -164,7 +165,7 @@ public class UserDashboardActivity extends AppCompatActivity {
                 .commit();
     }
 
-    // ================== NOTIFICATIONS ==================
+    // ================= NOTIFICATIONS =================
 
     private void createDailyReminderChannel() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -185,33 +186,7 @@ public class UserDashboardActivity extends AppCompatActivity {
     }
 
     private void scheduleDailyReminder() {
-        AlarmManager alarmManager =
-                (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-
-        Intent intent = new Intent(this, DailyReminderReceiver.class);
-
-        android.app.PendingIntent pendingIntent =
-                android.app.PendingIntent.getBroadcast(
-                        this, 0, intent,
-                        android.app.PendingIntent.FLAG_UPDATE_CURRENT
-                                | android.app.PendingIntent.FLAG_IMMUTABLE
-                );
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 19);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-
-        if (calendar.getTimeInMillis() < System.currentTimeMillis()) {
-            calendar.add(Calendar.DAY_OF_MONTH, 1);
-        }
-
-        alarmManager.setRepeating(
-                AlarmManager.RTC_WAKEUP,
-                calendar.getTimeInMillis(),
-                AlarmManager.INTERVAL_DAY,
-                pendingIntent
-        );
+        scheduleAlarm(0, 19);
     }
 
     private void createDailySummaryChannel() {
@@ -233,33 +208,7 @@ public class UserDashboardActivity extends AppCompatActivity {
     }
 
     private void scheduleDailySummary() {
-        AlarmManager alarmManager =
-                (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-
-        Intent intent = new Intent(this, DailySummaryReceiver.class);
-
-        android.app.PendingIntent pendingIntent =
-                android.app.PendingIntent.getBroadcast(
-                        this, 4001, intent,
-                        android.app.PendingIntent.FLAG_UPDATE_CURRENT
-                                | android.app.PendingIntent.FLAG_IMMUTABLE
-                );
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 21);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-
-        if (calendar.getTimeInMillis() < System.currentTimeMillis()) {
-            calendar.add(Calendar.DAY_OF_MONTH, 1);
-        }
-
-        alarmManager.setRepeating(
-                AlarmManager.RTC_WAKEUP,
-                calendar.getTimeInMillis(),
-                AlarmManager.INTERVAL_DAY,
-                pendingIntent
-        );
+        scheduleAlarm(4001, 21);
     }
 
     private void createMorningGreetingChannel() {
@@ -281,20 +230,28 @@ public class UserDashboardActivity extends AppCompatActivity {
     }
 
     private void scheduleMorningGreeting() {
+        scheduleAlarm(7001, 7);
+    }
+
+    private void scheduleAlarm(int requestCode, int hour) {
+
         AlarmManager alarmManager =
                 (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 
-        Intent intent = new Intent(this, MorningGreetingReceiver.class);
+        Intent intent = new Intent(this,
+                requestCode == 0 ? DailyReminderReceiver.class :
+                        requestCode == 4001 ? DailySummaryReceiver.class :
+                                MorningGreetingReceiver.class);
 
         android.app.PendingIntent pendingIntent =
                 android.app.PendingIntent.getBroadcast(
-                        this, 7001, intent,
+                        this, requestCode, intent,
                         android.app.PendingIntent.FLAG_UPDATE_CURRENT
                                 | android.app.PendingIntent.FLAG_IMMUTABLE
                 );
 
         Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 7);
+        calendar.set(Calendar.HOUR_OF_DAY, hour);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
 
