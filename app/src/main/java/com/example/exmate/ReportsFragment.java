@@ -70,6 +70,19 @@ public class ReportsFragment extends Fragment {
     private final SimpleDateFormat timeFormat =
             new SimpleDateFormat("hh:mm a", Locale.getDefault());
 
+    class ExportTxn {
+        String dateTime;
+        String category;
+        double amount;
+
+        ExportTxn(String dateTime, String category, double amount) {
+            this.dateTime = dateTime;
+            this.category = category;
+            this.amount = amount;
+        }
+    }
+
+
     @Nullable
     @Override
     public View onCreateView(
@@ -371,9 +384,9 @@ public class ReportsFragment extends Fragment {
                     "No data to export", Toast.LENGTH_SHORT).show();
             return;
         }
+        List<ExportTxn> incomes = new ArrayList<>();
+        List<ExportTxn> expenses = new ArrayList<>();
 
-        List<Pair<String, Double>> incomes = new ArrayList<>();
-        List<Pair<String, Double>> expenses = new ArrayList<>();
 
         double totalIncome = 0;
         double totalExpense = 0;
@@ -384,19 +397,29 @@ public class ReportsFragment extends Fragment {
                 continue;
 
             double amount = item.getAmountValue();
+            long timeMillis = item.getTimeMillis();
+
+            String dateTime =
+                    dateHeaderFormat.format(new Date(timeMillis)) +
+                            " • " +
+                            timeFormat.format(new Date(timeMillis));
+
+            String category = item.getCategory();
 
             if (item.isIncome()) {
-                incomes.add(new Pair<>(item.getCategory(), amount));
+                incomes.add(new ExportTxn(dateTime, category, amount));
                 totalIncome += amount;
             } else {
-                expenses.add(new Pair<>(item.getCategory(), amount));
+                expenses.add(new ExportTxn(dateTime, category, amount));
                 totalExpense += amount;
             }
         }
 
+
         generateCorporatePdf(
                 incomes,
                 expenses,
+
                 totalIncome,
                 totalExpense
         );
@@ -414,8 +437,9 @@ public class ReportsFragment extends Fragment {
 
 
     private void generateCorporatePdf(
-            List<Pair<String, Double>> incomes,
-            List<Pair<String, Double>> expenses,
+            List<ExportTxn> incomes,
+            List<ExportTxn> expenses,
+
             double totalIncome,
             double totalExpense
     ) {
@@ -472,11 +496,20 @@ public class ReportsFragment extends Fragment {
         Map<String, Double> incomeMap = new LinkedHashMap<>();
         Map<String, Double> expenseMap = new LinkedHashMap<>();
 
-        for (Pair<String, Double> p : incomes)
-            incomeMap.put(p.first, incomeMap.getOrDefault(p.first, 0.0) + p.second);
+        for (ExportTxn t : incomes) {
+            incomeMap.put(
+                    t.category,
+                    incomeMap.getOrDefault(t.category, 0.0) + t.amount
+            );
+        }
 
-        for (Pair<String, Double> p : expenses)
-            expenseMap.put(p.first, expenseMap.getOrDefault(p.first, 0.0) + p.second);
+        for (ExportTxn t : expenses) {
+            expenseMap.put(
+                    t.category,
+                    expenseMap.getOrDefault(t.category, 0.0) + t.amount
+            );
+        }
+
 
         // HIGHEST INCOME
         String topIncomeCat = "";
@@ -551,15 +584,19 @@ public class ReportsFragment extends Fragment {
         canvas.drawText("Income Details", 40, yy, bold);
         yy += 10;
         canvas.drawRect(40, yy, 555, yy + 25, headerBg);
-        canvas.drawText("Category", 50, yy + 17, bold);
+        canvas.drawText("Date & Time", 50, yy + 17, bold);
+        canvas.drawText("Category", 220, yy + 17, bold);
         canvas.drawText("Amount", 450, yy + 17, bold);
 
+
         yy += 35;
-        for (Pair<String, Double> p : incomes) {
-            canvas.drawText(p.first, 50, yy, normal);
-            canvas.drawText("₹ " + String.format("%.2f", p.second), 450, yy, normal);
+        for (ExportTxn t : incomes) {
+            canvas.drawText(t.dateTime, 50, yy, normal);
+            canvas.drawText(t.category, 220, yy, normal);
+            canvas.drawText("₹ " + String.format("%.2f", t.amount), 450, yy, normal);
             yy += 18;
         }
+
 
         yy += 30;
 
@@ -567,15 +604,18 @@ public class ReportsFragment extends Fragment {
         canvas.drawText("Expense Details", 40, yy, bold);
         yy += 10;
         canvas.drawRect(40, yy, 555, yy + 25, headerBg);
-        canvas.drawText("Category", 50, yy + 17, bold);
+        canvas.drawText("Date & Time", 50, yy + 17, bold);
+        canvas.drawText("Category", 220, yy + 17, bold);
         canvas.drawText("Amount", 450, yy + 17, bold);
 
         yy += 35;
-        for (Pair<String, Double> p : expenses) {
-            canvas.drawText(p.first, 50, yy, normal);
-            canvas.drawText("₹ " + String.format("%.2f", p.second), 450, yy, normal);
+        for (ExportTxn t : expenses) {
+            canvas.drawText(t.dateTime, 50, yy, normal);
+            canvas.drawText(t.category, 220, yy, normal);
+            canvas.drawText("₹ " + String.format("%.2f", t.amount), 450, yy, normal);
             yy += 18;
         }
+
 
         // =====================================================
 // MULTI CATEGORY BUDGET INSIGHTS (END OF PDF)
