@@ -234,6 +234,15 @@ public class IncomeFragment extends Fragment {
                 .addOnSuccessListener(unused -> {
                     hideLoader();
                     resetFields();
+
+                    // 🔔 NOTIFICATION (SAFE)
+                    NotificationHelper.showTransactionNotification(
+                            requireContext(),
+                            "Income Added",
+                            "₹" + amount + " received from " +
+                                    spIncomeSource.getSelectedItem().toString()
+                    );
+
                     Toast.makeText(requireContext(),
                             "Income saved successfully",
                             Toast.LENGTH_SHORT).show();

@@ -1,12 +1,17 @@
 package com.example.exmate;
 
+import android.Manifest;
 import android.app.AlarmManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -55,6 +60,9 @@ public class UserDashboardActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_dashboard);
 
+        // 🔔 ASK NOTIFICATION PERMISSION (ANDROID 13+)
+        requestNotificationPermission();
+
         bottomNav = findViewById(R.id.bottomNav);
 
         if (savedInstanceState == null) {
@@ -71,6 +79,24 @@ public class UserDashboardActivity extends AppCompatActivity
         scheduleMorningGreeting();
     }
 
+    // ================= NOTIFICATION PERMISSION =================
+
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= 33) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED) {
+
+                ActivityCompat.requestPermissions(
+                        this,
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                        101
+                );
+            }
+        }
+    }
+
     // ================= HOME CALLBACKS =================
 
     @Override
@@ -82,7 +108,7 @@ public class UserDashboardActivity extends AppCompatActivity
     @Override
     public void openBudget() {
         bottomNav.setSelectedItemId(R.id.nav_budget);
-        openBudgetFlow(); // 🔥 FIX
+        openBudgetFlow();
     }
 
     // ================= BOTTOM NAV =================
@@ -173,10 +199,10 @@ public class UserDashboardActivity extends AppCompatActivity
                 .commit();
     }
 
-    // ================= NOTIFICATIONS =================
+    // ================= NOTIFICATION CHANNELS =================
 
     private void createDailyReminderChannel() {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             android.app.NotificationChannel channel =
                     new android.app.NotificationChannel(
                             "daily_reminder",
@@ -198,7 +224,7 @@ public class UserDashboardActivity extends AppCompatActivity
     }
 
     private void createDailySummaryChannel() {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             android.app.NotificationChannel channel =
                     new android.app.NotificationChannel(
                             "daily_summary",
@@ -220,7 +246,7 @@ public class UserDashboardActivity extends AppCompatActivity
     }
 
     private void createMorningGreetingChannel() {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             android.app.NotificationChannel channel =
                     new android.app.NotificationChannel(
                             "morning_greeting",

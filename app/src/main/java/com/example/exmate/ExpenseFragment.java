@@ -234,6 +234,15 @@ public class ExpenseFragment extends Fragment {
                 .addOnSuccessListener(unused -> {
                     hideLoader();
                     resetFields();
+
+                    // 🔔 NOTIFICATION (SAFE)
+                    NotificationHelper.showTransactionNotification(
+                            requireContext(),
+                            "Expense Added",
+                            "₹" + amount + " spent on " +
+                                    spExpenseCategory.getSelectedItem().toString()
+                    );
+
                     Toast.makeText(requireContext(),
                             "Expense added successfully",
                             Toast.LENGTH_SHORT).show();

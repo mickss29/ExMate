@@ -7,6 +7,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
 
     <!-- 📝 Storage permission (safe, legacy) -->
     <uses-permission
@@ -69,6 +71,7 @@
 
         <activity android:name=".AddCategoryActivity" android:exported="false" />
         <activity android:name=".SetBudgetActivity" android:exported="false" />
+        <activity android:name="NotificationHelper" android:exported="false"/>
 
         <!-- 📂 FILE PROVIDER -->
         <provider
@@ -85,6 +88,7 @@
         <receiver android:name=".DailyReminderReceiver" android:exported="false" />
         <receiver android:name=".DailySummaryReceiver" android:exported="false" />
         <receiver android:name=".MorningGreetingReceiver" android:exported="false" />
+
 
     </application>
 
