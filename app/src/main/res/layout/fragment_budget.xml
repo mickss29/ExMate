@@ -11,21 +11,22 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- ================= PREMIUM SUMMARY CARD ================= -->
+        <!-- ================= SUMMARY CARD ================= -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
             app:cardCornerRadius="22dp"
             app:cardElevation="10dp"
-            android:background="@drawable/bg_budget_gradient"
-            >
+            android:background="@drawable/bg_budget_gradient">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="18dp">
+
+                <!-- MONTH NAVIGATION -->
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -39,11 +40,11 @@
                         android:src="@android:drawable/ic_media_previous" />
 
                     <TextView
-                        android:id="@+id/tvMonthTitle"
+                        android:id="@+id/tvMonthNav"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="January"
-                        android:textSize="20sp"
+                        android:text="January 2026"
+                        android:textSize="18sp"
                         android:textStyle="bold"
                         android:layout_marginHorizontal="12dp" />
 
@@ -54,7 +55,6 @@
                         android:src="@android:drawable/ic_media_next" />
                 </LinearLayout>
 
-
                 <!-- TITLE -->
                 <TextView
                     android:id="@+id/tvMonthTitle"
@@ -63,10 +63,24 @@
                     android:text="Spent in January"
                     android:textSize="20sp"
                     android:textStyle="bold"
-                    android:textColor="#111827" />
+                    android:textColor="#111827"
+                    android:layout_marginTop="6dp" />
 
-                <!-- CHART + STATS -->
+                <!-- EMPTY STATE -->
+                <TextView
+                    android:id="@+id/tvEmptyBudget"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Please add your budget first"
+                    android:textSize="16sp"
+                    android:textColor="#6B7280"
+                    android:gravity="center"
+                    android:padding="12dp"
+                    android:visibility="gone" />
+
+                <!-- CHART CONTAINER -->
                 <LinearLayout
+                    android:id="@+id/layoutChart"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
@@ -78,7 +92,7 @@
                         android:layout_width="150dp"
                         android:layout_height="150dp" />
 
-                    <!-- RIGHT STATS -->
+                    <!-- STATS -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -88,40 +102,40 @@
 
                         <TextView
                             android:id="@+id/tvTotalBudget"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
                             android:text="Total Budget\n₹0"
                             android:textSize="14sp"
-                            android:textColor="#6B7280" />
+                            android:textColor="#6B7280"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
 
                         <TextView
                             android:id="@+id/tvSpent"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
                             android:text="Spent\n₹0"
                             android:textSize="16sp"
                             android:textStyle="bold"
                             android:textColor="#DC2626"
-                            android:layout_marginTop="10dp" />
+                            android:layout_marginTop="10dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
 
                         <TextView
                             android:id="@+id/tvAvailable"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
                             android:text="Available\n₹0"
                             android:textSize="16sp"
                             android:textStyle="bold"
                             android:textColor="#16A34A"
-                            android:layout_marginTop="8dp" />
+                            android:layout_marginTop="8dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
 
                         <TextView
                             android:id="@+id/tvUnallocated"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
                             android:text="Unallocated\n₹0"
                             android:textSize="13sp"
                             android:textColor="#9CA3AF"
-                            android:layout_marginTop="8dp" />
+                            android:layout_marginTop="8dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
                     </LinearLayout>
                 </LinearLayout>
 
@@ -142,46 +156,46 @@
                     <TextView
                         android:id="@+id/tvIncome"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:gravity="center"
                         android:text="Income\n₹0"
                         android:textSize="14sp"
-                        android:textColor="#2563EB" />
+                        android:textColor="#2563EB"
+                        android:layout_height="wrap_content" />
 
                     <TextView
                         android:id="@+id/tvExpense"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:gravity="center"
                         android:text="Expense\n₹0"
                         android:textSize="14sp"
-                        android:textColor="#DC2626" />
+                        android:textColor="#DC2626"
+                        android:layout_height="wrap_content" />
 
                     <TextView
                         android:id="@+id/tvSavings"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:gravity="center"
                         android:text="Savings\n₹0"
                         android:textSize="14sp"
-                        android:textColor="#7C3AED" />
+                        android:textColor="#7C3AED"
+                        android:layout_height="wrap_content" />
                 </LinearLayout>
 
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- ================= CATEGORY LIST ================= -->
+        <!-- CATEGORY LIST -->
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:text="Budgeted Categories"
             android:textColor="#FFFFFF"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:layout_marginBottom="10dp" />
+            android:layout_marginBottom="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvCategories"
