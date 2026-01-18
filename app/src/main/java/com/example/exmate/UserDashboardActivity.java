@@ -58,7 +58,7 @@ public class UserDashboardActivity extends AppCompatActivity
         bottomNav = findViewById(R.id.bottomNav);
 
         if (savedInstanceState == null) {
-            loadFragment(new HomeFragment());
+            loadFragmentIfNeeded(new HomeFragment());
         }
 
         setupBottomNav();
@@ -76,11 +76,13 @@ public class UserDashboardActivity extends AppCompatActivity
     @Override
     public void openReports() {
         bottomNav.setSelectedItemId(R.id.nav_reports);
+        loadFragmentIfNeeded(new ReportsFragment());
     }
 
     @Override
     public void openBudget() {
         bottomNav.setSelectedItemId(R.id.nav_budget);
+        openBudgetFlow(); // 🔥 FIX
     }
 
     // ================= BOTTOM NAV =================
@@ -94,7 +96,7 @@ public class UserDashboardActivity extends AppCompatActivity
             int id = item.getItemId();
 
             if (id == R.id.nav_dashboard) {
-                loadFragment(new HomeFragment());
+                loadFragmentIfNeeded(new HomeFragment());
                 return true;
             }
 
@@ -109,12 +111,12 @@ public class UserDashboardActivity extends AppCompatActivity
             }
 
             if (id == R.id.nav_reports) {
-                loadFragment(new ReportsFragment());
+                loadFragmentIfNeeded(new ReportsFragment());
                 return true;
             }
 
             if (id == R.id.nav_profile) {
-                loadFragment(new ProfileFragment());
+                loadFragmentIfNeeded(new ProfileFragment());
                 return true;
             }
 
@@ -139,9 +141,7 @@ public class UserDashboardActivity extends AppCompatActivity
         ref.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-
-                Fragment target = new BudgetFragment();
-                loadFragment(target);
+                loadFragmentIfNeeded(new BudgetFragment());
             }
 
             @Override
@@ -158,7 +158,15 @@ public class UserDashboardActivity extends AppCompatActivity
 
     // ================= FRAGMENT LOADER =================
 
-    private void loadFragment(Fragment fragment) {
+    private void loadFragmentIfNeeded(Fragment fragment) {
+
+        Fragment current = getSupportFragmentManager()
+                .findFragmentById(R.id.fragmentContainer);
+
+        if (current != null && current.getClass().equals(fragment.getClass())) {
+            return;
+        }
+
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.fragmentContainer, fragment)

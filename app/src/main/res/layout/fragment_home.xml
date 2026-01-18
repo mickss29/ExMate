@@ -264,11 +264,14 @@
             <!-- ================= MINI BUDGET SUMMARY (FIXED) ================= -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
+                android:id="@+id/cardBudgetSummary"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="22dp"
                 app:cardBackgroundColor="#0E1A2B"
                 app:cardCornerRadius="26dp"
-                app:cardElevation="8dp">
+                app:cardElevation="8dp"
+                android:clickable="true"
+                android:focusable="true">
 
                 <LinearLayout
                     android:layout_width="match_parent"
