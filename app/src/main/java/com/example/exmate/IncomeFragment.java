@@ -220,13 +220,16 @@ public class IncomeFragment extends Fragment {
             return;
         }
 
+        // 🔥 FIX: reset se pehle source save
+        String selectedSource = spIncomeSource.getSelectedItem().toString();
+
         btnSaveIncome.setEnabled(false);
         progressSaveIncome.setVisibility(View.VISIBLE);
 
         Map<String, Object> map = new HashMap<>();
         map.put("amount", amount);
         map.put("time", selectedDateMillis);
-        map.put("source", spIncomeSource.getSelectedItem().toString());
+        map.put("source", selectedSource);
         map.put("paymentMode", spPaymentMode.getSelectedItem().toString());
         map.put("note", etIncomeNote.getText().toString().trim());
 
@@ -235,12 +238,11 @@ public class IncomeFragment extends Fragment {
                     hideLoader();
                     resetFields();
 
-                    // 🔔 NOTIFICATION (SAFE)
-                    NotificationHelper.showTransactionNotification(
+                    // 🔔 CORRECT income notification
+                    NotificationHelper.showIncomeSummaryNotification(
                             requireContext(),
-                            "Income Added",
-                            "₹" + amount + " received from " +
-                                    spIncomeSource.getSelectedItem().toString()
+                            amount,
+                            selectedSource
                     );
 
                     Toast.makeText(requireContext(),

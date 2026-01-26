@@ -220,13 +220,16 @@ public class ExpenseFragment extends Fragment {
             return;
         }
 
+        // 🔥 IMPORTANT: reset se pehle category store
+        String selectedCategory = spExpenseCategory.getSelectedItem().toString();
+
         btnSaveExpense.setEnabled(false);
         progressSave.setVisibility(View.VISIBLE);
 
         Map<String, Object> data = new HashMap<>();
         data.put("amount", amount);
         data.put("time", selectedDateMillis);
-        data.put("category", spExpenseCategory.getSelectedItem().toString());
+        data.put("category", selectedCategory);
         data.put("paymentMode", spExpensePaymentMode.getSelectedItem().toString());
         data.put("note", etExpenseNote.getText().toString().trim());
 
@@ -235,12 +238,11 @@ public class ExpenseFragment extends Fragment {
                     hideLoader();
                     resetFields();
 
-                    // 🔔 NOTIFICATION (SAFE)
-                    NotificationHelper.showTransactionNotification(
+                    // 🔔 FINAL CORRECT NOTIFICATION CALL
+                    NotificationHelper.showExpenseSummaryNotification(
                             requireContext(),
-                            "Expense Added",
-                            "₹" + amount + " spent on " +
-                                    spExpenseCategory.getSelectedItem().toString()
+                            amount,
+                            selectedCategory
                     );
 
                     Toast.makeText(requireContext(),
