@@ -276,7 +276,7 @@ public class ExpenseFragment extends Fragment {
             android.app.NotificationChannel channel =
                     new android.app.NotificationChannel(
                             "transaction_alert",
-                            "Transaction Alerts",
+                            "Transaction Alerts.",
                             NotificationManager.IMPORTANCE_HIGH
                     );
 
