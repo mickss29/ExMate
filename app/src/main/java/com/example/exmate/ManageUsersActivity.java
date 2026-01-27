@@ -34,6 +34,7 @@ import com.google.firebase.database.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class ManageUsersActivity extends AppCompatActivity {
@@ -50,16 +51,18 @@ public class ManageUsersActivity extends AppCompatActivity {
 
     private static final int STORAGE_REQ = 101;
 
+    // 🔥 SINGLE SOURCE OF TRUTH FORMAT
+    private final SimpleDateFormat sdf =
+            new SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.ENGLISH);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_manage_users);
 
-        // Toolbar
         Toolbar toolbar = findViewById(R.id.usersToolbar);
         setSupportActionBar(toolbar);
 
-        // UI
         etSearch = findViewById(R.id.etSearchUser);
         btnWeek = findViewById(R.id.btnWeek);
         btnMonth = findViewById(R.id.btnMonth);
@@ -73,22 +76,18 @@ public class ManageUsersActivity extends AppCompatActivity {
         FloatingActionButton fabExport = findViewById(R.id.fabExport);
         fabExport.setOnClickListener(v -> showExportBottomSheet());
 
-        // Firebase
         usersRef = FirebaseDatabase.getInstance().getReference("users");
 
         checkPermission();
         loadUsersFromFirebase();
 
-        // Filters
         btnWeek.setOnClickListener(v -> applyWeek());
         btnMonth.setOnClickListener(v -> applyMonth());
         btnDate.setOnClickListener(v -> pickCustomDate());
 
-        // Search
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
             @Override public void afterTextChanged(Editable s) {}
-
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 searchUsers(s.toString());
@@ -96,7 +95,7 @@ public class ManageUsersActivity extends AppCompatActivity {
         });
     }
 
-    // ================= LOAD USERS =================
+    // ================= LOAD USERS (FIXED 100%) =================
     private void loadUsersFromFirebase() {
         usersRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -112,18 +111,43 @@ public class ManageUsersActivity extends AppCompatActivity {
                     String email = s.child("email").getValue(String.class);
                     String phone = s.child("phone").getValue(String.class);
                     Boolean blocked = s.child("blocked").getValue(Boolean.class);
-                    Long createdAt = s.child("createdAt").getValue(Long.class);
-
                     if (blocked == null) blocked = false;
-                    if (createdAt == null) createdAt = 0L;
+
+                    // 🔥 SAFE DATE READ (String + Long + null)
+                    String createdAt;
+                    Object raw = s.child("createdAt").getValue();
+
+                    if (raw instanceof String) {
+                        createdAt = (String) raw;
+                    } else if (raw instanceof Long) {
+                        createdAt = sdf.format(new Date((Long) raw));
+                        s.getRef().child("createdAt").setValue(createdAt); // migrate
+                    } else {
+                        createdAt = sdf.format(new Date());
+                        s.getRef().child("createdAt").setValue(createdAt);
+                    }
+
+                    // 🔥 normalize format (THIS FIXES FILTER)
+                    long millis = parseDate(createdAt);
+                    createdAt = sdf.format(new Date(millis));
+                    s.getRef().child("createdAt").setValue(createdAt);
 
                     AdminUserModel u = new AdminUserModel(
-                            uid, safe(name), safe(email), safe(phone), blocked
+                            uid,
+                            safe(name),
+                            safe(email),
+                            safe(phone),
+                            blocked,
+                            createdAt
                     );
-                    u.setCreatedAt(createdAt);
 
                     userList.add(u);
                 }
+
+                // 🔥 NEWEST → OLDEST
+                Collections.sort(userList, (a, b) ->
+                        Long.compare(parseDate(b.getCreatedAt()), parseDate(a.getCreatedAt()))
+                );
 
                 filteredList.addAll(userList);
                 adapter.notifyDataSetChanged();
@@ -167,39 +191,35 @@ public class ManageUsersActivity extends AppCompatActivity {
     private void pickCustomDate() {
         Calendar cal = Calendar.getInstance();
 
-        // FROM DATE
         new DatePickerDialog(this, (v, y, m, d) -> {
 
             Calendar from = Calendar.getInstance();
             from.set(y, m, d, 0, 0, 0);
-            long fromTime = from.getTimeInMillis();
 
-            // TO DATE
             new DatePickerDialog(this, (v2, y2, m2, d2) -> {
 
                 Calendar to = Calendar.getInstance();
                 to.set(y2, m2, d2, 23, 59, 59);
-                long toTime = to.getTimeInMillis();
 
-                if (toTime < fromTime) {
+                if (to.before(from)) {
                     Toast.makeText(this,
                             "End date must be after start date",
                             Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                filterByRange(fromTime, toTime);
+                filterByRange(from.getTimeInMillis(), to.getTimeInMillis());
 
             }, y, m, d).show();
 
         }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show();
     }
 
-
     private void filterByRange(long start, long end) {
         filteredList.clear();
         for (AdminUserModel u : userList) {
-            if (u.getCreatedAt() >= start && u.getCreatedAt() <= end) {
+            long t = parseDate(u.getCreatedAt());
+            if (t >= start && t <= end) {
                 filteredList.add(u);
             }
         }
@@ -228,13 +248,14 @@ public class ManageUsersActivity extends AppCompatActivity {
     private void exportCSV(List<AdminUserModel> list) {
         try {
             File dir = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
-            File file = new File(dir, "Filtered_Users.csv");
+            File file = new File(dir, "Users.csv");
 
             FileWriter w = new FileWriter(file);
-            w.append("Name,Email,Phone,Status\n");
+            w.append("Date,Name,Email,Phone,Status\n");
 
             for (AdminUserModel u : list) {
-                w.append(u.getName()).append(",")
+                w.append(u.getCreatedAt()).append(",")
+                        .append(u.getName()).append(",")
                         .append(u.getEmail()).append(",")
                         .append(u.getPhone()).append(",")
                         .append(u.isBlocked() ? "Blocked" : "Active")
@@ -251,44 +272,33 @@ public class ManageUsersActivity extends AppCompatActivity {
     private void exportPDF(List<AdminUserModel> list) {
         try {
             PdfDocument pdf = new PdfDocument();
-            Paint titlePaint = new Paint();
-            Paint textPaint = new Paint();
-            Paint headerPaint = new Paint();
+            Paint title = new Paint();
+            Paint header = new Paint();
+            Paint text = new Paint();
 
             PdfDocument.PageInfo info =
                     new PdfDocument.PageInfo.Builder(595, 842, 1).create();
 
             PdfDocument.Page page = pdf.startPage(info);
             Canvas c = page.getCanvas();
-
             int y = 40;
 
-            // Title
-            titlePaint.setTextSize(18);
-            titlePaint.setFakeBoldText(true);
-            c.drawText("ExMate - Users Detailed Report", 40, y, titlePaint);
+            title.setTextSize(18);
+            title.setFakeBoldText(true);
+            c.drawText("ExMate Users Report", 40, y, title);
 
             y += 25;
-            textPaint.setTextSize(11);
-            c.drawText("Total Users: " + list.size(), 40, y, textPaint);
+            header.setFakeBoldText(true);
 
-            y += 20;
+            c.drawText("Date & Time", 40, y, header);
+            c.drawText("Name", 170, y, header);
+            c.drawText("Email", 300, y, header);
+            c.drawText("Mobile", 460, y, header);
 
-            // Header
-            headerPaint.setFakeBoldText(true);
-            c.drawText("Name", 40, y, headerPaint);
-            c.drawText("Email", 160, y, headerPaint);
-            c.drawText("Mobile", 320, y, headerPaint);
-            c.drawText("Status", 460, y, headerPaint);
-
-            y += 10;
-            c.drawLine(40, y, 555, y, textPaint);
             y += 18;
-
-            headerPaint.setFakeBoldText(false);
+            header.setFakeBoldText(false);
 
             for (AdminUserModel u : list) {
-
                 if (y > 780) {
                     pdf.finishPage(page);
                     page = pdf.startPage(info);
@@ -296,39 +306,42 @@ public class ManageUsersActivity extends AppCompatActivity {
                     y = 40;
                 }
 
-                c.drawText(trim(u.getName(), 18), 40, y, textPaint);
-                c.drawText(trim(u.getEmail(), 25), 160, y, textPaint);
-                c.drawText(trim(u.getPhone(), 14), 320, y, textPaint);
-                c.drawText(u.isBlocked() ? "Blocked" : "Active", 460, y, textPaint);
-
+                c.drawText(u.getCreatedAt(), 40, y, text);
+                c.drawText(trim(u.getName(), 18), 170, y, text);
+                c.drawText(trim(u.getEmail(), 25), 300, y, text);
+                c.drawText(trim(u.getPhone(), 14), 460, y, text);
                 y += 18;
             }
 
             pdf.finishPage(page);
-
-            File dir = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
-            File file = new File(dir, "ExMate_Full_User_Report.pdf");
-
+            File file = new File(getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS),
+                    "ExMate_Users_Report.pdf");
             pdf.writeTo(new FileOutputStream(file));
             pdf.close();
 
             openFile(file, "application/pdf");
 
         } catch (Exception e) {
-            Toast.makeText(this, "PDF error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
-
     // ================= HELPERS =================
-    private String safe(String v) {
-        return v == null ? "-" : v;
+    private long parseDate(String date) {
+        try { return sdf.parse(date).getTime(); }
+        catch (Exception e) { return 0L; }
+    }
+
+    private String safe(String v) { return v == null ? "-" : v; }
+
+    private String trim(String t, int max) {
+        if (t == null) return "-";
+        return t.length() > max ? t.substring(0, max - 3) + "..." : t;
     }
 
     private void openFile(File file, String type) {
-        Uri uri = FileProvider.getUriForFile(this,
-                getPackageName() + ".provider", file);
-
+        Uri uri = FileProvider.getUriForFile(
+                this, getPackageName() + ".provider", file);
         Intent i = new Intent(Intent.ACTION_VIEW);
         i.setDataAndType(uri, type);
         i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
@@ -346,9 +359,4 @@ public class ManageUsersActivity extends AppCompatActivity {
                     STORAGE_REQ);
         }
     }
-    private String trim(String text, int max) {
-        if (text == null) return "-";
-        return text.length() > max ? text.substring(0, max - 3) + "..." : text;
-    }
-
 }

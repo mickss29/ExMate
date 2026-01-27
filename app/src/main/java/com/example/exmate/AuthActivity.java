@@ -31,6 +31,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.*;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 public class AuthActivity extends AppCompatActivity {
@@ -140,6 +141,8 @@ public class AuthActivity extends AppCompatActivity {
                     @Override
                     public void onDataChange(DataSnapshot snapshot) {
                         loader.dismiss();
+                        migrateOldUsers(snapshot); // 🔥 auto-fix old users
+
 
                         // 🔐 RESTORE APP LOCK AFTER CLEAR DATA
                         restoreAppLockFromServer();
@@ -327,6 +330,19 @@ public class AuthActivity extends AppCompatActivity {
                     map.put("email", email);
                     map.put("phone", phone);
                     map.put("role", "user");
+
+// 🔥 CREATED DATE (HUMAN READABLE)
+                    String createdAtText = new java.text.SimpleDateFormat(
+                            "dd MMM yyyy, hh:mm a",
+                            java.util.Locale.getDefault()
+                    ).format(new java.util.Date());
+
+// 🔥 CREATED DATE (FOR FILTER LOGIC)
+                    long createdAtMillis = System.currentTimeMillis();
+
+                    map.put("createdAtText", createdAtText);
+                    map.put("createdAtMillis", createdAtMillis);
+
 
                     usersRef.child(uid).setValue(map).addOnCompleteListener(dbTask -> {
                         loader.dismiss();
@@ -758,6 +774,27 @@ public class AuthActivity extends AppCompatActivity {
 
             @Override public void onCancelled(DatabaseError error) {}
         });
+    }
+    private void migrateOldUsers(DataSnapshot snapshot) {
+
+        for (DataSnapshot s : snapshot.getChildren()) {
+
+            if (!s.hasChild("createdAtMillis")) {
+
+                long now = System.currentTimeMillis();
+
+                String text = new java.text.SimpleDateFormat(
+                        "dd MMM yyyy, hh:mm a",
+                        java.util.Locale.getDefault()
+                ).format(new java.util.Date(now));
+
+                Map<String, Object> update = new HashMap<>();
+                update.put("createdAtMillis", now);
+                update.put("createdAtText", text);
+
+                s.getRef().updateChildren(update);
+            }
+        }
     }
 
 

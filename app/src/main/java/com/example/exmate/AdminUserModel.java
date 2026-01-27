@@ -7,18 +7,31 @@ public class AdminUserModel {
     private String email;
     private String phone;
     private boolean blocked;
-    private long createdAt; // 🔥 for filter (week / month / date)
+    private String createdAt; // 🔥 FULL DATE + TIME (STRING)
 
     // REQUIRED empty constructor for Firebase
     public AdminUserModel() {}
 
-    public AdminUserModel(String uid, String name, String email, String phone, boolean blocked) {
+    // 🔥 OLD CODE COMPATIBILITY (IMPORTANT)
+    public AdminUserModel(String uid, String name, String email,
+                          String phone, boolean blocked) {
         this.uid = uid;
         this.name = name;
         this.email = email;
         this.phone = phone;
         this.blocked = blocked;
-        this.createdAt = 0L; // safe default (no crash)
+        this.createdAt = "01 Jan 2000, 12:00 AM"; // safe default
+    }
+
+    // 🔥 NEW CONSTRUCTOR (FULL DATA)
+    public AdminUserModel(String uid, String name, String email,
+                          String phone, boolean blocked, String createdAt) {
+        this.uid = uid;
+        this.name = name;
+        this.email = email;
+        this.phone = phone;
+        this.blocked = blocked;
+        this.createdAt = createdAt;
     }
 
     // ================= GETTERS =================
@@ -42,7 +55,7 @@ public class AdminUserModel {
         return blocked;
     }
 
-    public long getCreatedAt() {
+    public String getCreatedAt() {
         return createdAt;
     }
 
@@ -51,7 +64,7 @@ public class AdminUserModel {
         this.blocked = blocked;
     }
 
-    public void setCreatedAt(long createdAt) {
+    public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
     }
 }
