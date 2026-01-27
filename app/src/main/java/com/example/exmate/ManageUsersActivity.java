@@ -1,6 +1,7 @@
 package com.example.exmate;
 
 import android.Manifest;
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Canvas;
@@ -10,7 +11,11 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -24,27 +29,24 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 public class ManageUsersActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private AdminUserAdapter adapter;
-    private List<AdminUserModel> userList;
+    private List<AdminUserModel> userList = new ArrayList<>();
+    private List<AdminUserModel> filteredList = new ArrayList<>();
+
     private DatabaseReference usersRef;
+
+    private EditText etSearch;
+    private Button btnWeek, btnMonth, btnDate;
 
     private static final int STORAGE_REQ = 101;
 
@@ -53,33 +55,45 @@ public class ManageUsersActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_manage_users);
 
+        // Toolbar
         Toolbar toolbar = findViewById(R.id.usersToolbar);
         setSupportActionBar(toolbar);
 
+        // UI
+        etSearch = findViewById(R.id.etSearchUser);
+        btnWeek = findViewById(R.id.btnWeek);
+        btnMonth = findViewById(R.id.btnMonth);
+        btnDate = findViewById(R.id.btnDate);
+
         recyclerView = findViewById(R.id.recyclerUsers);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        userList = new ArrayList<>();
-        adapter = new AdminUserAdapter(this, userList);
+        adapter = new AdminUserAdapter(this, filteredList);
         recyclerView.setAdapter(adapter);
 
+        FloatingActionButton fabExport = findViewById(R.id.fabExport);
+        fabExport.setOnClickListener(v -> showExportBottomSheet());
+
+        // Firebase
         usersRef = FirebaseDatabase.getInstance().getReference("users");
 
         checkPermission();
         loadUsersFromFirebase();
 
-        FloatingActionButton fabExport = findViewById(R.id.fabExport);
-        fabExport.setOnClickListener(v -> showExportBottomSheet());
-    }
+        // Filters
+        btnWeek.setOnClickListener(v -> applyWeek());
+        btnMonth.setOnClickListener(v -> applyMonth());
+        btnDate.setOnClickListener(v -> pickCustomDate());
 
-    // ================= SAFE STRING =================
-    private String safe(String value) {
-        return value == null || value.trim().isEmpty() ? "-" : value;
-    }
+        // Search
+        etSearch.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
+            @Override public void afterTextChanged(Editable s) {}
 
-    private String trim(String text, int max) {
-        if (text == null) return "-";
-        return text.length() > max ? text.substring(0, max - 3) + "..." : text;
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                searchUsers(s.toString());
+            }
+        });
     }
 
     // ================= LOAD USERS =================
@@ -89,176 +103,212 @@ public class ManageUsersActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
 
                 userList.clear();
+                filteredList.clear();
 
-                for (DataSnapshot userSnap : snapshot.getChildren()) {
-                    String uid = userSnap.getKey();
-                    String name = userSnap.child("name").getValue(String.class);
-                    String email = userSnap.child("email").getValue(String.class);
-                    String phone = userSnap.child("phone").getValue(String.class);
-                    Boolean blocked = userSnap.child("blocked").getValue(Boolean.class);
+                for (DataSnapshot s : snapshot.getChildren()) {
+
+                    String uid = s.getKey();
+                    String name = s.child("name").getValue(String.class);
+                    String email = s.child("email").getValue(String.class);
+                    String phone = s.child("phone").getValue(String.class);
+                    Boolean blocked = s.child("blocked").getValue(Boolean.class);
+                    Long createdAt = s.child("createdAt").getValue(Long.class);
 
                     if (blocked == null) blocked = false;
+                    if (createdAt == null) createdAt = 0L;
 
-                    userList.add(new AdminUserModel(
-                            uid,
-                            safe(name),
-                            safe(email),
-                            safe(phone),
-                            blocked
-                    ));
+                    AdminUserModel u = new AdminUserModel(
+                            uid, safe(name), safe(email), safe(phone), blocked
+                    );
+                    u.setCreatedAt(createdAt);
+
+                    userList.add(u);
                 }
+
+                filteredList.addAll(userList);
                 adapter.notifyDataSetChanged();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(ManageUsersActivity.this,
-                        "Failed to load users: " + error.getMessage(),
-                        Toast.LENGTH_LONG).show();
+                        error.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }
 
-    // ================= EXPORT OPTIONS =================
+    // ================= SEARCH =================
+    private void searchUsers(String q) {
+        filteredList.clear();
+        q = q.toLowerCase();
+
+        for (AdminUserModel u : userList) {
+            if (u.getName().toLowerCase().contains(q)
+                    || u.getEmail().toLowerCase().contains(q)
+                    || u.getPhone().toLowerCase().contains(q)) {
+                filteredList.add(u);
+            }
+        }
+        adapter.notifyDataSetChanged();
+    }
+
+    // ================= FILTERS =================
+    private void applyWeek() {
+        long now = System.currentTimeMillis();
+        filterByRange(now - 7L * 24 * 60 * 60 * 1000, now);
+    }
+
+    private void applyMonth() {
+        Calendar c = Calendar.getInstance();
+        c.set(Calendar.DAY_OF_MONTH, 1);
+        filterByRange(c.getTimeInMillis(), System.currentTimeMillis());
+    }
+
+    private void pickCustomDate() {
+        Calendar cal = Calendar.getInstance();
+
+        // FROM DATE
+        new DatePickerDialog(this, (v, y, m, d) -> {
+
+            Calendar from = Calendar.getInstance();
+            from.set(y, m, d, 0, 0, 0);
+            long fromTime = from.getTimeInMillis();
+
+            // TO DATE
+            new DatePickerDialog(this, (v2, y2, m2, d2) -> {
+
+                Calendar to = Calendar.getInstance();
+                to.set(y2, m2, d2, 23, 59, 59);
+                long toTime = to.getTimeInMillis();
+
+                if (toTime < fromTime) {
+                    Toast.makeText(this,
+                            "End date must be after start date",
+                            Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                filterByRange(fromTime, toTime);
+
+            }, y, m, d).show();
+
+        }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show();
+    }
+
+
+    private void filterByRange(long start, long end) {
+        filteredList.clear();
+        for (AdminUserModel u : userList) {
+            if (u.getCreatedAt() >= start && u.getCreatedAt() <= end) {
+                filteredList.add(u);
+            }
+        }
+        adapter.notifyDataSetChanged();
+    }
+
+    // ================= EXPORT =================
     private void showExportBottomSheet() {
         BottomSheetDialog dialog = new BottomSheetDialog(this);
-        View view = getLayoutInflater().inflate(R.layout.bottom_sheet_export, null);
-        dialog.setContentView(view);
+        View v = getLayoutInflater().inflate(R.layout.bottom_sheet_export, null);
+        dialog.setContentView(v);
 
-        view.findViewById(R.id.btnExportPDF).setOnClickListener(v -> {
-            exportProfessionalPDF();
+        v.findViewById(R.id.btnExportPDF).setOnClickListener(x -> {
+            exportPDF(filteredList);
             dialog.dismiss();
         });
 
-        view.findViewById(R.id.btnExportCSV).setOnClickListener(v -> {
-            exportCSV();
+        v.findViewById(R.id.btnExportCSV).setOnClickListener(x -> {
+            exportCSV(filteredList);
             dialog.dismiss();
         });
 
         dialog.show();
     }
 
-    // ================= CSV EXPORT (AUTO OPEN) =================
-    private void exportCSV() {
+    private void exportCSV(List<AdminUserModel> list) {
         try {
             File dir = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
-            if (dir != null && !dir.exists()) dir.mkdirs();
+            File file = new File(dir, "Filtered_Users.csv");
 
-            File file = new File(dir, "ExMate_Users.csv");
-            FileWriter writer = new FileWriter(file);
+            FileWriter w = new FileWriter(file);
+            w.append("Name,Email,Phone,Status\n");
 
-            writer.append("UID,Name,Email,Phone,Status\n");
-
-            for (AdminUserModel user : userList) {
-                writer.append(safe(user.getUid())).append(",")
-                        .append(safe(user.getName())).append(",")
-                        .append(safe(user.getEmail())).append(",")
-                        .append(safe(user.getPhone())).append(",")
-                        .append(user.isBlocked() ? "Blocked" : "Active")
+            for (AdminUserModel u : list) {
+                w.append(u.getName()).append(",")
+                        .append(u.getEmail()).append(",")
+                        .append(u.getPhone()).append(",")
+                        .append(u.isBlocked() ? "Blocked" : "Active")
                         .append("\n");
             }
-
-            writer.flush();
-            writer.close();
-
+            w.close();
             openFile(file, "text/csv");
 
         } catch (Exception e) {
-            Toast.makeText(this, "CSV error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
-    // ================= PDF EXPORT (AUTO OPEN + SIGNATURE) =================
-    private void exportProfessionalPDF() {
+    private void exportPDF(List<AdminUserModel> list) {
         try {
             PdfDocument pdf = new PdfDocument();
-
             Paint titlePaint = new Paint();
             Paint textPaint = new Paint();
             Paint headerPaint = new Paint();
-            Paint footerPaint = new Paint();
 
-            PdfDocument.PageInfo pageInfo =
+            PdfDocument.PageInfo info =
                     new PdfDocument.PageInfo.Builder(595, 842, 1).create();
 
-            int pageNumber = 1;
-            int totalUsers = userList.size();
-            int blockedUsers = 0;
+            PdfDocument.Page page = pdf.startPage(info);
+            Canvas c = page.getCanvas();
 
-            for (AdminUserModel u : userList) if (u.isBlocked()) blockedUsers++;
+            int y = 40;
 
-            PdfDocument.Page page = pdf.startPage(pageInfo);
-            Canvas canvas = page.getCanvas();
-            int y = 50;
-
-            titlePaint.setTextSize(22);
+            // Title
+            titlePaint.setTextSize(18);
             titlePaint.setFakeBoldText(true);
-            canvas.drawText("ExMate – Users Report", 40, y, titlePaint);
-
-            y += 28;
-            textPaint.setTextSize(11);
-            String generatedAt = new SimpleDateFormat(
-                    "dd MMM yyyy, hh:mm a", Locale.getDefault()
-            ).format(new Date());
-
-            canvas.drawText("Generated on: " + generatedAt, 40, y, textPaint);
+            c.drawText("ExMate - Users Detailed Report", 40, y, titlePaint);
 
             y += 25;
-            headerPaint.setFakeBoldText(true);
-            canvas.drawText("Summary", 40, y, headerPaint);
-            y += 15;
-
-            canvas.drawText("Total Users: " + totalUsers, 40, y, textPaint);
-            canvas.drawText("Blocked Users: " + blockedUsers, 200, y, textPaint);
+            textPaint.setTextSize(11);
+            c.drawText("Total Users: " + list.size(), 40, y, textPaint);
 
             y += 20;
-            canvas.drawLine(40, y, 555, y, textPaint);
-            y += 20;
 
+            // Header
             headerPaint.setFakeBoldText(true);
-            canvas.drawText("Name", 40, y, headerPaint);
-            canvas.drawText("Email", 150, y, headerPaint);
-            canvas.drawText("Phone", 320, y, headerPaint);
-            canvas.drawText("Status", 460, y, headerPaint);
+            c.drawText("Name", 40, y, headerPaint);
+            c.drawText("Email", 160, y, headerPaint);
+            c.drawText("Mobile", 320, y, headerPaint);
+            c.drawText("Status", 460, y, headerPaint);
 
-            y += 15;
-            canvas.drawLine(40, y, 555, y, textPaint);
-            y += 15;
+            y += 10;
+            c.drawLine(40, y, 555, y, textPaint);
+            y += 18;
+
             headerPaint.setFakeBoldText(false);
 
-            for (AdminUserModel user : userList) {
+            for (AdminUserModel u : list) {
 
-                if (y > 760) {
-                    drawFooter(canvas, footerPaint, pageNumber);
+                if (y > 780) {
                     pdf.finishPage(page);
-                    pageNumber++;
-                    page = pdf.startPage(pageInfo);
-                    canvas = page.getCanvas();
-                    y = 50;
+                    page = pdf.startPage(info);
+                    c = page.getCanvas();
+                    y = 40;
                 }
 
-                canvas.drawText(trim(user.getName(), 16), 40, y, textPaint);
-                canvas.drawText(trim(user.getEmail(), 26), 150, y, textPaint);
-                canvas.drawText(trim(user.getPhone(), 14), 320, y, textPaint);
-                canvas.drawText(user.isBlocked() ? "Blocked" : "Active", 460, y, textPaint);
+                c.drawText(trim(u.getName(), 18), 40, y, textPaint);
+                c.drawText(trim(u.getEmail(), 25), 160, y, textPaint);
+                c.drawText(trim(u.getPhone(), 14), 320, y, textPaint);
+                c.drawText(u.isBlocked() ? "Blocked" : "Active", 460, y, textPaint);
+
                 y += 18;
             }
 
-            // ===== DIGITAL SIGNATURE =====
-            y += 30;
-            canvas.drawLine(40, y, 300, y, textPaint);
-            y += 16;
-            canvas.drawText("Digitally signed by ExMate Admin", 40, y, textPaint);
-            y += 14;
-            canvas.drawText("Signed on: " + generatedAt, 40, y, textPaint);
-
-            drawFooter(canvas, footerPaint, pageNumber);
             pdf.finishPage(page);
 
             File dir = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
-            if (dir != null && !dir.exists()) dir.mkdirs();
+            File file = new File(dir, "ExMate_Full_User_Report.pdf");
 
-            File file = new File(dir, "ExMate_Users_Report.pdf");
             pdf.writeTo(new FileOutputStream(file));
             pdf.close();
 
@@ -269,37 +319,22 @@ public class ManageUsersActivity extends AppCompatActivity {
         }
     }
 
-    // ================= FOOTER =================
-    private void drawFooter(Canvas canvas, Paint paint, int pageNumber) {
-        paint.setTextSize(10);
-        canvas.drawLine(40, 810, 555, 810, paint);
-        canvas.drawText("Generated by ExMate Admin Panel", 180, 828, paint);
-        canvas.drawText("Page " + pageNumber, 480, 828, paint);
+
+    // ================= HELPERS =================
+    private String safe(String v) {
+        return v == null ? "-" : v;
     }
 
-    // ================= OPEN FILE SAFELY =================
-    private void openFile(File file, String mimeType) {
-        try {
-            Uri uri = FileProvider.getUriForFile(
-                    this,
-                    getPackageName() + ".provider",
-                    file
-            );
+    private void openFile(File file, String type) {
+        Uri uri = FileProvider.getUriForFile(this,
+                getPackageName() + ".provider", file);
 
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setDataAndType(uri, mimeType);
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-            startActivity(Intent.createChooser(intent, "Open file"));
-
-        } catch (Exception e) {
-            Toast.makeText(this,
-                    "No app found to open this file",
-                    Toast.LENGTH_LONG).show();
-        }
+        Intent i = new Intent(Intent.ACTION_VIEW);
+        i.setDataAndType(uri, type);
+        i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        startActivity(Intent.createChooser(i, "Open file"));
     }
 
-    // ================= PERMISSION =================
     private void checkPermission() {
         if (Build.VERSION.SDK_INT < 29 &&
                 ContextCompat.checkSelfPermission(this,
@@ -311,4 +346,9 @@ public class ManageUsersActivity extends AppCompatActivity {
                     STORAGE_REQ);
         }
     }
+    private String trim(String text, int max) {
+        if (text == null) return "-";
+        return text.length() > max ? text.substring(0, max - 3) + "..." : text;
+    }
+
 }
