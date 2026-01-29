@@ -9,8 +9,6 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
-
-    <!-- 📝 Storage permission (safe, legacy) -->
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
@@ -36,10 +34,10 @@
             </intent-filter>
         </activity>
 
-        <!-- 🔐 AUTH / LOGIN -->
+        <!-- 🔐 AUTH -->
         <activity android:name=".AuthActivity" android:exported="false" />
 
-        <!-- 👤 USER SIDE -->
+        <!-- 👤 USER -->
         <activity android:name=".UserDashboardActivity" android:exported="false" />
         <activity android:name=".UserReportsActivity" android:exported="false" />
 
@@ -48,12 +46,11 @@
         <activity android:name=".EditProfileActivity" android:exported="false" />
         <activity android:name=".StatisticsActivity" android:exported="false" />
 
-        <!-- ⭐ NEW REQUIRED ACTIVITY (SAFE) -->
         <activity
             android:name=".AddTransactionActivity"
             android:exported="false" />
 
-        <!-- 👨‍💼 ADMIN SIDE -->
+        <!-- 👨‍💼 ADMIN -->
         <activity android:name=".AdminDashboardActivity" android:exported="false" />
         <activity android:name=".ManageUsersActivity" android:exported="false" />
         <activity android:name=".ManageExpensesActivity" android:exported="false" />
@@ -65,6 +62,7 @@
         <activity android:name=".AdminFeedbackDetailActivity" android:exported="false" />
         <activity android:name=".AdminFeedbackActivity" android:exported="false" />
         <activity android:name=".AdminUserFinanceActivity" android:exported="false" />
+
         <activity android:name=".AppLockActivity" android:exported="false"/>
         <activity android:name=".AppLockManager" android:exported="false"/>
         <activity android:name=".SetPinActivity" android:exported="false"/>
@@ -72,6 +70,12 @@
         <activity android:name=".AddCategoryActivity" android:exported="false" />
         <activity android:name=".SetBudgetActivity" android:exported="false" />
         <activity android:name="NotificationHelper" android:exported="false"/>
+
+        <!-- ✅ NEW PROFILE PAGES -->
+        <activity android:name=".TermsActivity" android:exported="false" />
+        <activity android:name=".PrivacyActivity" android:exported="false" />
+        <activity android:name=".SubscriptionActivity" android:exported="false" />
+        <activity android:name=".AboutActivity" android:exported="false" />
 
         <!-- 📂 FILE PROVIDER -->
         <provider
@@ -88,7 +92,6 @@
         <receiver android:name=".DailyReminderReceiver" android:exported="false" />
         <receiver android:name=".DailySummaryReceiver" android:exported="false" />
         <receiver android:name=".MorningGreetingReceiver" android:exported="false" />
-
 
     </application>
 

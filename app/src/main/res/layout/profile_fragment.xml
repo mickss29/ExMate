@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="#0A0F1C"
     android:padding="18dp">
 
@@ -45,7 +45,7 @@
                 android:text="User"
                 android:textColor="#FFFFFF"
                 android:textSize="18sp"
-                android:textStyle="bold"/>
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tvUserEmail"
@@ -54,7 +54,7 @@
                 android:layout_marginTop="4dp"
                 android:text="email@example.com"
                 android:textColor="#9CA3AF"
-                android:textSize="14sp"/>
+                android:textSize="14sp" />
 
             <TextView
                 android:id="@+id/tvUserPhone"
@@ -62,82 +62,38 @@
                 android:layout_height="wrap_content"
                 android:text=""
                 android:textColor="#9CA3AF"
-                android:textSize="14sp"/>
+                android:textSize="14sp" />
         </LinearLayout>
 
-        <!-- ================= GENERAL SETTINGS ================= -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="General Settings"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"
-            android:textSize="16sp"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="6dp"/>
+        <!-- ================= SETTINGS ================= -->
 
         <include
             android:id="@+id/itemProfileInfo"
             layout="@layout/row_profile_item"
-            android:background="@drawable/bg_row_card"/>
-
-        <include
-            android:id="@+id/itemAppLock"
-            layout="@layout/row_profile_item_switch"
-            android:background="@drawable/bg_row_card"/>
-
-        <include
-            android:id="@+id/itemRateApp"
-            layout="@layout/row_profile_item"
-            android:background="@drawable/bg_row_card"/>
+            android:background="@drawable/bg_row_card" />
 
         <include
             android:id="@+id/itemSubscription"
             layout="@layout/row_profile_item"
-            android:background="@drawable/bg_row_card"/>
-
-        <include
-            android:id="@+id/itemInvite"
-            layout="@layout/row_profile_item"
-            android:background="@drawable/bg_row_card"/>
+            android:background="@drawable/bg_row_card" />
 
         <include
             android:id="@+id/itemAbout"
             layout="@layout/row_profile_item"
-            android:background="@drawable/bg_row_card"/>
+            android:background="@drawable/bg_row_card" />
 
         <include
             android:id="@+id/itemTerms"
             layout="@layout/row_profile_item"
-            android:background="@drawable/bg_row_card"/>
+            android:background="@drawable/bg_row_card" />
 
         <include
             android:id="@+id/itemPrivacy"
             layout="@layout/row_profile_item"
-            android:background="@drawable/bg_row_card"/>
+            android:background="@drawable/bg_row_card" />
 
-        <!-- ================= HELP ================= -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Help &amp; Support"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"
-            android:textSize="16sp"
-            android:layout_marginTop="22dp"
-            android:layout_marginBottom="6dp"/>
+        <!-- ================= LOGOUT ================= -->
 
-        <include
-            android:id="@+id/itemFinancialSupport"
-            layout="@layout/row_profile_item"
-            android:background="@drawable/bg_row_card"/>
-
-        <include
-            android:id="@+id/itemWhatsNew"
-            layout="@layout/row_profile_item"
-            android:background="@drawable/bg_row_card"/>
-
-        <!-- ================= LOGOUT BUTTON ================= -->
         <Button
             android:id="@+id/btnLogout"
             android:layout_width="match_parent"
@@ -146,7 +102,7 @@
             android:text="Logout"
             android:textStyle="bold"
             android:textColor="#FFFFFF"
-            android:backgroundTint="#EF4444"/>
+            android:backgroundTint="#EF4444" />
 
         <TextView
             android:id="@+id/tvFeedbackStatus"
@@ -154,7 +110,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:textColor="#FFFFFF"
-            android:textSize="13sp"/>
+            android:textSize="13sp" />
+
     </LinearLayout>
 
 </ScrollView>
