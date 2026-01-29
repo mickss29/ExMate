@@ -72,6 +72,12 @@
             layout="@layout/row_profile_item"
             android:background="@drawable/bg_row_card" />
 
+        <!-- 🔒 APP LOCK (RESTORED) -->
+        <include
+            android:id="@+id/itemAppLock"
+            layout="@layout/row_profile_item_switch"
+            android:background="@drawable/bg_row_card" />
+
         <include
             android:id="@+id/itemSubscription"
             layout="@layout/row_profile_item"

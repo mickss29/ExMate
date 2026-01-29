@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,6 +25,7 @@ public class ProfileFragment extends Fragment {
     private TextView tvUserName, tvUserEmail, tvFeedbackStatus;
 
     private View itemProfileInfo,
+            itemAppLock,
             itemSubscription,
             itemAbout,
             itemTerms,
@@ -61,6 +63,7 @@ public class ProfileFragment extends Fragment {
         tvFeedbackStatus = view.findViewById(R.id.tvFeedbackStatus);
 
         itemProfileInfo  = view.findViewById(R.id.itemProfileInfo);
+        itemAppLock      = view.findViewById(R.id.itemAppLock);
         itemSubscription = view.findViewById(R.id.itemSubscription);
         itemAbout        = view.findViewById(R.id.itemAbout);
         itemTerms        = view.findViewById(R.id.itemTerms);
@@ -72,6 +75,7 @@ public class ProfileFragment extends Fragment {
     private void setupRows(View root) {
 
         bindRow(root, R.id.itemProfileInfo, R.drawable.ic_user, "Profile Info");
+        bindRow(root, R.id.itemAppLock, R.drawable.ic_lock, "App Lock");
         bindRow(root, R.id.itemSubscription, R.drawable.ic_subscription, "Subscription");
         bindRow(root, R.id.itemAbout, R.drawable.ic_info, "About Us");
         bindRow(root, R.id.itemTerms, R.drawable.ic_terms, "Terms & Conditions");
@@ -127,19 +131,30 @@ public class ProfileFragment extends Fragment {
         itemProfileInfo.setOnClickListener(v ->
                 startActivity(new Intent(requireContext(), EditProfileActivity.class)));
 
-        // Subscription (Coming Soon)
+        // 🔒 App Lock (OLD LOGIC)
+        itemAppLock.setOnClickListener(v -> {
+            if (AppLockManager.isEnabled(requireContext())) {
+                Toast.makeText(getContext(),
+                        "App Lock already enabled",
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                startActivity(new Intent(requireContext(), SetPinActivity.class));
+            }
+        });
+
+        // Subscription
         itemSubscription.setOnClickListener(v ->
                 startActivity(new Intent(requireContext(), SubscriptionActivity.class)));
 
-        // About Us (future page)
+        // About
         itemAbout.setOnClickListener(v ->
                 startActivity(new Intent(requireContext(), AboutActivity.class)));
 
-        // Terms & Conditions
+        // Terms
         itemTerms.setOnClickListener(v ->
                 startActivity(new Intent(requireContext(), TermsActivity.class)));
 
-        // Privacy Policy
+        // Privacy
         itemPrivacy.setOnClickListener(v ->
                 startActivity(new Intent(requireContext(), PrivacyActivity.class)));
 
