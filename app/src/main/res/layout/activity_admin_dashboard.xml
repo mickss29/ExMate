@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:background="@drawable/bg_glass_toolbaar"
         android:title="Admin Dashboard"
-        android:titleTextColor="@android:color/white"
+        android:titleTextColor="@android:color/black"
         android:padding="16dp" />
 
     <!-- ScrollView for better scrolling -->
