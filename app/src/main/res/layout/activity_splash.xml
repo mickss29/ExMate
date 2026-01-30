@@ -25,7 +25,7 @@
         android:id="@+id/tagline"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Save Better,Spend Better"
+        android:text="Save Better Spend Better"
         android:textSize="14sp"
         android:textColor="#9FB6E3"
         android:alpha="0"

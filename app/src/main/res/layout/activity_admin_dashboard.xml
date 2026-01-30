@@ -4,14 +4,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@drawable/admin_gradient_bg">
+    android:background="@drawable/bg_glass_card">
 
     <!-- Premium Toolbar -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/adminToolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/premiumToolbarColor"
+        android:background="@drawable/bg_glass_toolbaar"
         android:title="Admin Dashboard"
         android:titleTextColor="@android:color/white"
         android:padding="16dp" />
@@ -36,7 +36,7 @@
                 android:text="Dashboard Overview"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                android:textColor="@color/white"
+                android:textColor="@color/black"
                 android:layout_marginBottom="16dp"
                 android:letterSpacing="0.02"/>
 
@@ -45,6 +45,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
+                android:background="@drawable/glass_border"
                 android:layout_marginBottom="24dp"
                 android:weightSum="3">
 
@@ -64,6 +65,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:orientation="vertical"
+                        android:background="@drawable/card_charcoal_glass"
                         android:padding="16dp"
                         android:gravity="center">
 
@@ -73,14 +75,7 @@
                             android:layout_height="50dp"
                             android:background="@drawable/circle_bg_blue"
                             android:gravity="center"
-                            android:layout_marginBottom="8dp">
-
-                            <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
-                                android:src="@drawable/ic_users"
-                                app:tint="@android:color/white"/>
-                        </LinearLayout>
+                            android:layout_marginBottom="8dp"/>
 
                         <!-- Count -->
                         <TextView
@@ -119,6 +114,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:orientation="vertical"
+                        android:background="@drawable/card_navy_steel"
                         android:padding="16dp"
                         android:gravity="center">
 
@@ -173,6 +169,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:orientation="vertical"
+                        android:background="@drawable/card_smock_blake"
                         android:padding="16dp"
                         android:gravity="center">
 
@@ -182,14 +179,7 @@
                             android:layout_height="50dp"
                             android:background="@drawable/circle_bg_green"
                             android:gravity="center"
-                            android:layout_marginBottom="8dp">
-
-                            <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
-                                android:src="@drawable/ic_transaction"
-                                app:tint="@android:color/white"/>
-                        </LinearLayout>
+                            android:layout_marginBottom="8dp"/>
 
                         <!-- Count -->
                         <TextView
@@ -220,7 +210,7 @@
                 android:text="Management"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="@color/white"
+                android:textColor="@color/black"
                 android:layout_marginBottom="16dp"
                 android:letterSpacing="0.02"/>
 
@@ -229,6 +219,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
+                android:background="@drawable/glass_shine_overlay"
                 android:layout_marginBottom="16dp"
                 android:weightSum="2">
 

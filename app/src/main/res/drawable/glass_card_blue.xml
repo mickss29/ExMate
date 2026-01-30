@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- base frosted glass -->
+    <item>
+        <shape>
+            <solid android:color="#DCE8F8" />
+            <corners android:radius="16dp"/>
+        </shape>
+    </item>
+
+    <!-- top light reflection -->
+    <item>
+        <shape>
+            <gradient
+                android:angle="270"
+                android:startColor="#66FFFFFF"
+                android:endColor="#00FFFFFF" />
+            <corners android:radius="16dp"/>
+        </shape>
+    </item>
+
+</layer-list>

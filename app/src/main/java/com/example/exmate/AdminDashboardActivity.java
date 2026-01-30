@@ -3,13 +3,18 @@ package com.example.exmate;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -26,6 +31,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
     private DatabaseReference usersRef;
     private static final String TAG = "AdminDashboard";
 
+    // ================= APP LOCK =================
     @Override
     protected void onPause() {
         super.onPause();
@@ -46,6 +52,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
         loadDashboardData();
     }
 
+    // ================= ON CREATE =================
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,6 +100,52 @@ public class AdminDashboardActivity extends AppCompatActivity {
         loadDashboardData();
     }
 
+    // ================= LOGOUT MENU =================
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_admin_xml, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+        if (item.getItemId() == R.id.menu_logout) {
+            logoutAdmin(); // ✅ FIXED HERE
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    // ================= LOGOUT =================
+    private void logoutAdmin() {
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Logout")
+                .setMessage("Do you really want to logout?")
+                .setPositiveButton("Logout", (d, which) -> {
+
+                    FirebaseAuth.getInstance().signOut();
+
+                    Intent intent = new Intent(AdminDashboardActivity.this, AuthActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                })
+                .setNegativeButton("Cancel", null)
+                .create();
+
+        dialog.show();
+
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                .setTextColor(getResources().getColor(android.R.color.holo_red_dark));
+
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE)
+                .setTextColor(getResources().getColor(android.R.color.darker_gray));
+    }
+
+    // ================= DASHBOARD DATA =================
     private void loadDashboardData() {
         loadTotalUsers();
         loadFinancialData();
@@ -108,19 +161,16 @@ public class AdminDashboardActivity extends AppCompatActivity {
                     Log.d(TAG, "Total users: " + userCount);
                 } catch (Exception e) {
                     tvTotalUsers.setText("0");
-                    Log.e(TAG, "Error users: " + e.getMessage());
                 }
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 tvTotalUsers.setText("0");
-                Log.e(TAG, "Failed users: " + databaseError.getMessage());
             }
         });
     }
 
-    // 🔥 FIXED: This method handles BOTH expenses and incomes
     private void loadFinancialData() {
         usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -129,128 +179,37 @@ public class AdminDashboardActivity extends AppCompatActivity {
                     double totalExpenses = 0.0;
                     int totalTransactions = 0;
 
-                    if (dataSnapshot.exists()) {
-                        for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
-                            String userId = userSnapshot.getKey();
-                            Log.d(TAG, "Processing user: " + userId);
+                    for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
 
-                            // 🔥 Check for EXPENSES
-                            if (userSnapshot.hasChild("expenses")) {
-                                DataSnapshot expensesSnapshot = userSnapshot.child("expenses");
-                                totalTransactions += expensesSnapshot.getChildrenCount();
+                        if (userSnapshot.hasChild("expenses")) {
+                            DataSnapshot expenses = userSnapshot.child("expenses");
+                            totalTransactions += expenses.getChildrenCount();
 
-                                for (DataSnapshot expenseSnapshot : expensesSnapshot.getChildren()) {
-                                    Object amountObj = expenseSnapshot.child("amount").getValue();
-                                    if (amountObj != null) {
-                                        double amount = convertToDouble(amountObj);
-                                        totalExpenses += amount;
-                                        Log.d(TAG, "  Expense: ₹" + amount);
-                                    }
+                            for (DataSnapshot e : expenses.getChildren()) {
+                                Object amt = e.child("amount").getValue();
+                                if (amt != null) {
+                                    totalExpenses += convertToDouble(amt);
                                 }
                             }
+                        }
 
-                            // 🔥 Check for INCOMES
-                            if (userSnapshot.hasChild("incomes")) {
-                                DataSnapshot incomesSnapshot = userSnapshot.child("incomes");
-                                totalTransactions += incomesSnapshot.getChildrenCount();
-
-                                // If you want to show total income too, add it here
-                                // double userIncome = 0;
-                                // for (DataSnapshot incomeSnapshot : incomesSnapshot.getChildren()) {
-                                //     Object amountObj = incomeSnapshot.child("amount").getValue();
-                                //     if (amountObj != null) {
-                                //         userIncome += convertToDouble(amountObj);
-                                //     }
-                                // }
-                                // Log.d(TAG, "  User " + userId + " income: ₹" + userIncome);
-                            }
+                        if (userSnapshot.hasChild("incomes")) {
+                            totalTransactions += userSnapshot.child("incomes").getChildrenCount();
                         }
                     }
 
-                    // Update UI
                     tvTotalExpenses.setText("₹" + String.format("%.2f", totalExpenses));
                     tvTotalTransactions.setText(String.valueOf(totalTransactions));
-
-                    Log.d(TAG, "=== FINAL RESULTS ===");
-                    Log.d(TAG, "Total Expenses: ₹" + totalExpenses);
-                    Log.d(TAG, "Total Transactions: " + totalTransactions);
 
                 } catch (Exception e) {
                     tvTotalExpenses.setText("₹0.00");
                     tvTotalTransactions.setText("0");
-                    Log.e(TAG, "Error in loadFinancialData: " + e.getMessage());
-                    e.printStackTrace();
                 }
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 tvTotalExpenses.setText("₹0.00");
-                tvTotalTransactions.setText("0");
-                Log.e(TAG, "Firebase error: " + databaseError.getMessage());
-            }
-        });
-    }
-
-    // Alternative: Load expenses and transactions separately (more efficient)
-    private void loadSeparateData() {
-        // This method is for if you want to show loading separately
-        loadExpenses();
-        loadTransactions();
-    }
-
-    private void loadExpenses() {
-        usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                double totalExpenses = 0.0;
-
-                for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
-                    if (userSnapshot.hasChild("expenses")) {
-                        DataSnapshot expenses = userSnapshot.child("expenses");
-                        for (DataSnapshot expense : expenses.getChildren()) {
-                            Object amount = expense.child("amount").getValue();
-                            if (amount != null) {
-                                totalExpenses += convertToDouble(amount);
-                            }
-                        }
-                    }
-                }
-
-                tvTotalExpenses.setText("₹" + String.format("%.2f", totalExpenses));
-                Log.d(TAG, "Expenses loaded: ₹" + totalExpenses);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                tvTotalExpenses.setText("₹0.00");
-            }
-        });
-    }
-
-    private void loadTransactions() {
-        usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                int totalTransactions = 0;
-
-                for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
-                    // Count expenses
-                    if (userSnapshot.hasChild("expenses")) {
-                        totalTransactions += userSnapshot.child("expenses").getChildrenCount();
-                    }
-                    // Count incomes
-                    if (userSnapshot.hasChild("incomes")) {
-                        totalTransactions += userSnapshot.child("incomes").getChildrenCount();
-                    }
-                }
-
-                tvTotalTransactions.setText(String.valueOf(totalTransactions));
-                Log.d(TAG, "Transactions loaded: " + totalTransactions);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
                 tvTotalTransactions.setText("0");
             }
         });
@@ -262,9 +221,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
             if (obj instanceof Long) return ((Long) obj).doubleValue();
             if (obj instanceof Integer) return ((Integer) obj).doubleValue();
             if (obj instanceof String) return Double.parseDouble((String) obj);
-        } catch (Exception e) {
-            Log.e(TAG, "Convert error: " + e.getMessage());
-        }
+        } catch (Exception ignored) {}
         return 0.0;
     }
 

@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/admin_gradient_bg">
+    android:background="@drawable/bg_glass_blue">
 
     <!-- CONTENT -->
     <LinearLayout
@@ -12,22 +12,24 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- Toolbar -->
+        <!-- ================= TOOLBAR ================= -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/usersToolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:title="Manage Users"
-            android:titleTextColor="@android:color/white"
-            android:background="@color/premiumToolbarColor"
+            android:titleTextColor="#1E2A38"
+            android:background="@drawable/bg_glass_toolbaar"
             android:padding="16dp"/>
 
-        <!-- 🔥 FILTER + SEARCH BAR -->
+        <!-- ================= FILTER + SEARCH CARD ================= -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="10dp">
+            android:layout_margin="12dp"
+            android:padding="14dp"
+            android:background="@drawable/glass_card_blue">
 
             <!-- Search -->
             <EditText
@@ -40,85 +42,90 @@
                 android:inputType="text"
                 android:drawableStart="@drawable/ic_search"
                 android:drawablePadding="8dp"
-                android:textColor="@color/text_primary_dark"
-                app:hintTextColor="@color/text_hint"/>
+                android:textColor="#1E2A38"
+                android:textSize="14sp"
+                app:hintTextColor="#7A8CA3"/>
 
-            <!-- Filter Buttons Row 1 -->
+            <!-- FILTER BUTTONS -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="10dp"
                 android:gravity="center">
 
                 <Button
                     android:id="@+id/btnWeek"
                     android:layout_width="0dp"
+                    android:layout_height="42dp"
                     android:layout_weight="1"
-                    android:layout_height="45dp"
                     android:text="Weekly"
-                    android:backgroundTint="@color/premium_blue_light"
-                    android:textColor="@color/white"
-                    android:layout_marginEnd="3dp"
-                    android:padding="8dp"/>
+                    android:textColor="#1E2A38"
+                    android:background="@drawable/glass_filter_button"
+                    android:layout_marginEnd="4dp"/>
 
                 <Button
                     android:id="@+id/btnMonth"
                     android:layout_width="0dp"
+                    android:layout_height="42dp"
                     android:layout_weight="1"
-                    android:layout_height="45dp"
                     android:text="Monthly"
-                    android:backgroundTint="@color/premium_blue_light"
-                    android:textColor="@color/white"
-                    android:layout_marginStart="3dp"
-                    android:layout_marginEnd="3dp"
-                    android:padding="8dp"/>
+                    android:textColor="#1E2A38"
+                    android:background="@drawable/glass_filter_button"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"/>
 
                 <Button
                     android:id="@+id/btnDate"
                     android:layout_width="0dp"
+                    android:layout_height="42dp"
                     android:layout_weight="1"
-                    android:layout_height="45dp"
                     android:text="Custom"
-                    android:backgroundTint="@color/premium_blue_light"
-                    android:textColor="@color/white"
-                    android:layout_marginStart="3dp"
-                    android:padding="8dp"/>
+                    android:textColor="#1E2A38"
+                    android:background="@drawable/glass_filter_button"
+                    android:layout_marginStart="4dp"/>
             </LinearLayout>
 
-            <!-- 🔥 CLEAR FILTER BUTTON -->
+            <!-- CLEAR FILTER -->
             <Button
                 android:id="@+id/btnClearFilter"
                 android:layout_width="match_parent"
-                android:layout_height="45dp"
+                android:layout_height="44dp"
                 android:text="Clear All Filters"
-                android:layout_marginTop="8dp"
-                android:backgroundTint="@color/premium_red"
-                android:textColor="@color/white"
-                android:padding="8dp"/>
+                android:layout_marginTop="10dp"
+                android:textColor="#FFFFFF"
+                android:background="@drawable/glass_red_soft"/>
 
         </LinearLayout>
 
-        <!-- RecyclerView -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerUsers"
+        <!-- ================= USERS LIST ================= -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:padding="12dp"
-            android:clipToPadding="false"/>
+            android:layout_marginHorizontal="12dp"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/glass_card_blue"
+            android:padding="8dp">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerUsers"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"/>
+        </LinearLayout>
+
     </LinearLayout>
 
-    <!-- 🔥 EXPORT FLOATING BUTTON -->
+    <!-- ================= EXPORT FAB ================= -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabExport"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="20dp"
         android:src="@drawable/ic_export"
-        android:contentDescription="Export"
         android:tint="@android:color/white"
-        app:backgroundTint="@color/premiumToolbarColor"
+        app:backgroundTint="#3D6DF2"
         android:layout_gravity="bottom|end"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
