@@ -37,6 +37,11 @@
     <color name="premiumButtonColor">#1E88E5</color>
     <color name="premiumHintColor">#8FA3BF</color>
 
+    <!-- Add these at the end of your colors.xml -->
+    <color name="colorPrimary">#3949AB</color>  <!-- Same as premiumToolbarColor -->
+    <color name="colorPrimaryDark">#1E2A8A</color>  <!-- Same as premium_blue_dark -->
+    <color name="colorAccent">#E53935</color>  <!-- Same as premium_red -->
+
     <color name="premiumBackgroundColor">#0E1A2B</color>
 
 

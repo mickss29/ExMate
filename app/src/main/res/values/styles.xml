@@ -51,5 +51,16 @@
         <item name="android:textColor">#1E3C72</item>
         <item name="android:background">@drawable/bg_keypad_key</item>
     </style>
+    <!-- In your res/values/styles.xml -->
+    <style name="Widget.Material3.Button.OutlinedButton" parent="Widget.AppCompat.Button">
+        <item name="android:background">@drawable/button_outline_bg</item>
+        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="android:padding">12dp</item>
+    </style>
 
+    <style name="Widget.Material3.Button" parent="Widget.AppCompat.Button">
+        <item name="android:background">@drawable/button_bg</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:padding">12dp</item>
+    </style>
 </resources>

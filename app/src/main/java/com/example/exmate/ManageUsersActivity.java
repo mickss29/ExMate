@@ -48,12 +48,19 @@ public class ManageUsersActivity extends AppCompatActivity {
 
     private EditText etSearch;
     private Button btnWeek, btnMonth, btnDate;
+    private Button btnClearFilter; // 🔥 NEW: Clear filter button
 
     private static final int STORAGE_REQ = 101;
+
+    // Current filter state
+    private long currentFilterStart = 0;
+    private long currentFilterEnd = 0;
 
     // 🔥 SINGLE SOURCE OF TRUTH FORMAT
     private final SimpleDateFormat sdf =
             new SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.ENGLISH);
+    private final SimpleDateFormat dbFormat =
+            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,9 +74,11 @@ public class ManageUsersActivity extends AppCompatActivity {
         btnWeek = findViewById(R.id.btnWeek);
         btnMonth = findViewById(R.id.btnMonth);
         btnDate = findViewById(R.id.btnDate);
+        btnClearFilter = findViewById(R.id.btnClearFilter); // Make sure this button exists in XML
 
         recyclerView = findViewById(R.id.recyclerUsers);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        filteredList = new ArrayList<>(userList); // Start with all users
         adapter = new AdminUserAdapter(this, filteredList);
         recyclerView.setAdapter(adapter);
 
@@ -84,6 +93,9 @@ public class ManageUsersActivity extends AppCompatActivity {
         btnWeek.setOnClickListener(v -> applyWeek());
         btnMonth.setOnClickListener(v -> applyMonth());
         btnDate.setOnClickListener(v -> pickCustomDate());
+
+        // 🔥 NEW: Clear filter button
+        btnClearFilter.setOnClickListener(v -> clearAllFilters());
 
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
@@ -100,12 +112,9 @@ public class ManageUsersActivity extends AppCompatActivity {
         usersRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-
                 userList.clear();
-                filteredList.clear();
 
                 for (DataSnapshot s : snapshot.getChildren()) {
-
                     String uid = s.getKey();
                     String name = s.child("name").getValue(String.class);
                     String email = s.child("email").getValue(String.class);
@@ -113,7 +122,7 @@ public class ManageUsersActivity extends AppCompatActivity {
                     Boolean blocked = s.child("blocked").getValue(Boolean.class);
                     if (blocked == null) blocked = false;
 
-                    // 🔥 SAFE DATE READ (String + Long + null)
+                    // 🔥 FIXED DATE PARSING
                     String createdAt;
                     Object raw = s.child("createdAt").getValue();
 
@@ -121,16 +130,17 @@ public class ManageUsersActivity extends AppCompatActivity {
                         createdAt = (String) raw;
                     } else if (raw instanceof Long) {
                         createdAt = sdf.format(new Date((Long) raw));
-                        s.getRef().child("createdAt").setValue(createdAt); // migrate
                     } else {
                         createdAt = sdf.format(new Date());
-                        s.getRef().child("createdAt").setValue(createdAt);
                     }
 
-                    // 🔥 normalize format (THIS FIXES FILTER)
-                    long millis = parseDate(createdAt);
-                    createdAt = sdf.format(new Date(millis));
-                    s.getRef().child("createdAt").setValue(createdAt);
+                    // Ensure consistent format
+                    try {
+                        Date date = parseDateFlexible(createdAt);
+                        createdAt = sdf.format(date);
+                    } catch (Exception e) {
+                        createdAt = sdf.format(new Date());
+                    }
 
                     AdminUserModel u = new AdminUserModel(
                             uid,
@@ -146,60 +156,113 @@ public class ManageUsersActivity extends AppCompatActivity {
 
                 // 🔥 NEWEST → OLDEST
                 Collections.sort(userList, (a, b) ->
-                        Long.compare(parseDate(b.getCreatedAt()), parseDate(a.getCreatedAt()))
+                        Long.compare(parseDateFlexible(b.getCreatedAt()).getTime(),
+                                parseDateFlexible(a.getCreatedAt()).getTime())
                 );
 
-                filteredList.addAll(userList);
-                adapter.notifyDataSetChanged();
+                // 🔥 IMPORTANT: Update filtered list
+                applyCurrentFilter();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(ManageUsersActivity.this,
-                        error.getMessage(), Toast.LENGTH_LONG).show();
+                        "Failed to load users: " + error.getMessage(),
+                        Toast.LENGTH_LONG).show();
             }
         });
     }
 
-    // ================= SEARCH =================
+    // ================= SEARCH (FIXED) =================
     private void searchUsers(String q) {
-        filteredList.clear();
-        q = q.toLowerCase();
+        List<AdminUserModel> tempList;
 
-        for (AdminUserModel u : userList) {
-            if (u.getName().toLowerCase().contains(q)
-                    || u.getEmail().toLowerCase().contains(q)
-                    || u.getPhone().toLowerCase().contains(q)) {
-                filteredList.add(u);
+        // First apply current date filter
+        if (currentFilterStart != 0 && currentFilterEnd != 0) {
+            tempList = new ArrayList<>();
+            for (AdminUserModel u : userList) {
+                long t = parseDateFlexible(u.getCreatedAt()).getTime();
+                if (t >= currentFilterStart && t <= currentFilterEnd) {
+                    tempList.add(u);
+                }
+            }
+        } else {
+            tempList = new ArrayList<>(userList);
+        }
+
+        // Then apply search
+        if (q.isEmpty()) {
+            filteredList.clear();
+            filteredList.addAll(tempList);
+        } else {
+            filteredList.clear();
+            q = q.toLowerCase();
+            for (AdminUserModel u : tempList) {
+                if (u.getName().toLowerCase().contains(q)
+                        || u.getEmail().toLowerCase().contains(q)
+                        || u.getPhone().toLowerCase().contains(q)) {
+                    filteredList.add(u);
+                }
             }
         }
         adapter.notifyDataSetChanged();
     }
 
-    // ================= FILTERS =================
+    // ================= FILTERS (FIXED) =================
     private void applyWeek() {
-        long now = System.currentTimeMillis();
-        filterByRange(now - 7L * 24 * 60 * 60 * 1000, now);
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+
+        long end = System.currentTimeMillis();
+        cal.add(Calendar.DAY_OF_YEAR, -7);
+        long start = cal.getTimeInMillis();
+
+        currentFilterStart = start;
+        currentFilterEnd = end;
+
+        filterByRange(start, end);
+        Toast.makeText(this, "Showing users from last 7 days", Toast.LENGTH_SHORT).show();
     }
 
     private void applyMonth() {
-        Calendar c = Calendar.getInstance();
-        c.set(Calendar.DAY_OF_MONTH, 1);
-        filterByRange(c.getTimeInMillis(), System.currentTimeMillis());
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.DAY_OF_MONTH, 1);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+
+        long start = cal.getTimeInMillis();
+        long end = System.currentTimeMillis();
+
+        currentFilterStart = start;
+        currentFilterEnd = end;
+
+        filterByRange(start, end);
+        Toast.makeText(this, "Showing users from this month", Toast.LENGTH_SHORT).show();
     }
 
     private void pickCustomDate() {
         Calendar cal = Calendar.getInstance();
 
         new DatePickerDialog(this, (v, y, m, d) -> {
-
             Calendar from = Calendar.getInstance();
-            from.set(y, m, d, 0, 0, 0);
+            from.set(y, m, d);
+            from.set(Calendar.HOUR_OF_DAY, 0);
+            from.set(Calendar.MINUTE, 0);
+            from.set(Calendar.SECOND, 0);
+            from.set(Calendar.MILLISECOND, 0);
 
             new DatePickerDialog(this, (v2, y2, m2, d2) -> {
-
                 Calendar to = Calendar.getInstance();
-                to.set(y2, m2, d2, 23, 59, 59);
+                to.set(y2, m2, d2);
+                to.set(Calendar.HOUR_OF_DAY, 23);
+                to.set(Calendar.MINUTE, 59);
+                to.set(Calendar.SECOND, 59);
+                to.set(Calendar.MILLISECOND, 999);
 
                 if (to.before(from)) {
                     Toast.makeText(this,
@@ -208,7 +271,13 @@ public class ManageUsersActivity extends AppCompatActivity {
                     return;
                 }
 
+                currentFilterStart = from.getTimeInMillis();
+                currentFilterEnd = to.getTimeInMillis();
+
                 filterByRange(from.getTimeInMillis(), to.getTimeInMillis());
+                Toast.makeText(this,
+                        "Showing users from selected date range",
+                        Toast.LENGTH_SHORT).show();
 
             }, y, m, d).show();
 
@@ -218,12 +287,48 @@ public class ManageUsersActivity extends AppCompatActivity {
     private void filterByRange(long start, long end) {
         filteredList.clear();
         for (AdminUserModel u : userList) {
-            long t = parseDate(u.getCreatedAt());
+            long t = parseDateFlexible(u.getCreatedAt()).getTime();
             if (t >= start && t <= end) {
                 filteredList.add(u);
             }
         }
+
+        // Apply search if any
+        String searchText = etSearch.getText().toString().trim();
+        if (!searchText.isEmpty()) {
+            searchUsers(searchText);
+        } else {
+            adapter.notifyDataSetChanged();
+        }
+    }
+
+    private void applyCurrentFilter() {
+        if (currentFilterStart != 0 && currentFilterEnd != 0) {
+            filterByRange(currentFilterStart, currentFilterEnd);
+        } else {
+            filteredList.clear();
+            filteredList.addAll(userList);
+
+            // Apply search if any
+            String searchText = etSearch.getText().toString().trim();
+            if (!searchText.isEmpty()) {
+                searchUsers(searchText);
+            } else {
+                adapter.notifyDataSetChanged();
+            }
+        }
+    }
+
+    private void clearAllFilters() {
+        etSearch.setText("");
+        currentFilterStart = 0;
+        currentFilterEnd = 0;
+
+        filteredList.clear();
+        filteredList.addAll(userList);
         adapter.notifyDataSetChanged();
+
+        Toast.makeText(this, "All filters cleared", Toast.LENGTH_SHORT).show();
     }
 
     // ================= EXPORT =================
@@ -248,24 +353,25 @@ public class ManageUsersActivity extends AppCompatActivity {
     private void exportCSV(List<AdminUserModel> list) {
         try {
             File dir = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
-            File file = new File(dir, "Users.csv");
+            File file = new File(dir, "Users_" + System.currentTimeMillis() + ".csv");
 
             FileWriter w = new FileWriter(file);
             w.append("Date,Name,Email,Phone,Status\n");
 
             for (AdminUserModel u : list) {
-                w.append(u.getCreatedAt()).append(",")
-                        .append(u.getName()).append(",")
-                        .append(u.getEmail()).append(",")
-                        .append(u.getPhone()).append(",")
-                        .append(u.isBlocked() ? "Blocked" : "Active")
+                w.append("\"").append(u.getCreatedAt()).append("\",")
+                        .append("\"").append(u.getName()).append("\",")
+                        .append("\"").append(u.getEmail()).append("\",")
+                        .append("\"").append(u.getPhone()).append("\",")
+                        .append("\"").append(u.isBlocked() ? "Blocked" : "Active").append("\"")
                         .append("\n");
             }
             w.close();
             openFile(file, "text/csv");
+            Toast.makeText(this, "CSV exported successfully", Toast.LENGTH_SHORT).show();
 
         } catch (Exception e) {
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Export failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -287,16 +393,28 @@ public class ManageUsersActivity extends AppCompatActivity {
             title.setFakeBoldText(true);
             c.drawText("ExMate Users Report", 40, y, title);
 
-            y += 25;
+            // Add date
+            title.setTextSize(12);
+            title.setFakeBoldText(false);
+            c.drawText("Generated: " + sdf.format(new Date()), 40, y + 20, title);
+            c.drawText("Total Users: " + list.size(), 400, y + 20, title);
+
+            y += 50;
+            header.setTextSize(11);
             header.setFakeBoldText(true);
 
             c.drawText("Date & Time", 40, y, header);
             c.drawText("Name", 170, y, header);
             c.drawText("Email", 300, y, header);
             c.drawText("Mobile", 460, y, header);
+            c.drawText("Status", 530, y, header);
 
-            y += 18;
+            y += 15;
+            c.drawLine(40, y, 570, y, header);
+            y += 10;
+
             header.setFakeBoldText(false);
+            text.setTextSize(10);
 
             for (AdminUserModel u : list) {
                 if (y > 780) {
@@ -310,42 +428,74 @@ public class ManageUsersActivity extends AppCompatActivity {
                 c.drawText(trim(u.getName(), 18), 170, y, text);
                 c.drawText(trim(u.getEmail(), 25), 300, y, text);
                 c.drawText(trim(u.getPhone(), 14), 460, y, text);
+                c.drawText(u.isBlocked() ? "Blocked" : "Active", 530, y, text);
                 y += 18;
             }
 
             pdf.finishPage(page);
             File file = new File(getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS),
-                    "ExMate_Users_Report.pdf");
+                    "ExMate_Users_Report_" + System.currentTimeMillis() + ".pdf");
             pdf.writeTo(new FileOutputStream(file));
             pdf.close();
 
             openFile(file, "application/pdf");
+            Toast.makeText(this, "PDF exported successfully", Toast.LENGTH_SHORT).show();
 
         } catch (Exception e) {
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Export failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
     // ================= HELPERS =================
-    private long parseDate(String date) {
-        try { return sdf.parse(date).getTime(); }
-        catch (Exception e) { return 0L; }
+    private Date parseDateFlexible(String date) {
+        try {
+            return sdf.parse(date);
+        } catch (Exception e1) {
+            try {
+                return dbFormat.parse(date);
+            } catch (Exception e2) {
+                try {
+                    // Try with other common formats
+                    SimpleDateFormat[] formats = {
+                            new SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH),
+                            new SimpleDateFormat("MM/dd/yyyy", Locale.ENGLISH),
+                            new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH),
+                            new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH)
+                    };
+
+                    for (SimpleDateFormat format : formats) {
+                        try {
+                            return format.parse(date);
+                        } catch (Exception ignored) {}
+                    }
+                    return new Date(); // Default to current date
+                } catch (Exception e3) {
+                    return new Date();
+                }
+            }
+        }
     }
 
-    private String safe(String v) { return v == null ? "-" : v; }
+    private String safe(String v) {
+        return (v == null || v.trim().isEmpty()) ? "-" : v.trim();
+    }
 
     private String trim(String t, int max) {
-        if (t == null) return "-";
+        if (t == null || t.equals("-")) return "-";
         return t.length() > max ? t.substring(0, max - 3) + "..." : t;
     }
 
     private void openFile(File file, String type) {
-        Uri uri = FileProvider.getUriForFile(
-                this, getPackageName() + ".provider", file);
-        Intent i = new Intent(Intent.ACTION_VIEW);
-        i.setDataAndType(uri, type);
-        i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        startActivity(Intent.createChooser(i, "Open file"));
+        try {
+            Uri uri = FileProvider.getUriForFile(
+                    this, getPackageName() + ".provider", file);
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setDataAndType(uri, type);
+            i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(Intent.createChooser(i, "Open file"));
+        } catch (Exception e) {
+            Toast.makeText(this, "No app found to open this file", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void checkPermission() {
@@ -357,6 +507,18 @@ public class ManageUsersActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     STORAGE_REQ);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == STORAGE_REQ) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Storage permission granted", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Storage permission denied", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 }

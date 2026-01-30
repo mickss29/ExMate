@@ -39,9 +39,11 @@
                 android:background="@drawable/bg_search"
                 android:inputType="text"
                 android:drawableStart="@drawable/ic_search"
-                android:drawablePadding="8dp"/>
+                android:drawablePadding="8dp"
+                android:textColor="@color/text_primary_dark"
+                app:hintTextColor="@color/text_hint"/>
 
-            <!-- Filter Buttons -->
+            <!-- Filter Buttons Row 1 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -53,25 +55,48 @@
                     android:id="@+id/btnWeek"
                     android:layout_width="0dp"
                     android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:text="This Week"/>
+                    android:layout_height="45dp"
+                    android:text="Weekly"
+                    android:backgroundTint="@color/premium_blue_light"
+                    android:textColor="@color/white"
+                    android:layout_marginEnd="3dp"
+                    android:padding="8dp"/>
 
                 <Button
                     android:id="@+id/btnMonth"
                     android:layout_width="0dp"
                     android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:text="This Month"
-                    android:layout_marginStart="6dp"/>
+                    android:layout_height="45dp"
+                    android:text="Monthly"
+                    android:backgroundTint="@color/premium_blue_light"
+                    android:textColor="@color/white"
+                    android:layout_marginStart="3dp"
+                    android:layout_marginEnd="3dp"
+                    android:padding="8dp"/>
 
                 <Button
                     android:id="@+id/btnDate"
                     android:layout_width="0dp"
                     android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:text="Pick Date"
-                    android:layout_marginStart="6dp"/>
+                    android:layout_height="45dp"
+                    android:text="Custom"
+                    android:backgroundTint="@color/premium_blue_light"
+                    android:textColor="@color/white"
+                    android:layout_marginStart="3dp"
+                    android:padding="8dp"/>
             </LinearLayout>
+
+            <!-- 🔥 CLEAR FILTER BUTTON -->
+            <Button
+                android:id="@+id/btnClearFilter"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:text="Clear All Filters"
+                android:layout_marginTop="8dp"
+                android:backgroundTint="@color/premium_red"
+                android:textColor="@color/white"
+                android:padding="8dp"/>
+
         </LinearLayout>
 
         <!-- RecyclerView -->
