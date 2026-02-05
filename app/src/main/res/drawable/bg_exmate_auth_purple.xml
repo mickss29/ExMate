@@ -1,0 +1,60 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- BASE GRADIENT -->
+    <item>
+        <shape>
+            <gradient
+                android:startColor="#050712"
+                android:centerColor="#08142A"
+                android:endColor="#050712"
+                android:angle="135"/>
+        </shape>
+    </item>
+
+    <!-- WAVE 1 (TOP RIGHT) -->
+    <item android:top="-120dp" android:right="-120dp">
+        <shape android:shape="oval">
+            <gradient
+                android:type="radial"
+                android:gradientRadius="420dp"
+                android:centerX="0.65"
+                android:centerY="0.35"
+                android:startColor="#2A3A7BFF"
+                android:endColor="@android:color/transparent"/>
+        </shape>
+    </item>
+
+    <!-- WAVE 2 (CENTER LEFT) -->
+    <item android:left="-180dp" android:top="140dp">
+        <shape android:shape="oval">
+            <gradient
+                android:type="radial"
+                android:gradientRadius="520dp"
+                android:centerX="0.40"
+                android:centerY="0.50"
+                android:startColor="#1F1D4ED8"
+                android:endColor="@android:color/transparent"/>
+        </shape>
+    </item>
+
+    <!-- WAVE 3 (BOTTOM RIGHT) -->
+    <item android:right="-220dp" android:bottom="-220dp">
+        <shape android:shape="oval">
+            <gradient
+                android:type="radial"
+                android:gradientRadius="560dp"
+                android:centerX="0.65"
+                android:centerY="0.65"
+                android:startColor="#1A2D5FFF"
+                android:endColor="@android:color/transparent"/>
+        </shape>
+    </item>
+
+    <!-- DARK FADE OVERLAY (to blend everything) -->
+    <item>
+        <shape>
+            <solid android:color="#12050712"/>
+        </shape>
+    </item>
+
+</layer-list>

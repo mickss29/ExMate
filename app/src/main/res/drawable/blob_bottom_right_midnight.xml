@@ -1,0 +1,27 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Soft ambient glow -->
+    <item>
+        <shape>
+            <gradient
+                android:type="radial"
+                android:gradientRadius="260dp"
+                android:centerX="0.7"
+                android:centerY="0.7"
+                android:startColor="#2A1D4ED8"
+                android:endColor="@android:color/transparent"/>
+        </shape>
+    </item>
+
+    <!-- Main depth blob -->
+    <item android:insetRight="50dp" android:insetBottom="50dp">
+        <shape>
+            <gradient
+                android:startColor="#0E1C3A"
+                android:endColor="#060A14"
+                android:angle="135"/>
+            <corners android:radius="200dp"/>
+        </shape>
+    </item>
+
+</layer-list>
