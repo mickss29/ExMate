@@ -37,7 +37,8 @@ public class VoiceExpenseParser {
         expense.note = detectNote(text);
 
         // 6) Category detection
-        expense.category = CategoryMapper.detectCategory(expense.note.toLowerCase(Locale.ROOT));
+        expense.category = CategoryMapper.detectCategory(text);
+
 
         // 7) Confidence
         expense.confidence = calculateConfidence(expense);

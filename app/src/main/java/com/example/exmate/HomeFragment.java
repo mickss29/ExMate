@@ -1,12 +1,16 @@
 package com.example.exmate;
 
+import android.Manifest;
 import android.animation.ValueAnimator;
-import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
+import android.speech.SpeechRecognizer;
 import android.text.TextUtils;
 import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
@@ -18,14 +22,16 @@ import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.card.MaterialCardView;
-
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -37,7 +43,6 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -56,14 +61,26 @@ public class HomeFragment extends Fragment {
     // ================= UI =================
     private RecyclerView rvRecent;
     private TextView tvIncome, tvExpense;
-    private TextView tvCurrentBalance, tvTotalBalance;
+    private TextView tvCurrentBalance;
     private TextView tvUserName, btnViewAll;
     private MaterialCardView cardAddIncome, cardAddExpense, cardBudgetSummary;
 
-    // 🎙️ Dashboard Mic (NEW)
+    // 🎙️ Dashboard Mic
     private View fabVoiceDashboard;
 
-    private static final int REQ_CODE_SPEECH_DASH = 3001;
+    // ================= PERMISSION =================
+    private static final int REQ_AUDIO_PERMISSION = 9001;
+
+    private View pulse3;
+    private View micCard;
+    private TextView tvDots;
+    private Animation micBounceAnim, dotsAnim;
+    private float lastRms = 0f;
+
+    private RecyclerView rvDiscover;
+    private DiscoverCardAdapter discoverAdapter;
+    private final List<DiscoverCardModel> discoverList = new ArrayList<>();
+
 
     // ================= FIREBASE =================
     private DatabaseReference userRef;
@@ -80,6 +97,15 @@ public class HomeFragment extends Fragment {
     private double lastBalance = 0;
 
     private final DecimalFormat moneyFormat = new DecimalFormat("#,##0.##");
+
+    // ================= VOICE (CUSTOM) =================
+    private SpeechRecognizer speechRecognizer;
+    private Intent speechIntent;
+
+    // ================= VOICE DIALOG UI =================
+    private Dialog voiceDialog;
+    private View pulse1, pulse2;
+    private Animation pulseAnim1, pulseAnim2;
 
     // ================= SINGLE REALTIME LISTENER =================
     private final ValueEventListener dashboardListener = new ValueEventListener() {
@@ -165,6 +191,7 @@ public class HomeFragment extends Fragment {
         setupCardClicks();
         loadUserProfile();
         playEntryAnimation();
+        setupDiscoverSection();
 
         // 🎙️ Setup dashboard mic
         setupDashboardVoice();
@@ -188,6 +215,18 @@ public class HomeFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        stopDashboardVoice();
+
+        if (speechRecognizer != null) {
+            speechRecognizer.destroy();
+            speechRecognizer = null;
+        }
+    }
+
     // =========================================================================================
 
     private void initViews(View view) {
@@ -200,8 +239,8 @@ public class HomeFragment extends Fragment {
         cardAddIncome = view.findViewById(R.id.cardAddIncome);
         cardAddExpense = view.findViewById(R.id.cardAddExpense);
         cardBudgetSummary = view.findViewById(R.id.cardBudgetSummary);
+        rvDiscover = view.findViewById(R.id.rvDiscover);
 
-        // 🎙️ NEW
         fabVoiceDashboard = view.findViewById(R.id.fabVoiceDashboard);
     }
 
@@ -213,7 +252,6 @@ public class HomeFragment extends Fragment {
                 .getReference("users")
                 .child(userId);
 
-        // 🎙️ direct save refs (NEW)
         incomeRef = userRef.child("incomes");
         expenseRef = userRef.child("expenses");
     }
@@ -280,15 +318,84 @@ public class HomeFragment extends Fragment {
     }
 
     private void finalizeList() {
+
+        // newest first
         Collections.sort(transactionList, (a, b) -> Long.compare(b.getTime(), a.getTime()));
+
+        // show only last 6
+        int limit = 6;
+        if (transactionList.size() > limit) {
+            transactionList.subList(limit, transactionList.size()).clear();
+        }
+
         adapter.notifyDataSetChanged();
-    }
+
+}
 
     private void setupRecentList() {
         adapter = new RecentTransactionAdapter(transactionList);
         rvRecent.setLayoutManager(new LinearLayoutManager(getContext()));
         rvRecent.setAdapter(adapter);
     }
+
+    private void setupDiscoverSection() {
+
+        if (rvDiscover == null) return;
+
+        discoverList.clear();
+
+        discoverList.add(new DiscoverCardModel(
+                "Shopping Offers",
+                "Best deals on Amazon, Flipkart",
+                R.drawable.ic_offer,
+                "#7C3AED"
+        ));
+
+        discoverList.add(new DiscoverCardModel(
+                "Movie Discounts",
+                "BookMyShow offers & coupons",
+                R.drawable.ic_movie,
+                "#F97316"
+        ));
+
+        discoverList.add(new DiscoverCardModel(
+                "Market Updates",
+                "NIFTY • Sensex • Top gainers",
+                R.drawable.ic_stocks,
+                "#22C55E"
+        ));
+
+        discoverList.add(new DiscoverCardModel(
+                "Food Deals",
+                "Swiggy • Zomato discounts",
+                R.drawable.ic_food,
+                "#EF4444"
+        ));
+
+        discoverList.add(new DiscoverCardModel(
+                "Travel Offers",
+                "Uber • Ola • IRCTC",
+                R.drawable.ic_travel,
+                "#3B82F6"
+        ));
+
+        discoverList.add(new DiscoverCardModel(
+                "Health & Fitness",
+                "Gym • Supplements • Tips",
+                R.drawable.ic_gym,
+                "#06B6D4"
+        ));
+
+        discoverAdapter = new DiscoverCardAdapter(discoverList);
+
+        LinearLayoutManager lm =
+                new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
+
+        rvDiscover.setLayoutManager(lm);
+        rvDiscover.setAdapter(discoverAdapter);
+        rvDiscover.setHasFixedSize(true);
+    }
+
 
     // =========================================================================================
 
@@ -333,14 +440,13 @@ public class HomeFragment extends Fragment {
         cardAddExpense.startAnimation(anim);
         rvRecent.startAnimation(anim);
 
-        // 🎙️ little pop animation
         if (fabVoiceDashboard != null) {
             fabVoiceDashboard.startAnimation(anim);
         }
     }
 
     // =========================================================================================
-    // 🎙️ DASHBOARD VOICE (NEW)
+    // 🎙️ DASHBOARD VOICE (CUSTOM + DIALOG)
     // =========================================================================================
 
     private void setupDashboardVoice() {
@@ -353,41 +459,226 @@ public class HomeFragment extends Fragment {
     }
 
     private void startDashboardVoice() {
-        try {
-            Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                    RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-IN");
-            intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak income or expense");
 
-            Toast.makeText(requireContext(), "Listening...", Toast.LENGTH_SHORT).show();
-            startActivityForResult(intent, REQ_CODE_SPEECH_DASH);
+        // ✅ Permission check
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.RECORD_AUDIO)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(
+                    requireActivity(),
+                    new String[]{Manifest.permission.RECORD_AUDIO},
+                    REQ_AUDIO_PERMISSION
+            );
+
+            Toast.makeText(requireContext(), "Allow mic permission first", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+
+            if (!SpeechRecognizer.isRecognitionAvailable(requireContext())) {
+                Toast.makeText(requireContext(), "Voice input not supported", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (speechRecognizer == null) {
+
+                speechRecognizer = SpeechRecognizer.createSpeechRecognizer(requireContext());
+
+                speechRecognizer.setRecognitionListener(new RecognitionListener() {
+
+                    @Override
+                    public void onReadyForSpeech(Bundle params) {
+                        showVoiceDialog();
+                    }
+
+                    @Override
+                    public void onResults(Bundle results) {
+                        hideVoiceDialog();
+
+                        ArrayList<String> matches =
+                                results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+
+                        if (matches != null && !matches.isEmpty()) {
+                            handleDashboardVoice(matches.get(0));
+                        }
+                    }
+
+                    @Override
+                    public void onError(int error) {
+                        hideVoiceDialog();
+                        Toast.makeText(requireContext(), "Try again 😅", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onEndOfSpeech() {
+                        // if user stops speaking, dialog will hide via onResults/onError
+                    }
+
+                    // required but unused
+                    @Override public void onBeginningOfSpeech() {}
+                    @Override
+                    public void onRmsChanged(float rmsdB) {
+
+                        if (micCard == null) return;
+
+                        // rmsdB usually: 0 to 10 (kabhi 0 to 15)
+                        float normalized = Math.min(10f, Math.max(0f, rmsdB));
+
+                        // Smooth scale range
+                        float scale = 1.0f + (normalized / 50f); // 1.0 to 1.2 approx
+
+                        // Smooth transition
+                        micCard.animate()
+                                .scaleX(scale)
+                                .scaleY(scale)
+                                .setDuration(120)
+                                .start();
+
+                        lastRms = rmsdB;
+                    }
+
+                    @Override public void onBufferReceived(byte[] buffer) {}
+                    @Override public void onPartialResults(Bundle partialResults) {}
+                    @Override public void onEvent(int eventType, Bundle params) {}
+                });
+            }
+
+            if (speechIntent == null) {
+                speechIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                speechIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                        RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                speechIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-IN");
+                speechIntent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
+            }
+
+            speechRecognizer.startListening(speechIntent);
 
         } catch (Exception e) {
-            Toast.makeText(requireContext(),
-                    "Voice input not supported",
-                    Toast.LENGTH_SHORT).show();
+            hideVoiceDialog();
+            Toast.makeText(requireContext(), "Voice input not supported", Toast.LENGTH_SHORT).show();
         }
     }
 
+    private void stopDashboardVoice() {
+        try {
+            if (speechRecognizer != null) {
+                speechRecognizer.stopListening();
+                speechRecognizer.cancel();
+            }
+        } catch (Exception ignored) {}
+
+        hideVoiceDialog();
+    }
+
+    // ✅ Permission callback
     @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if (requestCode == REQ_CODE_SPEECH_DASH &&
-                resultCode == Activity.RESULT_OK &&
-                data != null) {
-
-            ArrayList<String> result =
-                    data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-
-            if (result != null && !result.isEmpty()) {
-                String rawText = result.get(0);
-
-                handleDashboardVoice(rawText);
+        if (requestCode == REQ_AUDIO_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startDashboardVoice();
+            } else {
+                Toast.makeText(requireContext(), "Mic permission denied", Toast.LENGTH_SHORT).show();
             }
         }
     }
+
+    // =========================================================================================
+    // 🎨 VOICE LISTENING DIALOG UI
+    // =========================================================================================
+
+    private void showVoiceDialog() {
+        if (getContext() == null) return;
+
+        if (voiceDialog == null) {
+            voiceDialog = new Dialog(requireContext());
+            voiceDialog.setContentView(R.layout.dialog_voice_listening);
+            voiceDialog.setCancelable(false);
+
+            if (voiceDialog.getWindow() != null) {
+                voiceDialog.getWindow().setLayout(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                );
+                voiceDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+            }
+
+            pulse1 = voiceDialog.findViewById(R.id.pulse1);
+            pulse2 = voiceDialog.findViewById(R.id.pulse2);
+            pulse3 = voiceDialog.findViewById(R.id.pulse3);
+
+            micCard = voiceDialog.findViewById(R.id.micCard);
+
+            TextView btnCancel = voiceDialog.findViewById(R.id.btnCancelVoice);
+
+            tvDots = voiceDialog.findViewById(R.id.tvDots);
+
+            pulseAnim1 = AnimationUtils.loadAnimation(requireContext(), R.anim.pulse_scale);
+            pulseAnim1.setRepeatCount(Animation.INFINITE);
+
+            pulseAnim2 = AnimationUtils.loadAnimation(requireContext(), R.anim.pulse_scale);
+            pulseAnim2.setRepeatCount(Animation.INFINITE);
+            pulseAnim2.setStartOffset(220);
+
+            Animation pulseAnim3 = AnimationUtils.loadAnimation(requireContext(), R.anim.pulse_scale);
+            pulseAnim3.setRepeatCount(Animation.INFINITE);
+            pulseAnim3.setStartOffset(420);
+
+            // store as pulseAnim2? (simple) -> use pulse3 directly
+            pulseAnim2 = pulseAnim2;
+
+            micBounceAnim = AnimationUtils.loadAnimation(requireContext(), R.anim.mic_bounce);
+            dotsAnim = AnimationUtils.loadAnimation(requireContext(), R.anim.dots_fade);
+
+            btnCancel.setOnClickListener(v -> stopDashboardVoice());
+
+            // start third pulse later
+            if (pulse3 != null) pulse3.setTag(pulseAnim3);
+        }
+
+        try {
+            if (!voiceDialog.isShowing()) voiceDialog.show();
+        } catch (Exception ignored) {}
+
+        if (pulse1 != null) pulse1.startAnimation(pulseAnim1);
+        if (pulse2 != null) pulse2.startAnimation(pulseAnim2);
+
+        if (pulse3 != null && pulse3.getTag() instanceof Animation) {
+            pulse3.startAnimation((Animation) pulse3.getTag());
+        }
+
+        if (micCard != null) micCard.startAnimation(micBounceAnim);
+        if (tvDots != null) tvDots.startAnimation(dotsAnim);
+    }
+
+
+    private void hideVoiceDialog() {
+        try {
+            if (pulse1 != null) pulse1.clearAnimation();
+            if (pulse2 != null) pulse2.clearAnimation();
+            if (pulse3 != null) pulse3.clearAnimation();
+
+            if (micCard != null) micCard.clearAnimation();
+            if (tvDots != null) tvDots.clearAnimation();
+
+            if (voiceDialog != null && voiceDialog.isShowing()) {
+                if (micCard != null) {
+                    micCard.setScaleX(1f);
+                    micCard.setScaleY(1f);
+                }
+
+                voiceDialog.dismiss();
+            }
+        } catch (Exception ignored) {}
+    }
+
+    // =========================================================================================
+    // 🧠 VOICE HANDLING (SAME LOGIC)
+    // =========================================================================================
 
     private void handleDashboardVoice(String rawText) {
 
@@ -395,7 +686,6 @@ public class HomeFragment extends Fragment {
 
         String text = rawText.toLowerCase(Locale.ROOT);
 
-        // Amount
         double amount = extractAmount(text);
         if (amount <= 0) {
             Toast.makeText(requireContext(),
@@ -404,7 +694,6 @@ public class HomeFragment extends Fragment {
             return;
         }
 
-        // Decide Income vs Expense
         boolean isIncome = isIncomeText(text);
 
         long time = detectDateMillis(text);
@@ -523,7 +812,6 @@ public class HomeFragment extends Fragment {
         if (text.contains("bank") || text.contains("transfer")) return "Bank Transfer";
         if (text.contains("cheque")) return "Cheque";
 
-        // default
         return "Cash";
     }
 
@@ -579,6 +867,7 @@ public class HomeFragment extends Fragment {
 
         return "Other";
     }
+
 
     private String cleanNote(String text) {
 

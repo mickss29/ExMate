@@ -1,8 +1,8 @@
 package com.example.exmate;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.DatePickerDialog;
+import android.app.Dialog;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
@@ -12,16 +12,19 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
+import android.speech.SpeechRecognizer;
 import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -30,6 +33,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
+
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -39,7 +46,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -47,24 +53,22 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-// ✅ If your parser/model are inside models/utils then use these imports:
-// import com.example.exmate.models.ExpenseModel;
-// import com.example.exmate.utils.VoiceExpenseParser;
-
 // ❗ If your parser/model are directly in com.example.exmate, keep these:
 import com.example.exmate.ExpenseModel;
 import com.example.exmate.VoiceExpenseParser;
 
 public class ExpenseFragment extends Fragment {
 
-    private static final int REQ_CODE_SPEECH = 1001;
     private static final int REQ_CODE_LOCATION = 2001;
+
+    // 🎙️ Voice Permission
+    private static final int REQ_AUDIO_PERMISSION = 9001;
 
     private EditText etExpenseAmount, etExpenseDate, etExpenseNote;
     private Spinner spExpenseCategory, spExpensePaymentMode;
     private Button btnSaveExpense;
     private ProgressBar progressSave;
-    private com.google.android.material.card.MaterialCardView btnVoiceExpense;
+    private MaterialCardView btnVoiceExpense;
 
     private android.widget.TextView tvVoiceDetected;
 
@@ -80,6 +84,16 @@ public class ExpenseFragment extends Fragment {
     private DatabaseReference expenseRef;
     private String userId;
     private long selectedDateMillis = -1;
+
+    // ================= VOICE (CUSTOM, NO GOOGLE POPUP) =================
+    private SpeechRecognizer speechRecognizer;
+    private Intent speechIntent;
+
+    // ================= PREMIUM VOICE DIALOG =================
+    private Dialog voiceDialog;
+    private View pulse1, pulse2, pulse3, micCard;
+    private android.widget.TextView tvDots;
+    private Animation pulseAnim1, pulseAnim2, pulseAnim3, micBounceAnim, dotsAnim;
 
     @Nullable
     @Override
@@ -109,7 +123,7 @@ public class ExpenseFragment extends Fragment {
         setupAmountWatcher();
         focusAmountField();
 
-        // 📍 Location suggestion setup (NEW)
+        // 📍 Location suggestion setup
         setupLocationSuggestion();
 
         btnSaveExpense.setOnClickListener(v -> {
@@ -124,6 +138,20 @@ public class ExpenseFragment extends Fragment {
         });
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        stopVoiceInput();
+
+        if (speechRecognizer != null) {
+            try {
+                speechRecognizer.destroy();
+            } catch (Exception ignored) {}
+            speechRecognizer = null;
+        }
+    }
+
     // ================= INIT =================
     private void initViews(View view) {
         etExpenseAmount      = view.findViewById(R.id.etExpenseAmount);
@@ -136,7 +164,7 @@ public class ExpenseFragment extends Fragment {
         btnVoiceExpense      = view.findViewById(R.id.btnVoiceExpense);
         tvVoiceDetected      = view.findViewById(R.id.tvVoiceDetected);
 
-        // 📍 Location Suggestion Views (NEW)
+        // 📍 Location Suggestion Views
         cardLocationSuggestion = view.findViewById(R.id.cardLocationSuggestion);
         tvLocationTitle = view.findViewById(R.id.tvLocationTitle);
         tvLocationSubtitle = view.findViewById(R.id.tvLocationSubtitle);
@@ -253,62 +281,130 @@ public class ExpenseFragment extends Fragment {
         }, 200);
     }
 
-    // ================= VOICE =================
-    private void startVoiceInput() {
-        try {
-            Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                    RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-IN");
-            intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak your expense");
+    // =========================================================================================
+    // 🎙️ VOICE (CUSTOM PREMIUM)
+    // =========================================================================================
 
-            Toast.makeText(requireContext(), "Listening...", Toast.LENGTH_SHORT).show();
-            startActivityForResult(intent, REQ_CODE_SPEECH);
+    private void startVoiceInput() {
+
+        // ✅ Permission check
+        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.RECORD_AUDIO)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            requestPermissions(
+                    new String[]{Manifest.permission.RECORD_AUDIO},
+                    REQ_AUDIO_PERMISSION
+            );
+
+            Toast.makeText(requireContext(), "Allow mic permission first", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+
+            if (!SpeechRecognizer.isRecognitionAvailable(requireContext())) {
+                Toast.makeText(requireContext(), "Voice input not supported", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (speechRecognizer == null) {
+                speechRecognizer = SpeechRecognizer.createSpeechRecognizer(requireContext());
+
+                speechRecognizer.setRecognitionListener(new RecognitionListener() {
+
+                    @Override
+                    public void onReadyForSpeech(Bundle params) {
+                        showVoiceDialog();
+                    }
+
+                    @Override
+                    public void onRmsChanged(float rmsdB) {
+                        updateVoiceRms(rmsdB);
+                    }
+
+                    @Override
+                    public void onResults(Bundle results) {
+                        hideVoiceDialog();
+
+                        ArrayList<String> matches =
+                                results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+
+                        if (matches != null && !matches.isEmpty()) {
+                            String rawText = matches.get(0);
+                            applyVoiceParsedExpense(rawText);
+                        }
+                    }
+
+                    @Override
+                    public void onError(int error) {
+                        hideVoiceDialog();
+                        Toast.makeText(requireContext(), "Try again 😅", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onEndOfSpeech() {
+                        // handled by results/error
+                    }
+
+                    // required but unused
+                    @Override public void onBeginningOfSpeech() {}
+                    @Override public void onBufferReceived(byte[] buffer) {}
+                    @Override public void onPartialResults(Bundle partialResults) {}
+                    @Override public void onEvent(int eventType, Bundle params) {}
+                });
+            }
+
+            if (speechIntent == null) {
+                speechIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                speechIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                        RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                speechIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-IN");
+                speechIntent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
+            }
+
+            speechRecognizer.startListening(speechIntent);
 
         } catch (Exception e) {
-            Toast.makeText(requireContext(),
-                    "Voice input not supported",
-                    Toast.LENGTH_SHORT).show();
+            hideVoiceDialog();
+            Toast.makeText(requireContext(), "Voice input not supported", Toast.LENGTH_SHORT).show();
         }
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == REQ_CODE_SPEECH &&
-                resultCode == Activity.RESULT_OK &&
-                data != null) {
-
-            ArrayList<String> result =
-                    data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-
-            if (result != null && !result.isEmpty()) {
-                String rawText = result.get(0);
-
-                ExpenseModel parsed = VoiceExpenseParser.parse(rawText);
-
-                if (parsed.amount > 0)
-                    etExpenseAmount.setText(String.valueOf(parsed.amount));
-
-                etExpenseNote.setText(parsed.note);
-
-                selectedDateMillis = parsed.timestamp;
-                etExpenseDate.setText(
-                        new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                                .format(new Date(parsed.timestamp))
-                );
-
-                setSpinnerByText(spExpensePaymentMode, parsed.paymentMode);
-
-                String cat = parsed.category;
-                if ("Travel".equalsIgnoreCase(cat)) cat = "Transport";
-                setSpinnerByText(spExpenseCategory, cat);
-
-                tvVoiceDetected.setVisibility(View.VISIBLE);
-                tvVoiceDetected.setText("🎙️ Detected: " + rawText);
+    private void stopVoiceInput() {
+        try {
+            if (speechRecognizer != null) {
+                speechRecognizer.stopListening();
+                speechRecognizer.cancel();
             }
+        } catch (Exception ignored) {}
+
+        hideVoiceDialog();
+    }
+
+    private void applyVoiceParsedExpense(String rawText) {
+
+        ExpenseModel parsed = VoiceExpenseParser.parse(rawText);
+
+        if (parsed.amount > 0) {
+            etExpenseAmount.setText(String.valueOf(parsed.amount));
         }
+
+        etExpenseNote.setText(parsed.note);
+
+        selectedDateMillis = parsed.timestamp;
+        etExpenseDate.setText(
+                new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                        .format(new Date(parsed.timestamp))
+        );
+
+        setSpinnerByText(spExpensePaymentMode, parsed.paymentMode);
+
+        String cat = parsed.category;
+        if ("Travel".equalsIgnoreCase(cat)) cat = "Transport";
+        setSpinnerByText(spExpenseCategory, cat);
+
+        tvVoiceDetected.setVisibility(View.VISIBLE);
+        tvVoiceDetected.setText("🎙️ Detected: " + rawText);
     }
 
     private void setSpinnerByText(Spinner spinner, String text) {
@@ -323,15 +419,108 @@ public class ExpenseFragment extends Fragment {
         }
     }
 
-    // ================= 📍 LOCATION SUGGESTION (NEW) =================
+    // =========================================================================================
+    // 🎨 PREMIUM VOICE DIALOG UI
+    // =========================================================================================
+
+    private void showVoiceDialog() {
+        if (getContext() == null) return;
+
+        if (voiceDialog == null) {
+            voiceDialog = new Dialog(requireContext());
+            voiceDialog.setContentView(R.layout.dialog_voice_listening);
+            voiceDialog.setCancelable(false);
+
+            if (voiceDialog.getWindow() != null) {
+                voiceDialog.getWindow().setLayout(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                );
+                voiceDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+            }
+
+            pulse1 = voiceDialog.findViewById(R.id.pulse1);
+            pulse2 = voiceDialog.findViewById(R.id.pulse2);
+            pulse3 = voiceDialog.findViewById(R.id.pulse3);
+
+            micCard = voiceDialog.findViewById(R.id.micCard);
+            tvDots = voiceDialog.findViewById(R.id.tvDots);
+
+            android.widget.TextView btnCancel = voiceDialog.findViewById(R.id.btnCancelVoice);
+
+            pulseAnim1 = AnimationUtils.loadAnimation(requireContext(), R.anim.pulse_scale);
+            pulseAnim1.setRepeatCount(Animation.INFINITE);
+
+            pulseAnim2 = AnimationUtils.loadAnimation(requireContext(), R.anim.pulse_scale);
+            pulseAnim2.setRepeatCount(Animation.INFINITE);
+            pulseAnim2.setStartOffset(220);
+
+            pulseAnim3 = AnimationUtils.loadAnimation(requireContext(), R.anim.pulse_scale);
+            pulseAnim3.setRepeatCount(Animation.INFINITE);
+            pulseAnim3.setStartOffset(420);
+
+            micBounceAnim = AnimationUtils.loadAnimation(requireContext(), R.anim.mic_bounce);
+            dotsAnim = AnimationUtils.loadAnimation(requireContext(), R.anim.dots_fade);
+
+            btnCancel.setOnClickListener(v -> stopVoiceInput());
+        }
+
+        try {
+            if (!voiceDialog.isShowing()) voiceDialog.show();
+        } catch (Exception ignored) {}
+
+        if (pulse1 != null) pulse1.startAnimation(pulseAnim1);
+        if (pulse2 != null) pulse2.startAnimation(pulseAnim2);
+        if (pulse3 != null) pulse3.startAnimation(pulseAnim3);
+
+        if (micCard != null) micCard.startAnimation(micBounceAnim);
+        if (tvDots != null) tvDots.startAnimation(dotsAnim);
+    }
+
+    private void hideVoiceDialog() {
+        try {
+            if (pulse1 != null) pulse1.clearAnimation();
+            if (pulse2 != null) pulse2.clearAnimation();
+            if (pulse3 != null) pulse3.clearAnimation();
+
+            if (micCard != null) {
+                micCard.clearAnimation();
+                micCard.setScaleX(1f);
+                micCard.setScaleY(1f);
+            }
+
+            if (tvDots != null) tvDots.clearAnimation();
+
+            if (voiceDialog != null && voiceDialog.isShowing()) {
+                voiceDialog.dismiss();
+            }
+        } catch (Exception ignored) {}
+    }
+
+    // 🔥 Live RMS animation (Siri vibe)
+    private void updateVoiceRms(float rmsdB) {
+        if (micCard == null) return;
+
+        float normalized = Math.min(10f, Math.max(0f, rmsdB));
+        float scale = 1.0f + (normalized / 50f); // 1.0 -> 1.2
+
+        micCard.animate()
+                .scaleX(scale)
+                .scaleY(scale)
+                .setDuration(120)
+                .start();
+    }
+
+    // =========================================================================================
+    // 📍 LOCATION SUGGESTION
+    // =========================================================================================
+
     private void setupLocationSuggestion() {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
-        // Dismiss button
         btnLocationDismiss.setOnClickListener(v -> cardLocationSuggestion.setVisibility(View.GONE));
 
-        // Add button -> autofill note + category
         btnLocationAdd.setOnClickListener(v -> {
 
             if (detectedPlaceName == null || detectedPlaceName.trim().isEmpty()) {
@@ -343,7 +532,6 @@ public class ExpenseFragment extends Fragment {
 
             String lower = detectedPlaceName.toLowerCase(Locale.ROOT);
 
-            // Smart category mapping
             if (lower.contains("starbucks") || lower.contains("cafe") || lower.contains("coffee")) {
                 setSpinnerByText(spExpenseCategory, "Food");
             } else if (lower.contains("petrol") || lower.contains("fuel")) {
@@ -359,7 +547,6 @@ public class ExpenseFragment extends Fragment {
             Toast.makeText(requireContext(), "Suggestion applied ✨", Toast.LENGTH_SHORT).show();
         });
 
-        // Fetch once when fragment opens
         fetchLocationAndShowSuggestion();
     }
 
@@ -399,10 +586,8 @@ public class ExpenseFragment extends Fragment {
 
                 Address address = addresses.get(0);
 
-                // FeatureName gives nearest "place name"
                 String place = address.getFeatureName();
 
-                // fallback
                 if (place == null || place.trim().isEmpty()) {
                     place = address.getSubLocality();
                 }
@@ -422,9 +607,13 @@ public class ExpenseFragment extends Fragment {
             }
 
         } catch (Exception ignored) {
-            // No crash, no UI hurt
+            // No crash
         }
     }
+
+    // =========================================================================================
+    // PERMISSIONS
+    // =========================================================================================
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -436,10 +625,22 @@ public class ExpenseFragment extends Fragment {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 fetchLocationAndShowSuggestion();
             }
+            return;
+        }
+
+        if (requestCode == REQ_AUDIO_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startVoiceInput();
+            } else {
+                Toast.makeText(requireContext(), "Mic permission denied", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
-    // ================= SAVE =================
+    // =========================================================================================
+    // SAVE
+    // =========================================================================================
+
     private void validateAndSave() {
 
         if (expenseRef == null) return;
@@ -511,7 +712,6 @@ public class ExpenseFragment extends Fragment {
         tvVoiceDetected.setText("");
         tvVoiceDetected.setVisibility(View.GONE);
 
-        // 📍 Hide suggestion also
         cardLocationSuggestion.setVisibility(View.GONE);
         detectedPlaceName = null;
 

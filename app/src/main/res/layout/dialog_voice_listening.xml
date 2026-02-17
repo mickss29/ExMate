@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/voiceRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="#D9000000">
+
+    <FrameLayout
+        android:layout_width="170dp"
+        android:layout_height="170dp">
+
+        <!-- Pulse 1 -->
+        <View
+            android:id="@+id/pulse1"
+            android:layout_width="170dp"
+            android:layout_height="170dp"
+            android:background="@drawable/bg_pulse_circle"
+            android:alpha="0.18" />
+
+        <!-- Pulse 2 -->
+        <View
+            android:id="@+id/pulse2"
+            android:layout_width="170dp"
+            android:layout_height="170dp"
+            android:background="@drawable/bg_pulse_circle"
+            android:alpha="0.14" />
+
+        <!-- Pulse 3 -->
+        <View
+            android:id="@+id/pulse3"
+            android:layout_width="170dp"
+            android:layout_height="170dp"
+            android:background="@drawable/bg_pulse_circle"
+            android:alpha="0.10" />
+
+        <!-- Mic circle -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/micCard"
+            android:layout_width="88dp"
+            android:layout_height="88dp"
+            android:layout_gravity="center"
+            android:radius="44dp"
+            android:elevation="12dp"
+            android:backgroundTint="#111827">
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_mic"
+                android:tint="#FFFFFF" />
+        </androidx.cardview.widget.CardView>
+
+    </FrameLayout>
+
+    <!-- Listening with dots -->
+    <TextView
+        android:id="@+id/tvListening"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Listening"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        android:layout_marginTop="18dp"
+        android:fontFamily="sans-serif-medium"/>
+
+    <TextView
+        android:id="@+id/tvDots"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="..."
+        android:textColor="#93C5FD"
+        android:textSize="22sp"
+        android:layout_marginTop="2dp"
+        android:fontFamily="sans-serif-medium"/>
+
+    <TextView
+        android:id="@+id/btnCancelVoice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Cancel"
+        android:textColor="#93C5FD"
+        android:textSize="16sp"
+        android:layout_marginTop="16dp"/>
+</LinearLayout>

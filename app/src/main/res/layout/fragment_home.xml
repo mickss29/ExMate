@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="@color/bg_app">
 
-    <!-- ✅ Use NestedScrollView instead of ScrollView -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -395,6 +394,26 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- ================= DISCOVER SECTION (ABOVE RECENT) ================= -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:text="Discover"
+                android:textColor="@color/textPrimary"
+                android:textSize="18sp"
+                android:textStyle="bold"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvDiscover"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:overScrollMode="never"
+                android:paddingStart="2dp"
+                android:clipToPadding="false"
+                android:nestedScrollingEnabled="false"/>
+
             <!-- ================= RECENT HEADER ================= -->
             <LinearLayout
                 android:layout_width="match_parent"
@@ -452,7 +471,6 @@
                 app:strokeWidth="1dp"
                 app:strokeColor="@color/strokeDark">
 
-                <!-- ✅ FIX: nestedScrollingEnabled=false + height wrap_content works properly in NestedScrollView -->
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvRecent"
                     android:layout_width="match_parent"
@@ -461,6 +479,11 @@
                     android:overScrollMode="never"
                     android:padding="12dp"/>
             </com.google.android.material.card.MaterialCardView>
+
+            <!-- bottom spacing -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="26dp"/>
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

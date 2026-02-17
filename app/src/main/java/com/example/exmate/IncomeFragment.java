@@ -1,28 +1,34 @@
 package com.example.exmate;
 
-import android.app.Activity;
+import android.Manifest;
 import android.app.DatePickerDialog;
+import android.app.Dialog;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
+import android.speech.SpeechRecognizer;
 import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
 import java.text.SimpleDateFormat;
@@ -39,7 +45,8 @@ import com.google.firebase.database.FirebaseDatabase;
 
 public class IncomeFragment extends Fragment {
 
-    private static final int REQ_CODE_SPEECH = 1101;
+    // 🎙️ Voice Permission
+    private static final int REQ_AUDIO_PERMISSION = 9001;
 
     private EditText etIncomeAmount, etIncomeDate, etIncomeNote;
     private Spinner spIncomeSource, spPaymentMode;
@@ -48,12 +55,21 @@ public class IncomeFragment extends Fragment {
 
     // 🎙️ Voice
     private com.google.android.material.card.MaterialCardView btnVoiceIncome;
-
     private android.widget.TextView tvVoiceDetectedIncome;
 
     private long selectedDateMillis = -1;
     private DatabaseReference incomeRef;
     private String userId;
+
+    // ================= VOICE (CUSTOM, NO GOOGLE POPUP) =================
+    private SpeechRecognizer speechRecognizer;
+    private Intent speechIntent;
+
+    // ================= PREMIUM VOICE DIALOG =================
+    private Dialog voiceDialog;
+    private View pulse1, pulse2, pulse3, micCard;
+    private android.widget.TextView tvDots;
+    private Animation pulseAnim1, pulseAnim2, pulseAnim3, micBounceAnim, dotsAnim;
 
     @Nullable
     @Override
@@ -95,6 +111,20 @@ public class IncomeFragment extends Fragment {
         });
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        stopVoiceInput();
+
+        if (speechRecognizer != null) {
+            try {
+                speechRecognizer.destroy();
+            } catch (Exception ignored) {}
+            speechRecognizer = null;
+        }
+    }
+
     // ================= INIT =================
     private void initViews(View view) {
         etIncomeAmount     = view.findViewById(R.id.etIncomeAmount);
@@ -105,7 +135,6 @@ public class IncomeFragment extends Fragment {
         btnSaveIncome      = view.findViewById(R.id.btnSaveIncome);
         progressSaveIncome = view.findViewById(R.id.progressSaveIncome);
 
-        // 🎙️ NEW
         btnVoiceIncome = view.findViewById(R.id.btnVoiceIncome);
         tvVoiceDetectedIncome = view.findViewById(R.id.tvVoiceDetectedIncome);
 
@@ -219,72 +248,233 @@ public class IncomeFragment extends Fragment {
         }, 200);
     }
 
-    // ================= VOICE =================
-    private void startVoiceInput() {
-        try {
-            Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                    RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-IN");
-            intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak your income");
+    // =========================================================================================
+    // 🎙️ VOICE (CUSTOM PREMIUM)
+    // =========================================================================================
 
-            Toast.makeText(requireContext(), "Listening...", Toast.LENGTH_SHORT).show();
-            startActivityForResult(intent, REQ_CODE_SPEECH);
+    private void startVoiceInput() {
+
+        // ✅ Permission check
+        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.RECORD_AUDIO)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            requestPermissions(
+                    new String[]{Manifest.permission.RECORD_AUDIO},
+                    REQ_AUDIO_PERMISSION
+            );
+
+            Toast.makeText(requireContext(), "Allow mic permission first", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+
+            if (!SpeechRecognizer.isRecognitionAvailable(requireContext())) {
+                Toast.makeText(requireContext(), "Voice input not supported", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (speechRecognizer == null) {
+
+                speechRecognizer = SpeechRecognizer.createSpeechRecognizer(requireContext());
+
+                speechRecognizer.setRecognitionListener(new RecognitionListener() {
+
+                    @Override
+                    public void onReadyForSpeech(Bundle params) {
+                        showVoiceDialog();
+                    }
+
+                    @Override
+                    public void onRmsChanged(float rmsdB) {
+                        updateVoiceRms(rmsdB);
+                    }
+
+                    @Override
+                    public void onResults(Bundle results) {
+                        hideVoiceDialog();
+
+                        ArrayList<String> matches =
+                                results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+
+                        if (matches != null && !matches.isEmpty()) {
+                            String rawText = matches.get(0);
+                            applyVoiceParsedIncome(rawText);
+                        }
+                    }
+
+                    @Override
+                    public void onError(int error) {
+                        hideVoiceDialog();
+                        Toast.makeText(requireContext(), "Try again 😅", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onEndOfSpeech() {}
+
+                    // required but unused
+                    @Override public void onBeginningOfSpeech() {}
+                    @Override public void onBufferReceived(byte[] buffer) {}
+                    @Override public void onPartialResults(Bundle partialResults) {}
+                    @Override public void onEvent(int eventType, Bundle params) {}
+                });
+            }
+
+            if (speechIntent == null) {
+                speechIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                speechIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                        RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                speechIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-IN");
+                speechIntent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
+            }
+
+            speechRecognizer.startListening(speechIntent);
 
         } catch (Exception e) {
-            Toast.makeText(requireContext(),
-                    "Voice input not supported",
-                    Toast.LENGTH_SHORT).show();
+            hideVoiceDialog();
+            Toast.makeText(requireContext(), "Voice input not supported", Toast.LENGTH_SHORT).show();
         }
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == REQ_CODE_SPEECH &&
-                resultCode == Activity.RESULT_OK &&
-                data != null) {
-
-            ArrayList<String> result =
-                    data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-
-            if (result != null && !result.isEmpty()) {
-
-                String rawText = result.get(0);
-                String lower = rawText.toLowerCase(Locale.ROOT);
-
-                // Amount detect (simple)
-                double amount = detectAmount(lower);
-                if (amount > 0) etIncomeAmount.setText(String.valueOf(amount));
-
-                // Note
-                etIncomeNote.setText(cleanIncomeNote(lower));
-
-                // Date (basic)
-                long time = detectDateMillis(lower);
-                selectedDateMillis = time;
-                etIncomeDate.setText(
-                        new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                                .format(new Date(time))
-                );
-
-                // Payment Mode detect
-                String pay = detectPaymentMode(lower);
-                setSpinnerByText(spPaymentMode, pay);
-
-                // Source detect
-                String src = detectIncomeSource(lower);
-                setSpinnerByText(spIncomeSource, src);
-
-                // UI feedback
-                tvVoiceDetectedIncome.setVisibility(View.VISIBLE);
-                tvVoiceDetectedIncome.setText("🎙️ Detected: " + rawText);
+    private void stopVoiceInput() {
+        try {
+            if (speechRecognizer != null) {
+                speechRecognizer.stopListening();
+                speechRecognizer.cancel();
             }
-        }
+        } catch (Exception ignored) {}
+
+        hideVoiceDialog();
     }
 
-    // ===== Voice helpers =====
+    private void applyVoiceParsedIncome(String rawText) {
+
+        String lower = rawText.toLowerCase(Locale.ROOT);
+
+        // Amount detect
+        double amount = detectAmount(lower);
+        if (amount > 0) etIncomeAmount.setText(String.valueOf(amount));
+
+        // Note
+        etIncomeNote.setText(cleanIncomeNote(lower));
+
+        // Date
+        long time = detectDateMillis(lower);
+        selectedDateMillis = time;
+        etIncomeDate.setText(
+                new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                        .format(new Date(time))
+        );
+
+        // Payment Mode detect
+        String pay = detectPaymentMode(lower);
+        setSpinnerByText(spPaymentMode, pay);
+
+        // Source detect
+        String src = detectIncomeSource(lower);
+        setSpinnerByText(spIncomeSource, src);
+
+        // UI feedback
+        tvVoiceDetectedIncome.setVisibility(View.VISIBLE);
+        tvVoiceDetectedIncome.setText("🎙️ Detected: " + rawText);
+    }
+
+    // =========================================================================================
+    // 🎨 PREMIUM VOICE DIALOG UI
+    // =========================================================================================
+
+    private void showVoiceDialog() {
+        if (getContext() == null) return;
+
+        if (voiceDialog == null) {
+            voiceDialog = new Dialog(requireContext());
+            voiceDialog.setContentView(R.layout.dialog_voice_listening);
+            voiceDialog.setCancelable(false);
+
+            if (voiceDialog.getWindow() != null) {
+                voiceDialog.getWindow().setLayout(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                );
+                voiceDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+            }
+
+            pulse1 = voiceDialog.findViewById(R.id.pulse1);
+            pulse2 = voiceDialog.findViewById(R.id.pulse2);
+            pulse3 = voiceDialog.findViewById(R.id.pulse3);
+
+            micCard = voiceDialog.findViewById(R.id.micCard);
+            tvDots = voiceDialog.findViewById(R.id.tvDots);
+
+            android.widget.TextView btnCancel = voiceDialog.findViewById(R.id.btnCancelVoice);
+
+            pulseAnim1 = AnimationUtils.loadAnimation(requireContext(), R.anim.pulse_scale);
+            pulseAnim1.setRepeatCount(Animation.INFINITE);
+
+            pulseAnim2 = AnimationUtils.loadAnimation(requireContext(), R.anim.pulse_scale);
+            pulseAnim2.setRepeatCount(Animation.INFINITE);
+            pulseAnim2.setStartOffset(220);
+
+            pulseAnim3 = AnimationUtils.loadAnimation(requireContext(), R.anim.pulse_scale);
+            pulseAnim3.setRepeatCount(Animation.INFINITE);
+            pulseAnim3.setStartOffset(420);
+
+            micBounceAnim = AnimationUtils.loadAnimation(requireContext(), R.anim.mic_bounce);
+            dotsAnim = AnimationUtils.loadAnimation(requireContext(), R.anim.dots_fade);
+
+            btnCancel.setOnClickListener(v -> stopVoiceInput());
+        }
+
+        try {
+            if (!voiceDialog.isShowing()) voiceDialog.show();
+        } catch (Exception ignored) {}
+
+        if (pulse1 != null) pulse1.startAnimation(pulseAnim1);
+        if (pulse2 != null) pulse2.startAnimation(pulseAnim2);
+        if (pulse3 != null) pulse3.startAnimation(pulseAnim3);
+
+        if (micCard != null) micCard.startAnimation(micBounceAnim);
+        if (tvDots != null) tvDots.startAnimation(dotsAnim);
+    }
+
+    private void hideVoiceDialog() {
+        try {
+            if (pulse1 != null) pulse1.clearAnimation();
+            if (pulse2 != null) pulse2.clearAnimation();
+            if (pulse3 != null) pulse3.clearAnimation();
+
+            if (micCard != null) {
+                micCard.clearAnimation();
+                micCard.setScaleX(1f);
+                micCard.setScaleY(1f);
+            }
+
+            if (tvDots != null) tvDots.clearAnimation();
+
+            if (voiceDialog != null && voiceDialog.isShowing()) {
+                voiceDialog.dismiss();
+            }
+        } catch (Exception ignored) {}
+    }
+
+    // 🔥 Live RMS animation
+    private void updateVoiceRms(float rmsdB) {
+        if (micCard == null) return;
+
+        float normalized = Math.min(10f, Math.max(0f, rmsdB));
+        float scale = 1.0f + (normalized / 50f); // 1.0 -> 1.2
+
+        micCard.animate()
+                .scaleX(scale)
+                .scaleY(scale)
+                .setDuration(120)
+                .start();
+    }
+
+    // =========================================================================================
+    // VOICE HELPERS (SAME LOGIC)
+    // =========================================================================================
+
     private double detectAmount(String text) {
         try {
             java.util.regex.Pattern p = java.util.regex.Pattern.compile("(\\d+(?:\\.\\d{1,2})?)");
@@ -381,7 +571,29 @@ public class IncomeFragment extends Fragment {
         }
     }
 
-    // ================= SAVE =================
+    // =========================================================================================
+    // PERMISSION
+    // =========================================================================================
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == REQ_AUDIO_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startVoiceInput();
+            } else {
+                Toast.makeText(requireContext(), "Mic permission denied", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    // =========================================================================================
+    // SAVE (UNCHANGED)
+    // =========================================================================================
+
     private void validateAndSave() {
 
         if (incomeRef == null) return;
@@ -404,7 +616,6 @@ public class IncomeFragment extends Fragment {
             return;
         }
 
-        // 🔥 FIX: reset se pehle source save
         String selectedSource = spIncomeSource.getSelectedItem().toString();
 
         btnSaveIncome.setEnabled(false);

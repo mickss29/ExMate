@@ -1,5 +1,6 @@
 package com.example.exmate;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,24 +34,26 @@ public class RecentTransactionAdapter
     // ================= VIEW HOLDER =================
     static class ViewHolder extends RecyclerView.ViewHolder {
 
-        ImageView imgType;
+        ImageView imgType, imgArrow;
         TextView tvTitle, tvSub, tvAmount;
 
-        // NEW (for premium row)
-        View divider;
         MaterialCardView iconHolder;
+        MaterialCardView iconOuter;
+        MaterialCardView chipSub;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
 
             imgType  = itemView.findViewById(R.id.imgType);
+            imgArrow = itemView.findViewById(R.id.imgArrow);
+
             tvTitle  = itemView.findViewById(R.id.tvTitle);
             tvSub    = itemView.findViewById(R.id.tvSub);
             tvAmount = itemView.findViewById(R.id.tvAmount);
 
-            // NEW ids (safe)
-            divider = itemView.findViewById(R.id.divider);
             iconHolder = itemView.findViewById(R.id.iconHolder);
+            iconOuter  = itemView.findViewById(R.id.iconOuter);
+            chipSub    = itemView.findViewById(R.id.chipSub);
         }
     }
 
@@ -76,17 +79,17 @@ public class RecentTransactionAdapter
 
         boolean isIncome = "Income".equalsIgnoreCase(model.getType());
 
-        // ---------- TITLE (SMART) ----------
+        // ---------- TITLE ----------
         if (isIncome) {
-            holder.tvTitle.setText(model.getSource()); // Salary, Business
+            holder.tvTitle.setText(safeText(model.getSource(), "Income"));
         } else {
-            holder.tvTitle.setText(model.getCategory()); // Food, Travel
+            holder.tvTitle.setText(safeText(model.getCategory(), "Expense"));
         }
 
         // ---------- DATE / TIME ----------
         holder.tvSub.setText(formatTime(model.getTime()));
 
-        // ---------- AMOUNT (PREMIUM) ----------
+        // ---------- AMOUNT ----------
         String formattedAmount = moneyFormat.format(model.getAmount());
 
         if (isIncome) {
@@ -98,20 +101,31 @@ public class RecentTransactionAdapter
         // ---------- UI BASED ON TYPE ----------
         if (isIncome) {
 
+            // Amount color
             holder.tvAmount.setTextColor(
                     holder.itemView.getContext().getColor(R.color.greenIncome)
             );
 
+            // Arrow
+            if (holder.imgArrow != null) {
+                holder.imgArrow.setImageResource(R.drawable.ic_arrow_up);
+                holder.imgArrow.setColorFilter(
+                        holder.itemView.getContext().getColor(R.color.greenIncome)
+                );
+            }
+
+            // Main icon
             holder.imgType.setImageResource(R.drawable.ic_income);
 
-            // NEW premium icon holder color (safe)
+            // Glass badge colors
+            if (holder.iconOuter != null) {
+                holder.iconOuter.setCardBackgroundColor(Color.parseColor("#0F172A"));
+            }
+
             if (holder.iconHolder != null) {
                 holder.iconHolder.setCardBackgroundColor(
                         holder.itemView.getContext().getColor(R.color.greenIncomeDark)
                 );
-            } else {
-                // fallback (old)
-                holder.imgType.setBackgroundResource(R.drawable.bg_circle_green);
             }
 
         } else {
@@ -120,27 +134,47 @@ public class RecentTransactionAdapter
                     holder.itemView.getContext().getColor(R.color.redExpense)
             );
 
+            if (holder.imgArrow != null) {
+                holder.imgArrow.setImageResource(R.drawable.ic_arrow_down);
+                holder.imgArrow.setColorFilter(
+                        holder.itemView.getContext().getColor(R.color.redExpense)
+                );
+            }
+
             holder.imgType.setImageResource(R.drawable.ic_expense);
+
+            if (holder.iconOuter != null) {
+                holder.iconOuter.setCardBackgroundColor(Color.parseColor("#0F172A"));
+            }
 
             if (holder.iconHolder != null) {
                 holder.iconHolder.setCardBackgroundColor(
                         holder.itemView.getContext().getColor(R.color.redExpenseDark)
                 );
-            } else {
-                holder.imgType.setBackgroundResource(R.drawable.bg_circle_red);
             }
         }
 
-        // ---------- DIVIDER (HIDE LAST ITEM) ----------
-        if (holder.divider != null) {
-            holder.divider.setVisibility(
-                    position == getItemCount() - 1 ? View.GONE : View.VISIBLE
-            );
+        // ---------- CHIP POLISH ----------
+        // (optional future: show paymentMode also)
+        if (holder.chipSub != null) {
+            holder.chipSub.setStrokeWidth(1);
+            holder.chipSub.setStrokeColor(Color.parseColor("#1E293B"));
         }
 
-        // ---------- CLICK (FUTURE READY) ----------
+        // ---------- CLICK (SMOOTH PREMIUM FEEL) ----------
         holder.itemView.setOnClickListener(v -> {
-            // Later: open bottom sheet / details
+            v.animate()
+                    .scaleX(0.98f)
+                    .scaleY(0.98f)
+                    .setDuration(90)
+                    .withEndAction(() -> v.animate()
+                            .scaleX(1f)
+                            .scaleY(1f)
+                            .setDuration(90)
+                            .start())
+                    .start();
+
+            // Later: open details bottom sheet
         });
     }
 
@@ -151,10 +185,17 @@ public class RecentTransactionAdapter
 
     @Override
     public long getItemId(int position) {
-        return list.get(position).getTime(); // stable unique
+        // stable unique
+        return list.get(position).getTime();
     }
 
     // ================= HELPERS =================
+    private String safeText(String t, String fallback) {
+        if (t == null) return fallback;
+        String s = t.trim();
+        return s.isEmpty() ? fallback : s;
+    }
+
     private String formatTime(long millis) {
 
         java.util.Calendar now = java.util.Calendar.getInstance();
@@ -163,12 +204,10 @@ public class RecentTransactionAdapter
 
         boolean sameYear = now.get(java.util.Calendar.YEAR) == date.get(java.util.Calendar.YEAR);
 
-        // Today
         boolean isToday =
                 now.get(java.util.Calendar.YEAR) == date.get(java.util.Calendar.YEAR) &&
                         now.get(java.util.Calendar.DAY_OF_YEAR) == date.get(java.util.Calendar.DAY_OF_YEAR);
 
-        // Yesterday
         java.util.Calendar yesterday = java.util.Calendar.getInstance();
         yesterday.add(java.util.Calendar.DAY_OF_YEAR, -1);
 
@@ -186,7 +225,6 @@ public class RecentTransactionAdapter
             return "Yesterday • " + timeFormat.format(new Date(millis));
         }
 
-        // Normal
         SimpleDateFormat fullFormat;
 
         if (sameYear) {
@@ -197,6 +235,4 @@ public class RecentTransactionAdapter
 
         return fullFormat.format(new Date(millis));
     }
-
 }
-

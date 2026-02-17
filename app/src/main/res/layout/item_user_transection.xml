@@ -5,80 +5,114 @@
     android:id="@+id/cardRow"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginVertical="7dp"
+    android:layout_marginVertical="8dp"
     android:clickable="true"
     android:focusable="true"
     android:foreground="?attr/selectableItemBackground"
-    android:backgroundTint="#0F172A"
-    app:cardCornerRadius="18dp"
-    app:cardElevation="6dp"
+    android:backgroundTint="#0B1220"
+    app:cardCornerRadius="22dp"
+    app:cardElevation="0dp"
     app:strokeColor="#1E293B"
     app:strokeWidth="1dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
         android:paddingHorizontal="16dp"
         android:paddingVertical="14dp">
 
-        <!-- MAIN ROW -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+        <!-- ICON BADGE (GLASS STYLE) -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/iconOuter"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="0dp"
+            app:strokeColor="#22324A"
+            app:strokeWidth="1dp"
+            app:cardBackgroundColor="#0F172A">
 
-            <!-- ICON HOLDER -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/iconHolder"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                app:cardCornerRadius="22dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="4dp"
+                app:cardCornerRadius="20dp"
                 app:cardElevation="0dp"
-                app:cardBackgroundColor="#132238">
+                app:cardBackgroundColor="#12223A">
 
                 <ImageView
                     android:id="@+id/imgType"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:padding="11dp"
+                    android:padding="12dp"
                     android:src="@drawable/ic_expense"
                     android:tint="@android:color/white"/>
             </com.google.android.material.card.MaterialCardView>
+        </com.google.android.material.card.MaterialCardView>
 
-            <!-- TITLE + TIME -->
-            <LinearLayout
-                android:layout_width="0dp"
+        <!-- TITLE + SUB -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="14dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="14dp"
-                android:orientation="vertical">
+                android:text="Food"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end"/>
 
-                <TextView
-                    android:id="@+id/tvTitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Food"
-                    android:textColor="#FFFFFF"
-                    android:textSize="15sp"
-                    android:textStyle="bold"
-                    android:maxLines="1"
-                    android:ellipsize="end"/>
+            <!-- CHIP SUBTEXT -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/chipSub"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#1E293B"
+                app:strokeWidth="1dp"
+                app:cardBackgroundColor="#0F172A">
 
                 <TextView
                     android:id="@+id/tvSub"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="5dp"
                     android:text="Today • 6:45 PM"
                     android:textColor="#94A3B8"
-                    android:textSize="12sp"
+                    android:textSize="11sp"
                     android:maxLines="1"
                     android:ellipsize="end"/>
-            </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
 
-            <!-- AMOUNT -->
+        <!-- AMOUNT + ARROW -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:id="@+id/imgArrow"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_marginEnd="6dp"
+                android:src="@drawable/ic_arrow_down"
+                android:tint="#F87171"/>
+
             <TextView
                 android:id="@+id/tvAmount"
                 android:layout_width="wrap_content"
@@ -87,16 +121,9 @@
                 android:textSize="15sp"
                 android:textStyle="bold"
                 android:textColor="#F87171"
-                android:paddingStart="8dp"/>
+                android:gravity="end"/>
         </LinearLayout>
 
-        <!-- SOFT DIVIDER (optional - adapter se last item pe hide kar denge) -->
-        <View
-            android:id="@+id/divider"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="14dp"
-            android:background="#1E293B"/>
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>
