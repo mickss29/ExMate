@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:fillViewport="true"
     android:clipToPadding="false"
+    android:overScrollMode="never"
     android:background="#F2F0EF">
 
     <LinearLayout
@@ -14,61 +15,13 @@
         android:orientation="vertical"
         android:padding="18dp">
 
-        <!-- ===== HERO CARD ===== -->
+        <!-- ================= HERO CARD ================= -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardBackgroundColor="#0E1A2B"
-            app:cardCornerRadius="28dp"
-            app:cardElevation="10dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="26dp"
-                android:gravity="center_horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Add Expense"
-                    android:textColor="#CBD5E1"
-                    android:textSize="13sp"/>
-
-                <EditText
-                    android:id="@+id/etExpenseAmount"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
-                    android:hint="₹ 0.00"
-                    android:gravity="center"
-                    android:inputType="numberDecimal"
-                    android:textColor="#F7F9FC"
-                    android:textColorHint="#64748B"
-                    android:textSize="32sp"
-                    android:textStyle="bold"
-                    android:backgroundTint="#EF4444"
-                    android:padding="16dp"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Enter your expense amount"
-                    android:textColor="#94A3B8"
-                    android:textSize="12sp"/>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- ===== DETAILS CARD ===== -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="22dp"
-            app:cardBackgroundColor="#FFFFFF"
-            app:cardCornerRadius="26dp"
-            app:cardElevation="6dp">
+            app:cardCornerRadius="30dp"
+            app:cardElevation="12dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -76,12 +29,193 @@
                 android:orientation="vertical"
                 android:padding="22dp">
 
+                <!-- TOP ROW (TITLE + MIC) -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Add Expense"
+                            android:textColor="#E2E8F0"
+                            android:textSize="14sp"
+                            android:textStyle="bold"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="Tap mic to add by voice"
+                            android:textColor="#94A3B8"
+                            android:textSize="11sp"/>
+                    </LinearLayout>
+
+                    <!-- 🎙️ MIC BUTTON (Premium placement) -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/btnVoiceExpense"
+                        android:layout_width="46dp"
+                        android:layout_height="46dp"
+                        app:cardCornerRadius="23dp"
+                        app:cardBackgroundColor="#1F2A44"
+                        app:cardElevation="10dp"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="#223B5C"
+                        android:clickable="true"
+                        android:focusable="true">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="12dp"
+                            android:src="@android:drawable/ic_btn_speak_now"
+                            android:tint="#E2E8F0"/>
+                    </com.google.android.material.card.MaterialCardView>
+
+                </LinearLayout>
+
+                <!-- AMOUNT -->
+                <EditText
+                    android:id="@+id/etExpenseAmount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:hint="₹ 0.00"
+                    android:gravity="center"
+                    android:inputType="numberDecimal"
+                    android:textColor="#F7F9FC"
+                    android:textColorHint="#64748B"
+                    android:textSize="34sp"
+                    android:textStyle="bold"
+                    android:backgroundTint="#EF4444"
+                    android:padding="18dp"/>
+
+                <!-- 🎙️ Detected text -->
+                <TextView
+                    android:id="@+id/tvVoiceDetected"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text=""
+                    android:textColor="#94A3B8"
+                    android:textSize="12sp"
+                    android:gravity="center"
+                    android:visibility="gone"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Enter your expense amount"
+                    android:textColor="#94A3B8"
+                    android:textSize="12sp"
+                    android:layout_gravity="center_horizontal"/>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ================= DETAILS CARD ================= -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            app:cardBackgroundColor="#FFFFFF"
+            app:cardCornerRadius="28dp"
+            app:cardElevation="6dp"
+            app:strokeColor="#E5E7EB"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <!-- 📍 Location Suggestion Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardLocationSuggestion"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="18dp"
+                    android:visibility="gone"
+                    app:cardBackgroundColor="#F8FAFC"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="#E2E8F0"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:id="@+id/tvLocationTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="📍 Location detected"
+                            android:textColor="#0F172A"
+                            android:textSize="13sp"
+                            android:textStyle="bold"/>
+
+                        <TextView
+                            android:id="@+id/tvLocationSubtitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Looks like you're at a place. Add an expense?"
+                            android:textColor="#64748B"
+                            android:textSize="12sp"/>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:orientation="horizontal">
+
+                            <Button
+                                android:id="@+id/btnLocationAdd"
+                                android:layout_width="0dp"
+                                android:layout_height="42dp"
+                                android:layout_weight="1"
+                                android:text="Add"
+                                android:textAllCaps="false"
+                                android:textStyle="bold"
+                                android:textColor="#FFFFFF"
+                                android:backgroundTint="#0E1A2B"/>
+
+                            <Button
+                                android:id="@+id/btnLocationDismiss"
+                                android:layout_width="0dp"
+                                android:layout_height="42dp"
+                                android:layout_marginStart="10dp"
+                                android:layout_weight="1"
+                                android:text="Not now"
+                                android:textAllCaps="false"
+                                android:textStyle="bold"
+                                android:textColor="#0E1A2B"
+                                android:backgroundTint="#E2E8F0"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- CATEGORY -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Category"
                     android:textColor="#64748B"
-                    android:textSize="12sp"/>
+                    android:textSize="12sp"
+                    android:textStyle="bold"/>
 
                 <Spinner
                     android:id="@+id/spExpenseCategory"
@@ -92,16 +226,18 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginTop="18dp"
-                    android:background="#E5E7EB"/>
+                    android:layout_marginTop="16dp"
+                    android:background="#EEF2F7"/>
 
+                <!-- PAYMENT -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="18dp"
+                    android:layout_marginTop="16dp"
                     android:text="Payment Mode"
                     android:textColor="#64748B"
-                    android:textSize="12sp"/>
+                    android:textSize="12sp"
+                    android:textStyle="bold"/>
 
                 <Spinner
                     android:id="@+id/spExpensePaymentMode"
@@ -112,16 +248,18 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginTop="18dp"
-                    android:background="#E5E7EB"/>
+                    android:layout_marginTop="16dp"
+                    android:background="#EEF2F7"/>
 
+                <!-- DATE -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="18dp"
+                    android:layout_marginTop="16dp"
                     android:text="Date"
                     android:textColor="#64748B"
-                    android:textSize="12sp"/>
+                    android:textSize="12sp"
+                    android:textStyle="bold"/>
 
                 <EditText
                     android:id="@+id/etExpenseDate"
@@ -134,13 +272,15 @@
                     android:textColor="#0E1A2B"
                     android:textColorHint="#94A3B8"/>
 
+                <!-- NOTE -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="18dp"
+                    android:layout_marginTop="16dp"
                     android:text="Note (optional)"
                     android:textColor="#94A3B8"
-                    android:textSize="12sp"/>
+                    android:textSize="12sp"
+                    android:textStyle="bold"/>
 
                 <EditText
                     android:id="@+id/etExpenseNote"
@@ -153,11 +293,11 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- ===== SAVE ===== -->
+        <!-- ================= SAVE ================= -->
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp">
+            android:layout_marginTop="28dp">
 
             <Button
                 android:id="@+id/btnSaveExpense"
@@ -176,5 +316,8 @@
                 android:visibility="gone"/>
         </FrameLayout>
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="18dp"/>
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

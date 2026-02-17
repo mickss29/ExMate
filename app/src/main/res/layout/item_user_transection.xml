@@ -2,12 +2,16 @@
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardRow"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginVertical="6dp"
+    android:layout_marginVertical="7dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
     android:backgroundTint="#0F172A"
     app:cardCornerRadius="18dp"
-    app:cardElevation="4dp"
+    app:cardElevation="6dp"
     app:strokeColor="#1E293B"
     app:strokeWidth="1dp">
 
@@ -25,15 +29,23 @@
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
-            <!-- ICON -->
-            <ImageView
-                android:id="@+id/imgType"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="@drawable/bg_circle"
-                android:padding="9dp"
-                android:src="@drawable/ic_expense"
-                android:tint="@android:color/white"/>
+            <!-- ICON HOLDER -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/iconHolder"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                app:cardCornerRadius="22dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#132238">
+
+                <ImageView
+                    android:id="@+id/imgType"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="11dp"
+                    android:src="@drawable/ic_expense"
+                    android:tint="@android:color/white"/>
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- TITLE + TIME -->
             <LinearLayout
@@ -50,15 +62,20 @@
                     android:text="Food"
                     android:textColor="#FFFFFF"
                     android:textSize="15sp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end"/>
 
                 <TextView
                     android:id="@+id/tvSub"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
                     android:text="Today • 6:45 PM"
                     android:textColor="#94A3B8"
-                    android:textSize="12sp"/>
+                    android:textSize="12sp"
+                    android:maxLines="1"
+                    android:ellipsize="end"/>
             </LinearLayout>
 
             <!-- AMOUNT -->
@@ -69,11 +86,13 @@
                 android:text="- ₹250"
                 android:textSize="15sp"
                 android:textStyle="bold"
-                android:textColor="#F87171"/>
+                android:textColor="#F87171"
+                android:paddingStart="8dp"/>
         </LinearLayout>
 
-        <!-- SOFT DIVIDER -->
+        <!-- SOFT DIVIDER (optional - adapter se last item pe hide kar denge) -->
         <View
+            android:id="@+id/divider"
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginTop="14dp"
@@ -81,4 +100,3 @@
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>
-

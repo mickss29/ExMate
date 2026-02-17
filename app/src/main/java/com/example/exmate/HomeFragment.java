@@ -1,11 +1,14 @@
 package com.example.exmate;
 
 import android.animation.ValueAnimator;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.speech.RecognizerIntent;
 import android.text.TextUtils;
+import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +16,7 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,6 +25,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.card.MaterialCardView;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -30,8 +35,13 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 public class HomeFragment extends Fragment {
 
@@ -50,8 +60,15 @@ public class HomeFragment extends Fragment {
     private TextView tvUserName, btnViewAll;
     private MaterialCardView cardAddIncome, cardAddExpense, cardBudgetSummary;
 
+    // 🎙️ Dashboard Mic (NEW)
+    private View fabVoiceDashboard;
+
+    private static final int REQ_CODE_SPEECH_DASH = 3001;
+
     // ================= FIREBASE =================
     private DatabaseReference userRef;
+    private DatabaseReference incomeRef;
+    private DatabaseReference expenseRef;
     private String userId;
 
     // ================= DATA =================
@@ -149,6 +166,9 @@ public class HomeFragment extends Fragment {
         loadUserProfile();
         playEntryAnimation();
 
+        // 🎙️ Setup dashboard mic
+        setupDashboardVoice();
+
         return view;
     }
 
@@ -175,12 +195,14 @@ public class HomeFragment extends Fragment {
         tvIncome = view.findViewById(R.id.tvIncome);
         tvExpense = view.findViewById(R.id.tvExpense);
         tvCurrentBalance = view.findViewById(R.id.tvCurrentBalance);
-        tvTotalBalance = view.findViewById(R.id.tvTotalBalance);
         tvUserName = view.findViewById(R.id.tvUserName);
         btnViewAll = view.findViewById(R.id.btnViewAll);
         cardAddIncome = view.findViewById(R.id.cardAddIncome);
         cardAddExpense = view.findViewById(R.id.cardAddExpense);
         cardBudgetSummary = view.findViewById(R.id.cardBudgetSummary);
+
+        // 🎙️ NEW
+        fabVoiceDashboard = view.findViewById(R.id.fabVoiceDashboard);
     }
 
     private void setupFirebase() {
@@ -190,6 +212,10 @@ public class HomeFragment extends Fragment {
         userRef = FirebaseDatabase.getInstance()
                 .getReference("users")
                 .child(userId);
+
+        // 🎙️ direct save refs (NEW)
+        incomeRef = userRef.child("incomes");
+        expenseRef = userRef.child("expenses");
     }
 
     // =========================================================================================
@@ -238,10 +264,8 @@ public class HomeFragment extends Fragment {
                 : Color.parseColor("#F87171");
 
         tvCurrentBalance.setTextColor(color);
-        tvTotalBalance.setTextColor(color);
 
         animateBalance(tvCurrentBalance, lastBalance, newBalance);
-        animateBalance(tvTotalBalance, lastBalance, newBalance);
 
         lastBalance = newBalance;
     }
@@ -308,5 +332,288 @@ public class HomeFragment extends Fragment {
         cardAddIncome.startAnimation(anim);
         cardAddExpense.startAnimation(anim);
         rvRecent.startAnimation(anim);
+
+        // 🎙️ little pop animation
+        if (fabVoiceDashboard != null) {
+            fabVoiceDashboard.startAnimation(anim);
+        }
+    }
+
+    // =========================================================================================
+    // 🎙️ DASHBOARD VOICE (NEW)
+    // =========================================================================================
+
+    private void setupDashboardVoice() {
+        if (fabVoiceDashboard == null) return;
+
+        fabVoiceDashboard.setOnClickListener(v -> {
+            v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
+            startDashboardVoice();
+        });
+    }
+
+    private void startDashboardVoice() {
+        try {
+            Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                    RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-IN");
+            intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak income or expense");
+
+            Toast.makeText(requireContext(), "Listening...", Toast.LENGTH_SHORT).show();
+            startActivityForResult(intent, REQ_CODE_SPEECH_DASH);
+
+        } catch (Exception e) {
+            Toast.makeText(requireContext(),
+                    "Voice input not supported",
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQ_CODE_SPEECH_DASH &&
+                resultCode == Activity.RESULT_OK &&
+                data != null) {
+
+            ArrayList<String> result =
+                    data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+
+            if (result != null && !result.isEmpty()) {
+                String rawText = result.get(0);
+
+                handleDashboardVoice(rawText);
+            }
+        }
+    }
+
+    private void handleDashboardVoice(String rawText) {
+
+        if (userId == null || userRef == null) return;
+
+        String text = rawText.toLowerCase(Locale.ROOT);
+
+        // Amount
+        double amount = extractAmount(text);
+        if (amount <= 0) {
+            Toast.makeText(requireContext(),
+                    "Couldn't detect amount 😅",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Decide Income vs Expense
+        boolean isIncome = isIncomeText(text);
+
+        long time = detectDateMillis(text);
+
+        if (isIncome) {
+            String source = detectIncomeSource(text);
+            String pay = detectPaymentMode(text);
+            String note = cleanNote(text);
+
+            saveIncome(amount, time, source, pay, note);
+        } else {
+            String category = detectExpenseCategory(text);
+            String pay = detectPaymentMode(text);
+            String note = cleanNote(text);
+
+            saveExpense(amount, time, category, pay, note);
+        }
+    }
+
+    // ================= SAVE FROM DASHBOARD =================
+
+    private void saveIncome(double amount, long time, String source, String paymentMode, String note) {
+
+        if (incomeRef == null) return;
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("amount", amount);
+        map.put("time", time);
+        map.put("source", source);
+        map.put("paymentMode", paymentMode);
+        map.put("note", note);
+
+        incomeRef.push().setValue(map)
+                .addOnSuccessListener(unused -> {
+                    NotificationHelper.showIncomeSummaryNotification(
+                            requireContext(),
+                            amount,
+                            source
+                    );
+                    Toast.makeText(requireContext(),
+                            "Income added: ₹" + moneyFormat.format(amount),
+                            Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> Toast.makeText(requireContext(),
+                        "Failed: " + e.getMessage(),
+                        Toast.LENGTH_SHORT).show());
+    }
+
+    private void saveExpense(double amount, long time, String category, String paymentMode, String note) {
+
+        if (expenseRef == null) return;
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("amount", amount);
+        map.put("time", time);
+        map.put("category", category);
+        map.put("paymentMode", paymentMode);
+        map.put("note", note);
+
+        expenseRef.push().setValue(map)
+                .addOnSuccessListener(unused -> {
+                    NotificationHelper.showExpenseSummaryNotification(
+                            requireContext(),
+                            amount,
+                            category
+                    );
+                    Toast.makeText(requireContext(),
+                            "Expense added: ₹" + moneyFormat.format(amount),
+                            Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> Toast.makeText(requireContext(),
+                        "Failed: " + e.getMessage(),
+                        Toast.LENGTH_SHORT).show());
+    }
+
+    // ================= SMART HELPERS =================
+
+    private boolean isIncomeText(String text) {
+        return text.contains("salary")
+                || text.contains("freelance")
+                || text.contains("income")
+                || text.contains("business")
+                || text.contains("rent")
+                || text.contains("bonus")
+                || text.contains("received")
+                || text.contains("credit");
+    }
+
+    private double extractAmount(String text) {
+        try {
+            java.util.regex.Pattern p = java.util.regex.Pattern.compile("(\\d+(?:\\.\\d{1,2})?)");
+            java.util.regex.Matcher m = p.matcher(text);
+            if (m.find()) return Double.parseDouble(m.group(1));
+        } catch (Exception ignored) {}
+        return 0;
+    }
+
+    private long detectDateMillis(String text) {
+        Calendar cal = Calendar.getInstance();
+
+        if (text.contains("parso") || text.contains("day before yesterday")) {
+            cal.add(Calendar.DAY_OF_YEAR, -2);
+        } else if (text.contains("kal") || text.contains("yesterday")) {
+            cal.add(Calendar.DAY_OF_YEAR, -1);
+        }
+        return cal.getTimeInMillis();
+    }
+
+    private String detectPaymentMode(String text) {
+
+        if (text.contains("upi") || text.contains("gpay") || text.contains("phonepe") || text.contains("paytm")) {
+            return "UPI";
+        }
+        if (text.contains("cash")) return "Cash";
+        if (text.contains("card") || text.contains("credit") || text.contains("debit")) return "Card";
+        if (text.contains("bank") || text.contains("transfer")) return "Bank Transfer";
+        if (text.contains("cheque")) return "Cheque";
+
+        // default
+        return "Cash";
+    }
+
+    private String detectIncomeSource(String text) {
+
+        if (text.contains("salary")) return "Salary";
+        if (text.contains("business")) return "Business";
+        if (text.contains("freelance")) return "Freelance";
+        if (text.contains("investment") || text.contains("stock") || text.contains("profit")) return "Investment";
+        if (text.contains("rent") || text.contains("rental")) return "Rental Income";
+        if (text.contains("bonus")) return "Bonus";
+        if (text.contains("gift")) return "Gift";
+
+        return "Other";
+    }
+
+    private String detectExpenseCategory(String text) {
+
+        if (text.contains("uber") || text.contains("ola") || text.contains("metro") || text.contains("bus")
+                || text.contains("train") || text.contains("petrol") || text.contains("fuel")) {
+            return "Transport";
+        }
+
+        if (text.contains("dominos") || text.contains("pizza") || text.contains("cafe") || text.contains("coffee")
+                || text.contains("restaurant") || text.contains("chai") || text.contains("tea")
+                || text.contains("mcd") || text.contains("kfc")) {
+            return "Food";
+        }
+
+        if (text.contains("amazon") || text.contains("flipkart") || text.contains("shopping")
+                || text.contains("mall") || text.contains("store")) {
+            return "Shopping";
+        }
+
+        if (text.contains("netflix") || text.contains("movie") || text.contains("pvr") || text.contains("cinema")) {
+            return "Entertainment";
+        }
+
+        if (text.contains("doctor") || text.contains("hospital") || text.contains("medicine")
+                || text.contains("clinic") || text.contains("pharmacy")) {
+            return "Health";
+        }
+
+        if (text.contains("fees") || text.contains("college") || text.contains("school")
+                || text.contains("course") || text.contains("gym")) {
+            return "Education";
+        }
+
+        if (text.contains("bill") || text.contains("electricity") || text.contains("recharge")
+                || text.contains("wifi") || text.contains("rent")) {
+            return "Bills";
+        }
+
+        return "Other";
+    }
+
+    private String cleanNote(String text) {
+
+        String clean = text;
+
+        clean = clean.replace("today", "")
+                .replace("aaj", "")
+                .replace("yesterday", "")
+                .replace("kal", "")
+                .replace("parso", "")
+                .replace("day before yesterday", "");
+
+        clean = clean.replace("upi", "")
+                .replace("gpay", "")
+                .replace("phonepe", "")
+                .replace("paytm", "")
+                .replace("cash", "")
+                .replace("card", "")
+                .replace("debit", "")
+                .replace("credit", "")
+                .replace("bank transfer", "")
+                .replace("transfer", "")
+                .replace("bank", "")
+                .replace("cheque", "");
+
+        clean = clean.replace("rupees", "")
+                .replace("rupaye", "")
+                .replace("rs", "")
+                .replace("₹", "");
+
+        clean = clean.replaceAll("(\\d+(?:\\.\\d{1,2})?)", "");
+        clean = clean.replaceAll("\\s+", " ").trim();
+
+        if (clean.isEmpty()) return "Transaction";
+
+        return clean.substring(0, 1).toUpperCase() + clean.substring(1);
     }
 }

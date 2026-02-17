@@ -32,7 +32,7 @@ import java.util.concurrent.Executor;
 public class AppLockActivity extends AppCompatActivity {
 
     private EditText etPin;
-    private StringBuilder pinBuilder = new StringBuilder();
+    private final StringBuilder pinBuilder = new StringBuilder();
     private GridLayout keypad;
     private ImageView btnBackspace;
 
@@ -49,6 +49,10 @@ public class AppLockActivity extends AppCompatActivity {
     private int wrongAttempts = 0;
     private boolean isLocked = false;
 
+    // ✅ FIX: biometric prompt 2 baar show na ho
+    private boolean biometricShownOnce = false;
+    private boolean biometricInProgress = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,7 +65,11 @@ public class AppLockActivity extends AppCompatActivity {
         btnBackspace = findViewById(R.id.btnBackspace);
 
         setupBiometric();
-        tryBiometricAuth();
+
+        // 🔥 Auto biometric only ONCE
+        if (savedInstanceState == null) {
+            tryBiometricAuth(true);
+        }
 
         etPin.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
@@ -97,7 +105,12 @@ public class AppLockActivity extends AppCompatActivity {
             }
         });
 
-        tvBiometric.setOnClickListener(v -> tryBiometricAuth());
+        // 🔥 Manual biometric
+        tvBiometric.setOnClickListener(v -> {
+            if (!isLocked) {
+                tryBiometricAuth(false);
+            }
+        });
     }
 
     private void updatePinDots(int length) {
@@ -120,11 +133,26 @@ public class AppLockActivity extends AppCompatActivity {
                 this,
                 executor,
                 new BiometricPrompt.AuthenticationCallback() {
+
                     @Override
                     public void onAuthenticationSucceeded(
                             @NonNull BiometricPrompt.AuthenticationResult result) {
+
+                        biometricInProgress = false;
+
                         AppLockManager.setUnlocked(AppLockActivity.this, true);
                         redirectToDashboard();
+                    }
+
+                    @Override
+                    public void onAuthenticationError(int errorCode,
+                                                      @NonNull CharSequence errString) {
+                        biometricInProgress = false;
+                    }
+
+                    @Override
+                    public void onAuthenticationFailed() {
+                        // keep silent
                     }
                 });
 
@@ -138,11 +166,28 @@ public class AppLockActivity extends AppCompatActivity {
                 .build();
     }
 
-    private void tryBiometricAuth() {
-        if (BiometricManager.from(this).canAuthenticate(
+    /**
+     * @param autoCall true if this is automatic call from onCreate
+     */
+    private void tryBiometricAuth(boolean autoCall) {
+
+        if (isLocked) return;
+        if (biometricInProgress) return;
+
+        // ✅ auto call sirf ek baar
+        if (autoCall && biometricShownOnce) return;
+
+        int can = BiometricManager.from(this).canAuthenticate(
                 BiometricManager.Authenticators.BIOMETRIC_WEAK |
                         BiometricManager.Authenticators.DEVICE_CREDENTIAL
-        ) == BiometricManager.BIOMETRIC_SUCCESS) {
+        );
+
+        if (can == BiometricManager.BIOMETRIC_SUCCESS) {
+
+            biometricInProgress = true;
+
+            if (autoCall) biometricShownOnce = true;
+
             biometricPrompt.authenticate(promptInfo);
         }
     }
@@ -237,8 +282,9 @@ public class AppLockActivity extends AppCompatActivity {
     private void lockFor30Seconds() {
 
         isLocked = true;
-        keypad.setEnabled(false);
-        btnBackspace.setEnabled(false);
+
+        // ✅ Disable all keypad keys properly
+        setKeypadEnabled(false);
 
         Toast.makeText(this,
                 "Locked for 30 seconds",
@@ -248,14 +294,30 @@ public class AppLockActivity extends AppCompatActivity {
 
             isLocked = false;
             wrongAttempts = 0;
-            keypad.setEnabled(true);
-            btnBackspace.setEnabled(true);
+
+            setKeypadEnabled(true);
 
             pinBuilder.setLength(0);
             etPin.setText("");
             updatePinDots(0);
 
         }, LOCK_TIME_MS);
+    }
+
+    private void setKeypadEnabled(boolean enabled) {
+
+        keypad.setEnabled(enabled);
+        btnBackspace.setEnabled(enabled);
+        tvBiometric.setEnabled(enabled);
+
+        for (int i = 0; i < keypad.getChildCount(); i++) {
+            View v = keypad.getChildAt(i);
+            v.setEnabled(enabled);
+            v.setAlpha(enabled ? 1f : 0.5f);
+        }
+
+        btnBackspace.setAlpha(enabled ? 1f : 0.5f);
+        tvBiometric.setAlpha(enabled ? 1f : 0.5f);
     }
 
     // ================= REDIRECT =================

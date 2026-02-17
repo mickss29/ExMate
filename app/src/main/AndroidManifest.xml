@@ -6,12 +6,19 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- 🎙️ Voice Expense Add -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
+
+    <!-- Location Expense Add -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
 
     <!-- ========================================================= -->
 
@@ -22,7 +29,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ExMate"
-        android:enableOnBackInvokedCallback="true">
+        android:enableOnBackInvokedCallback="true"
+        >
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="YOUR_API_KEY_HERE" />
+
 
         <!-- 🚀 SPLASH SCREEN -->
         <activity
@@ -63,13 +76,13 @@
         <activity android:name=".AdminFeedbackActivity" android:exported="false" />
         <activity android:name=".AdminUserFinanceActivity" android:exported="false" />
 
-        <activity android:name=".AppLockActivity" android:exported="false"/>
-        <activity android:name=".AppLockManager" android:exported="false"/>
-        <activity android:name=".SetPinActivity" android:exported="false"/>
+        <activity android:name=".AppLockActivity" android:exported="false" />
+        <activity android:name=".AppLockManager" android:exported="false" />
+        <activity android:name=".SetPinActivity" android:exported="false" />
 
         <activity android:name=".AddCategoryActivity" android:exported="false" />
         <activity android:name=".SetBudgetActivity" android:exported="false" />
-        <activity android:name="NotificationHelper" android:exported="false"/>
+        <activity android:name="NotificationHelper" android:exported="false" />
 
         <!-- ✅ NEW PROFILE PAGES -->
         <activity android:name=".TermsActivity" android:exported="false" />
