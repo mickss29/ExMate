@@ -27,21 +27,59 @@
                 android:textStyle="bold"
                 android:textSize="20sp" />
 
-            <ImageView
-                android:id="@+id/imgAvatar"
-                android:layout_width="86dp"
-                android:layout_height="86dp"
-                android:layout_marginTop="16dp"
-                android:src="@drawable/ic_user"
-                android:padding="16dp"
-                android:background="@drawable/bg_glass_card"
-                app:tint="#FFFFFF" />
+            <!-- ===== Premium Avatar with Edit Overlay ===== -->
+            <FrameLayout
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:layout_marginTop="16dp">
+
+                <!-- Avatar circle -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="96dp"
+                    android:layout_height="96dp"
+                    app:cardCornerRadius="48dp"
+                    app:cardElevation="12dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="#243B67"
+                    app:cardBackgroundColor="#0A1022">
+
+                    <ImageView
+                        android:id="@+id/imgAvatar"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/ic_user"
+                        android:scaleType="centerCrop" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Edit button overlay -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnEditAvatar"
+                    android:layout_width="34dp"
+                    android:layout_height="34dp"
+                    android:layout_gravity="bottom|end"
+                    android:layout_marginEnd="2dp"
+                    android:layout_marginBottom="2dp"
+                    app:cardCornerRadius="13dp"
+                    app:cardElevation="14dp"
+                    app:cardBackgroundColor="#2F4DFF"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="8dp"
+                        android:src="@drawable/ic_edit"
+                        android:tint="@android:color/white" />
+                </com.google.android.material.card.MaterialCardView>
+
+            </FrameLayout>
 
             <TextView
                 android:id="@+id/tvUserName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="14dp"
                 android:text="User"
                 android:textColor="#FFFFFF"
                 android:textSize="18sp"
@@ -72,7 +110,7 @@
             layout="@layout/row_profile_item"
             android:background="@drawable/bg_row_card" />
 
-        <!-- 🔒 APP LOCK (RESTORED) -->
+        <!-- 🔒 APP LOCK -->
         <include
             android:id="@+id/itemAppLock"
             layout="@layout/row_profile_item_switch"
@@ -100,15 +138,17 @@
 
         <!-- ================= LOGOUT ================= -->
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLogout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="56dp"
             android:layout_marginTop="28dp"
             android:text="Logout"
             android:textStyle="bold"
             android:textColor="#FFFFFF"
-            android:backgroundTint="#EF4444" />
+            android:backgroundTint="#EF4444"
+            android:stateListAnimator="@null"
+            app:cornerRadius="18dp" />
 
         <TextView
             android:id="@+id/tvFeedbackStatus"

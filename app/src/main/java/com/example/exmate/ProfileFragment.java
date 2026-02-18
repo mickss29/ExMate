@@ -1,7 +1,10 @@
 package com.example.exmate;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,14 +17,21 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.*;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class ProfileFragment extends Fragment {
 
     // UI
     private ImageView imgAvatar;
+    private View btnEditAvatar;
+
     private TextView tvUserName, tvUserEmail, tvFeedbackStatus;
 
     private View itemProfileInfo,
@@ -36,6 +46,9 @@ public class ProfileFragment extends Fragment {
     // Firebase
     private FirebaseAuth auth;
     private DatabaseReference userRef;
+
+    // Gallery pick
+    private static final int REQ_GALLERY = 101;
 
     @Nullable
     @Override
@@ -58,6 +71,8 @@ public class ProfileFragment extends Fragment {
     private void initViews(View view) {
 
         imgAvatar        = view.findViewById(R.id.imgAvatar);
+        btnEditAvatar    = view.findViewById(R.id.btnEditAvatar);
+
         tvUserName       = view.findViewById(R.id.tvUserName);
         tvUserEmail      = view.findViewById(R.id.tvUserEmail);
         tvFeedbackStatus = view.findViewById(R.id.tvFeedbackStatus);
@@ -116,8 +131,20 @@ public class ProfileFragment extends Fragment {
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                // Name
                 String name = snapshot.child("name").getValue(String.class);
                 tvUserName.setText(TextUtils.isEmpty(name) ? "User" : name);
+
+                // Profile image (URI string)
+                String profileImage = snapshot.child("profileImage").getValue(String.class);
+
+                if (!TextUtils.isEmpty(profileImage) && isAdded()) {
+                    Glide.with(requireContext())
+                            .load(profileImage)
+                            .circleCrop()
+                            .into(imgAvatar);
+                }
             }
 
             @Override
@@ -126,6 +153,14 @@ public class ProfileFragment extends Fragment {
     }
 
     private void setupClicks() {
+
+        // ✅ Avatar click (Gallery open)
+        imgAvatar.setOnClickListener(v -> openGallery());
+
+        // Edit icon click (Gallery open)
+        if (btnEditAvatar != null) {
+            btnEditAvatar.setOnClickListener(v -> openGallery());
+        }
 
         // Profile edit
         itemProfileInfo.setOnClickListener(v ->
@@ -161,6 +196,44 @@ public class ProfileFragment extends Fragment {
         // Logout
         btnLogout.setOnClickListener(v -> logoutUser());
     }
+
+    // ===================== AVATAR PICK =====================
+
+    private void openGallery() {
+
+        if (userRef == null) {
+            Toast.makeText(requireContext(), "User not logged in", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        intent.setType("image/*");
+        startActivityForResult(intent, REQ_GALLERY);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQ_GALLERY && resultCode == Activity.RESULT_OK && data != null) {
+
+            Uri uri = data.getData();
+            if (uri == null) return;
+
+            // Show instantly
+            if (isAdded()) {
+                Glide.with(requireContext())
+                        .load(uri)
+                        .circleCrop()
+                        .into(imgAvatar);
+            }
+
+            // Save in Firebase Realtime DB
+            userRef.child("profileImage").setValue(uri.toString());
+        }
+    }
+
+    // ===================== LOGOUT =====================
 
     private void logoutUser() {
         auth.signOut();

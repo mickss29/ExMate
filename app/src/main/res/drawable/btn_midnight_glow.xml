@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Glow -->
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="22dp"/>
+            <solid android:color="#3D6BFF"/>
+            <size android:height="56dp"/>
+            <padding
+                android:left="10dp"
+                android:top="10dp"
+                android:right="10dp"
+                android:bottom="10dp"/>
+        </shape>
+    </item>
+
+    <!-- Main gradient -->
+    <item android:left="2dp" android:top="2dp" android:right="2dp" android:bottom="2dp">
+        <shape android:shape="rectangle">
+            <corners android:radius="18dp"/>
+            <gradient
+                android:startColor="#4B7BFF"
+                android:centerColor="#2F4DFF"
+                android:endColor="#1B2BFF"
+                android:angle="0"/>
+        </shape>
+    </item>
+
+</layer-list>
