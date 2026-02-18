@@ -410,6 +410,51 @@
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
             </LinearLayout>
+            <!-- OFFERS MANAGEMENT -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardOffers"
+                android:layout_width="match_parent"
+                android:layout_height="140dp"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="12dp"
+                android:foreground="?android:attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="20dp"
+                    android:gravity="center"
+                    android:background="@drawable/gradient_blue">
+
+                    <ImageView
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:src="@drawable/ic_discount"
+                        android:layout_marginBottom="12dp"
+                        app:tint="@android:color/white"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Manage Offers"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="@android:color/white"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Add &amp; control discounts"
+                        android:textSize="12sp"
+                        android:textColor="@android:color/white"
+                        android:alpha="0.8"
+                        android:layout_marginTop="4dp"/>
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
 
         </LinearLayout>
     </ScrollView>

@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+
 public class HomeFragment extends Fragment {
 
     // ================= NAVIGATION =================
@@ -78,8 +79,9 @@ public class HomeFragment extends Fragment {
     private float lastRms = 0f;
 
     private RecyclerView rvDiscover;
-    private DiscoverCardAdapter discoverAdapter;
-    private final List<DiscoverCardModel> discoverList = new ArrayList<>();
+    private DiscoverOfferAdapter discoverAdapter;
+    private final List<DiscoverOfferModel> discoverList = new ArrayList<>();
+    private DatabaseReference offersRef;
 
 
     // ================= FIREBASE =================
@@ -166,6 +168,49 @@ public class HomeFragment extends Fragment {
         @Override
         public void onCancelled(@NonNull DatabaseError error) {}
     };
+    private final ValueEventListener offersListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+            discoverList.clear();
+
+            java.text.SimpleDateFormat sdf =
+                    new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss",
+                            java.util.Locale.getDefault());
+
+            long currentTime = System.currentTimeMillis();
+
+            for (DataSnapshot ds : snapshot.getChildren()) {
+
+                DiscoverOfferModel model =
+                        ds.getValue(DiscoverOfferModel.class);
+
+                if (model == null || !model.isActive())
+                    continue;
+
+                try {
+                    java.util.Date expiry =
+                            sdf.parse(model.getExpiryDateTime());
+
+                    if (expiry != null &&
+                            expiry.getTime() > currentTime) {
+
+                        discoverList.add(model);
+                    }
+
+                } catch (Exception ignored) {}
+            }
+
+            java.util.Collections.sort(discoverList,
+                    (o1, o2) ->
+                            o2.getCreatedAt().compareTo(o1.getCreatedAt()));
+
+            discoverAdapter.notifyDataSetChanged();
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError error) {}
+    };
 
     // =========================================================================================
 
@@ -202,18 +247,30 @@ public class HomeFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+
         if (userRef != null) {
             userRef.addValueEventListener(dashboardListener);
         }
+
+        if (offersRef != null) {
+            offersRef.addValueEventListener(offersListener);
+        }
     }
+
 
     @Override
     public void onStop() {
         super.onStop();
+
         if (userRef != null) {
             userRef.removeEventListener(dashboardListener);
         }
+
+        if (offersRef != null) {
+            offersRef.removeEventListener(offersListener);
+        }
     }
+
 
     @Override
     public void onDestroyView() {
@@ -340,61 +397,40 @@ public class HomeFragment extends Fragment {
 
     private void setupDiscoverSection() {
 
-        if (rvDiscover == null) return;
+        List<DiscoverCategoryModel> categoryList = new ArrayList<>();
 
-        discoverList.clear();
+        categoryList.add(new DiscoverCategoryModel("Shopping", R.drawable.ic_offer));
+        categoryList.add(new DiscoverCategoryModel("Food", R.drawable.ic_food));
+        categoryList.add(new DiscoverCategoryModel("Travel", R.drawable.ic_travel));
+        categoryList.add(new DiscoverCategoryModel("Movies", R.drawable.ic_movie));
+        categoryList.add(new DiscoverCategoryModel("Electronics", R.drawable.ic_stocks));
+        categoryList.add(new DiscoverCategoryModel("Health", R.drawable.ic_gym));
 
-        discoverList.add(new DiscoverCardModel(
-                "Shopping Offers",
-                "Best deals on Amazon, Flipkart",
-                R.drawable.ic_offer,
-                "#7C3AED"
-        ));
+        DiscoverCategoryAdapter adapter =
+                new DiscoverCategoryAdapter(categoryList, category -> {
 
-        discoverList.add(new DiscoverCardModel(
-                "Movie Discounts",
-                "BookMyShow offers & coupons",
-                R.drawable.ic_movie,
-                "#F97316"
-        ));
+                    Bundle bundle = new Bundle();
+                    bundle.putString("category", category);
 
-        discoverList.add(new DiscoverCardModel(
-                "Market Updates",
-                "NIFTY • Sensex • Top gainers",
-                R.drawable.ic_stocks,
-                "#22C55E"
-        ));
+                    DiscoverFragment fragment = new DiscoverFragment();
+                    fragment.setArguments(bundle);
 
-        discoverList.add(new DiscoverCardModel(
-                "Food Deals",
-                "Swiggy • Zomato discounts",
-                R.drawable.ic_food,
-                "#EF4444"
-        ));
+                    requireActivity().getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.fragmentContainer, fragment)
+                            .addToBackStack(null)
+                            .commit();
 
-        discoverList.add(new DiscoverCardModel(
-                "Travel Offers",
-                "Uber • Ola • IRCTC",
-                R.drawable.ic_travel,
-                "#3B82F6"
-        ));
+                });
 
-        discoverList.add(new DiscoverCardModel(
-                "Health & Fitness",
-                "Gym • Supplements • Tips",
-                R.drawable.ic_gym,
-                "#06B6D4"
-        ));
+        rvDiscover.setLayoutManager(
+                new LinearLayoutManager(getContext(),
+                        LinearLayoutManager.HORIZONTAL,
+                        false));
 
-        discoverAdapter = new DiscoverCardAdapter(discoverList);
-
-        LinearLayoutManager lm =
-                new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
-
-        rvDiscover.setLayoutManager(lm);
-        rvDiscover.setAdapter(discoverAdapter);
-        rvDiscover.setHasFixedSize(true);
+        rvDiscover.setAdapter(adapter);
     }
+
 
 
     // =========================================================================================

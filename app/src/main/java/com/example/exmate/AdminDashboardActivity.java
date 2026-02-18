@@ -23,7 +23,7 @@ import com.google.firebase.database.ValueEventListener;
 
 public class AdminDashboardActivity extends AppCompatActivity {
 
-    private CardView cardUsers, cardCategories, cardReports, cardFeedback;
+    private CardView cardUsers, cardCategories, cardReports, cardFeedback, cardOffers;
     private CardView cardTotalUsers, cardTotalExpenses, cardTotalTransactions;
     private TextView tvTotalUsers, tvTotalExpenses, tvTotalTransactions;
     private Toolbar adminToolbar;
@@ -31,7 +31,6 @@ public class AdminDashboardActivity extends AppCompatActivity {
     private DatabaseReference usersRef;
     private static final String TAG = "AdminDashboard";
 
-    // ================= APP LOCK =================
     @Override
     protected void onPause() {
         super.onPause();
@@ -52,7 +51,6 @@ public class AdminDashboardActivity extends AppCompatActivity {
         loadDashboardData();
     }
 
-    // ================= ON CREATE =================
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,6 +73,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
         cardCategories = findViewById(R.id.cardCategories);
         cardReports = findViewById(R.id.cardReports);
         cardFeedback = findViewById(R.id.cardFeedback);
+        cardOffers = findViewById(R.id.cardOffers);
 
         cardTotalUsers.setOnClickListener(v ->
                 startActivity(new Intent(this, ManageUsersActivity.class)));
@@ -97,10 +96,14 @@ public class AdminDashboardActivity extends AppCompatActivity {
         cardFeedback.setOnClickListener(v ->
                 startActivity(new Intent(this, AdminFeedbackActivity.class)));
 
+        if (cardOffers != null) {
+            cardOffers.setOnClickListener(v ->
+                    startActivity(new Intent(this, AddOfferActivity.class)));
+        }
+
         loadDashboardData();
     }
 
-    // ================= LOGOUT MENU =================
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_admin_xml, menu);
@@ -111,14 +114,13 @@ public class AdminDashboardActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
         if (item.getItemId() == R.id.menu_logout) {
-            logoutAdmin(); // ✅ FIXED HERE
+            logoutAdmin();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    // ================= LOGOUT =================
     private void logoutAdmin() {
 
         AlertDialog dialog = new AlertDialog.Builder(this)
@@ -145,7 +147,6 @@ public class AdminDashboardActivity extends AppCompatActivity {
                 .setTextColor(getResources().getColor(android.R.color.darker_gray));
     }
 
-    // ================= DASHBOARD DATA =================
     private void loadDashboardData() {
         loadTotalUsers();
         loadFinancialData();

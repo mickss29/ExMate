@@ -4,18 +4,28 @@ public class DiscoverCardModel {
 
     private String title;
     private String subtitle;
-    private int iconRes;
+    private String imageUrl;     // from Firebase
     private String accentColor;
+    private String category;     // Shopping / Movies / Food / Stocks
 
-    public DiscoverCardModel(String title, String subtitle, int iconRes, String accentColor) {
+    public DiscoverCardModel() {
+        // Required empty constructor for Firebase
+    }
+
+    public DiscoverCardModel(String title, String subtitle,
+                             String imageUrl,
+                             String accentColor,
+                             String category) {
         this.title = title;
         this.subtitle = subtitle;
-        this.iconRes = iconRes;
+        this.imageUrl = imageUrl;
         this.accentColor = accentColor;
+        this.category = category;
     }
 
     public String getTitle() { return title; }
     public String getSubtitle() { return subtitle; }
-    public int getIconRes() { return iconRes; }
+    public String getImageUrl() { return imageUrl; }
     public String getAccentColor() { return accentColor; }
+    public String getCategory() { return category; }
 }

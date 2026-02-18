@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.card.MaterialCardView;
 
 import java.util.List;
@@ -53,10 +54,14 @@ public class DiscoverCardAdapter extends RecyclerView.Adapter<DiscoverCardAdapte
 
         h.tvTitle.setText(m.getTitle());
         h.tvSub.setText(m.getSubtitle());
-        h.imgIcon.setImageResource(m.getIconRes());
+
+        Glide.with(h.itemView.getContext())
+                .load(m.getImageUrl())
+                .into(h.imgIcon);
 
         try {
-            h.cardAccent.setCardBackgroundColor(Color.parseColor(m.getAccentColor()));
+            h.cardAccent.setCardBackgroundColor(
+                    Color.parseColor(m.getAccentColor()));
         } catch (Exception ignored) {}
     }
 
