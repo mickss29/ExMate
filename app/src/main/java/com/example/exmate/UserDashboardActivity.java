@@ -35,6 +35,12 @@ public class UserDashboardActivity extends AppCompatActivity
     // 🔒 AppLock guard
     private boolean isLockScreenOpened = false;
 
+    // ✅ Cached fragments (polish)
+    private Fragment homeFragment;
+    private Fragment budgetFragment;
+    private Fragment reportsFragment;
+    private Fragment profileFragment;
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -65,12 +71,20 @@ public class UserDashboardActivity extends AppCompatActivity
 
         bottomNav = findViewById(R.id.bottomNav);
 
+        // ✅ init cached fragments only once
+        if (homeFragment == null) homeFragment = new HomeFragment();
+        if (budgetFragment == null) budgetFragment = new BudgetFragment();
+        if (reportsFragment == null) reportsFragment = new ReportsFragment();
+        if (profileFragment == null) profileFragment = new ProfileFragment();
+
+        // Default fragment
         if (savedInstanceState == null) {
-            loadFragmentIfNeeded(new HomeFragment());
+            loadFragmentIfNeeded(homeFragment);
         }
 
         setupBottomNav();
 
+        // Notifications (UNCHANGED)
         createDailyReminderChannel();
         scheduleDailyReminder();
         createDailySummaryChannel();
@@ -102,7 +116,7 @@ public class UserDashboardActivity extends AppCompatActivity
     @Override
     public void openReports() {
         bottomNav.setSelectedItemId(R.id.nav_reports);
-        loadFragmentIfNeeded(new ReportsFragment());
+        loadFragmentIfNeeded(reportsFragment);
     }
 
     @Override
@@ -122,7 +136,7 @@ public class UserDashboardActivity extends AppCompatActivity
             int id = item.getItemId();
 
             if (id == R.id.nav_dashboard) {
-                loadFragmentIfNeeded(new HomeFragment());
+                loadFragmentIfNeeded(homeFragment);
                 return true;
             }
 
@@ -137,12 +151,12 @@ public class UserDashboardActivity extends AppCompatActivity
             }
 
             if (id == R.id.nav_reports) {
-                loadFragmentIfNeeded(new ReportsFragment());
+                loadFragmentIfNeeded(reportsFragment);
                 return true;
             }
 
             if (id == R.id.nav_profile) {
-                loadFragmentIfNeeded(new ProfileFragment());
+                loadFragmentIfNeeded(profileFragment);
                 return true;
             }
 
@@ -150,7 +164,7 @@ public class UserDashboardActivity extends AppCompatActivity
         });
     }
 
-    // ================= BUDGET FLOW =================
+    // ================= BUDGET FLOW (UNCHANGED LOGIC) =================
 
     private void openBudgetFlow() {
 
@@ -167,7 +181,8 @@ public class UserDashboardActivity extends AppCompatActivity
         ref.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                loadFragmentIfNeeded(new BudgetFragment());
+                // ✅ Same as your logic (always open BudgetFragment)
+                loadFragmentIfNeeded(budgetFragment);
             }
 
             @Override
@@ -182,7 +197,7 @@ public class UserDashboardActivity extends AppCompatActivity
         ).format(new Date());
     }
 
-    // ================= FRAGMENT LOADER =================
+    // ================= FRAGMENT LOADER (POLISHED SAFE) =================
 
     private void loadFragmentIfNeeded(Fragment fragment) {
 
@@ -195,6 +210,10 @@ public class UserDashboardActivity extends AppCompatActivity
 
         getSupportFragmentManager()
                 .beginTransaction()
+                .setCustomAnimations(
+                        android.R.anim.fade_in,
+                        android.R.anim.fade_out
+                )
                 .replace(R.id.fragmentContainer, fragment)
                 .commit();
     }

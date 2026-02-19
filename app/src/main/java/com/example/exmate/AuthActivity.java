@@ -197,7 +197,6 @@ public class AuthActivity extends AppCompatActivity {
         etSignupEmail = findViewById(R.id.etSignupEmail);
         etSignupPassword = findViewById(R.id.etSignupPassword);
         etSignupConfirmPassword = findViewById(R.id.etSignupConfirmPassword);
-        etSignupPhone = findViewById(R.id.etSignupPhone);
 
         btnLogin = findViewById(R.id.btnLogin);
         btnSignup = findViewById(R.id.btnSignup);

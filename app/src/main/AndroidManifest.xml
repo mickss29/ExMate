@@ -50,6 +50,8 @@
 
         <!-- 🔐 AUTH -->
         <activity android:name=".AuthActivity" android:exported="false" />
+        android:windowSoftInputMode="adjustResize"
+
 
         <!-- 👤 USER -->
         <activity android:name=".UserDashboardActivity" android:exported="false" />
@@ -59,6 +61,7 @@
         <activity android:name=".UserProfile" android:exported="false" />
         <activity android:name=".EditProfileActivity" android:exported="false" />
         <activity android:name=".StatisticsActivity" android:exported="false" />
+
 
         <activity
             android:name=".AddTransactionActivity"
