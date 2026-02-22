@@ -8,18 +8,17 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <!-- 🎙️ Voice Expense Add -->
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- Voice -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
+    <!-- Storage (Only below Android 10) -->
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
 
-    <!-- Location Expense Add -->
+    <!-- Location -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-
 
     <!-- ========================================================= -->
 
@@ -30,13 +29,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ExMate"
-        android:enableOnBackInvokedCallback="true"
-        >
+        android:enableOnBackInvokedCallback="true">
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="YOUR_API_KEY_HERE" />
-
 
         <!-- 🚀 SPLASH SCREEN -->
         <activity
@@ -49,23 +46,19 @@
         </activity>
 
         <!-- 🔐 AUTH -->
-        <activity android:name=".AuthActivity" android:exported="false" />
-        android:windowSoftInputMode="adjustResize"
-
+        <activity
+            android:name=".AuthActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
         <!-- 👤 USER -->
         <activity android:name=".UserDashboardActivity" android:exported="false" />
         <activity android:name=".UserReportsActivity" android:exported="false" />
-
         <activity android:name=".UserDetailsActivity" android:exported="false" />
         <activity android:name=".UserProfile" android:exported="false" />
         <activity android:name=".EditProfileActivity" android:exported="false" />
         <activity android:name=".StatisticsActivity" android:exported="false" />
-
-
-        <activity
-            android:name=".AddTransactionActivity"
-            android:exported="false" />
+        <activity android:name=".AddTransactionActivity" android:exported="false" />
 
         <!-- 👨‍💼 ADMIN -->
         <activity android:name=".AdminDashboardActivity" android:exported="false" />
@@ -81,20 +74,24 @@
         <activity android:name=".AdminUserFinanceActivity" android:exported="false" />
         <activity android:name=".AddOfferActivity" android:exported="false" />
 
-
+        <!-- 🔐 App Lock -->
         <activity android:name=".AppLockActivity" android:exported="false" />
         <activity android:name=".AppLockManager" android:exported="false" />
         <activity android:name=".SetPinActivity" android:exported="false" />
 
+        <!-- 📂 Others -->
         <activity android:name=".AddCategoryActivity" android:exported="false" />
         <activity android:name=".SetBudgetActivity" android:exported="false" />
-        <activity android:name="NotificationHelper" android:exported="false" />
+        <activity android:name=".NotificationHelper" android:exported="false" />
 
-        <!-- ✅ NEW PROFILE PAGES -->
+        <!-- Profile Pages -->
         <activity android:name=".TermsActivity" android:exported="false" />
         <activity android:name=".PrivacyActivity" android:exported="false" />
         <activity android:name=".SubscriptionActivity" android:exported="false" />
         <activity android:name=".AboutActivity" android:exported="false" />
+        <activity
+            android:name=".DiscoverActivity"
+            android:exported="false" />
 
         <!-- 📂 FILE PROVIDER -->
         <provider

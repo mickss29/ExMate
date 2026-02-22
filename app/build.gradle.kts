@@ -72,6 +72,10 @@ dependencies {
 
     implementation("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+    implementation("com.facebook.shimmer:shimmer:0.5.0")
+    implementation("com.firebaseui:firebase-ui-database:8.0.2")
+    implementation("androidx.lifecycle:lifecycle-viewmodel:2.8.4")
+    implementation("androidx.lifecycle:lifecycle-livedata:2.8.4")
 
     // Testing
     testImplementation(libs.junit)

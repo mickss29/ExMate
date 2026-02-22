@@ -5,7 +5,7 @@ public class DiscoverCategoryModel {
     private String title;
     private int icon;
 
-    // Required empty constructor for RecyclerView / Firebase
+    // Required empty constructor
     public DiscoverCategoryModel() {
     }
 
@@ -14,7 +14,13 @@ public class DiscoverCategoryModel {
         this.icon = icon;
     }
 
+    // 🔥 Existing Getter
     public String getTitle() {
+        return title;
+    }
+
+    // 🔥 NEW Getter (Adapter Compatible)
+    public String getCategoryName() {
         return title;
     }
 
@@ -22,7 +28,7 @@ public class DiscoverCategoryModel {
         return icon;
     }
 
-    // Optional setters (good practice)
+    // Optional setters
     public void setTitle(String title) {
         this.title = title;
     }

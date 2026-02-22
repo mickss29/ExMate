@@ -79,9 +79,9 @@ public class HomeFragment extends Fragment {
     private float lastRms = 0f;
 
     private RecyclerView rvDiscover;
-    private DiscoverOfferAdapter discoverAdapter;
-    private final List<DiscoverOfferModel> discoverList = new ArrayList<>();
-    private DatabaseReference offersRef;
+
+
+
 
 
     // ================= FIREBASE =================
@@ -168,49 +168,7 @@ public class HomeFragment extends Fragment {
         @Override
         public void onCancelled(@NonNull DatabaseError error) {}
     };
-    private final ValueEventListener offersListener = new ValueEventListener() {
-        @Override
-        public void onDataChange(@NonNull DataSnapshot snapshot) {
 
-            discoverList.clear();
-
-            java.text.SimpleDateFormat sdf =
-                    new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss",
-                            java.util.Locale.getDefault());
-
-            long currentTime = System.currentTimeMillis();
-
-            for (DataSnapshot ds : snapshot.getChildren()) {
-
-                DiscoverOfferModel model =
-                        ds.getValue(DiscoverOfferModel.class);
-
-                if (model == null || !model.isActive())
-                    continue;
-
-                try {
-                    java.util.Date expiry =
-                            sdf.parse(model.getExpiryDateTime());
-
-                    if (expiry != null &&
-                            expiry.getTime() > currentTime) {
-
-                        discoverList.add(model);
-                    }
-
-                } catch (Exception ignored) {}
-            }
-
-            java.util.Collections.sort(discoverList,
-                    (o1, o2) ->
-                            o2.getCreatedAt().compareTo(o1.getCreatedAt()));
-
-            discoverAdapter.notifyDataSetChanged();
-        }
-
-        @Override
-        public void onCancelled(@NonNull DatabaseError error) {}
-    };
 
     // =========================================================================================
 
@@ -252,9 +210,7 @@ public class HomeFragment extends Fragment {
             userRef.addValueEventListener(dashboardListener);
         }
 
-        if (offersRef != null) {
-            offersRef.addValueEventListener(offersListener);
-        }
+
     }
 
 
@@ -266,9 +222,7 @@ public class HomeFragment extends Fragment {
             userRef.removeEventListener(dashboardListener);
         }
 
-        if (offersRef != null) {
-            offersRef.removeEventListener(offersListener);
-        }
+
     }
 
 
@@ -311,6 +265,8 @@ public class HomeFragment extends Fragment {
 
         incomeRef = userRef.child("incomes");
         expenseRef = userRef.child("expenses");
+
+        // 🔥 ADD THIS
     }
 
     // =========================================================================================
@@ -407,20 +363,11 @@ public class HomeFragment extends Fragment {
         categoryList.add(new DiscoverCategoryModel("Health", R.drawable.ic_gym));
 
         DiscoverCategoryAdapter adapter =
-                new DiscoverCategoryAdapter(categoryList, category -> {
+                new DiscoverCategoryAdapter(requireContext(), categoryList, category -> {
 
-                    Bundle bundle = new Bundle();
-                    bundle.putString("category", category);
-
-                    DiscoverFragment fragment = new DiscoverFragment();
-                    fragment.setArguments(bundle);
-
-                    requireActivity().getSupportFragmentManager()
-                            .beginTransaction()
-                            .replace(R.id.fragmentContainer, fragment)
-                            .addToBackStack(null)
-                            .commit();
-
+                    Intent intent = new Intent(requireContext(), DiscoverActivity.class);
+                    intent.putExtra("selectedCategory", category);
+                    startActivity(intent);
                 });
 
         rvDiscover.setLayoutManager(
@@ -430,7 +377,6 @@ public class HomeFragment extends Fragment {
 
         rvDiscover.setAdapter(adapter);
     }
-
 
 
     // =========================================================================================
