@@ -5,19 +5,21 @@
     android:id="@+id/cardDiscoverAccent"
     android:layout_width="280dp"
     android:layout_height="wrap_content"
-    android:layout_margin="12dp"
-    app:cardCornerRadius="24dp"
-    app:cardElevation="10dp"
-    app:cardUseCompatPadding="true"
+    android:layout_margin="14dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackgroundBorderless"
+    app:cardCornerRadius="28dp"
+    app:cardElevation="6dp"
     app:strokeWidth="1dp"
-    app:strokeColor="#20FFFFFF">
+    app:strokeColor="#30FFFFFF"
+    app:cardBackgroundColor="#111827">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="18dp"
-        android:background="@drawable/bg_glass_toolbaar">
+        android:padding="20dp">
 
         <!-- TOP ROW -->
         <LinearLayout
@@ -26,66 +28,79 @@
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
-            <ImageView
-                android:id="@+id/imgDiscoverIcon"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:scaleType="centerCrop"
-                android:background="@drawable/circle_bg_blue"
-                android:padding="8dp"/>
+            <!-- PREMIUM ICON -->
+            <FrameLayout
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:background="@drawable/bg_discover_glow_circle"
+                android:gravity="center">
 
+                <ImageView
+                    android:id="@+id/imgDiscoverIcon"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:scaleType="centerInside"
+                    app:tint="@android:color/white"/>
+            </FrameLayout>
+
+            <!-- TITLE + SUB -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="vertical"
-                android:layout_marginStart="12dp">
+                android:layout_marginStart="14dp">
 
                 <TextView
                     android:id="@+id/tvDiscoverTitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
                     android:text="Offer Title"
-                    android:textSize="16sp"
+                    android:textSize="17sp"
                     android:textStyle="bold"
-                    android:textColor="@color/text_primary_dark"/>
+                    android:textColor="@android:color/white"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
                 <TextView
                     android:id="@+id/tvDiscoverSub"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
                     android:text="Offer subtitle here"
                     android:textSize="13sp"
-                    android:textColor="@color/text_hint"
-                    android:layout_marginTop="4dp"/>
+                    android:textColor="#9CA3AF"
+                    android:layout_marginTop="4dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
             </LinearLayout>
         </LinearLayout>
 
-        <!-- DISCOUNT -->
+        <!-- DISCOUNT BADGE STYLE -->
         <TextView
             android:id="@+id/tvDiscount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="50% OFF"
-            android:textSize="20sp"
+            android:textSize="14sp"
             android:textStyle="bold"
-            android:textColor="#22C55E"
-            android:layout_marginTop="14dp"/>
+            android:textColor="@android:color/white"
+            android:background="@drawable/bg_discount_badge"
+            android:stateListAnimator="@animator/lift_on_press"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="6dp"
+            android:layout_marginTop="16dp"/>
 
-        <!-- COUPON -->
+        <!-- COUPON CHIP -->
         <TextView
             android:id="@+id/tvCoupon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Use Code: SAVE50"
-            android:textSize="14sp"
+            android:textSize="13sp"
             android:textStyle="bold"
-            android:textColor="#3B82F6"
-            android:background="@drawable/glass_border"
-            android:padding="8dp"
-            android:layout_marginTop="8dp"/>
+            android:textColor="#60A5FA"
+            android:background="@drawable/bg_coupon_chip"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="8dp"
+            android:layout_marginTop="12dp"/>
 
-        <!-- COUNTDOWN -->
+        <!-- TIMER -->
         <TextView
             android:id="@+id/tvTimer"
             android:layout_width="wrap_content"
@@ -93,16 +108,16 @@
             android:text="Time Left: 2h 30m 10s"
             android:textSize="13sp"
             android:textColor="#F97316"
-            android:layout_marginTop="12dp"/>
+            android:layout_marginTop="14dp"/>
 
-        <!-- EXACT EXPIRY -->
+        <!-- EXPIRY -->
         <TextView
             android:id="@+id/tvExpiryExact"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Expires on: 18/02/2026 10:18:22"
             android:textSize="12sp"
-            android:textColor="@color/text_hint"
+            android:textColor="#6B7280"
             android:layout_marginTop="4dp"/>
 
     </LinearLayout>

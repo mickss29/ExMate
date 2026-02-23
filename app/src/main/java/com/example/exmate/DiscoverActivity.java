@@ -36,7 +36,6 @@ public class DiscoverActivity extends AppCompatActivity {
     private String selectedCategory;
 
     @Override
-
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_discover);
@@ -67,9 +66,11 @@ public class DiscoverActivity extends AppCompatActivity {
 
     private void setupRecyclerViews() {
 
+        // Banner
         bannerAdapter = new BannerAdapter(this, bannerList);
         bannerViewPager.setAdapter(bannerAdapter);
 
+        // Categories (Horizontal)
         categoryAdapter = new DiscoverCategoryAdapter(
                 this,
                 createCategoryModelList(),
@@ -80,9 +81,17 @@ public class DiscoverActivity extends AppCompatActivity {
                 new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false));
         categoryRecycler.setAdapter(categoryAdapter);
 
+        // Offers (Vertical)
         offerAdapter = new OfferAdapter(this, offerList);
         offerRecycler.setLayoutManager(new LinearLayoutManager(this));
         offerRecycler.setAdapter(offerAdapter);
+
+        // 🔥 Stability Fixes (No Logic Change)
+        categoryRecycler.setNestedScrollingEnabled(false);
+        offerRecycler.setNestedScrollingEnabled(false);
+
+        categoryRecycler.setHasFixedSize(true);
+        offerRecycler.setHasFixedSize(true);
     }
 
     private List<DiscoverCategoryModel> createCategoryModelList() {
@@ -139,7 +148,6 @@ public class DiscoverActivity extends AppCompatActivity {
 
                     if (model == null) continue;
 
-                    // 🔥 CASE-INSENSITIVE MATCH
                     if (model.getCategory() != null &&
                             model.getCategory().equalsIgnoreCase(category)) {
 
@@ -154,6 +162,7 @@ public class DiscoverActivity extends AppCompatActivity {
                     emptyLayout.setVisibility(View.VISIBLE);
                 } else {
                     offerAdapter.notifyDataSetChanged();
+                    offerRecycler.requestLayout(); // 🔥 layout refresh safety
                 }
             }
 
@@ -193,6 +202,7 @@ public class DiscoverActivity extends AppCompatActivity {
                     emptyLayout.setVisibility(View.VISIBLE);
                 } else {
                     offerAdapter.notifyDataSetChanged();
+                    offerRecycler.requestLayout(); // 🔥 layout refresh safety
                 }
             }
 

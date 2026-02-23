@@ -2,49 +2,61 @@
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="wrap_content"
-    android:layout_height="90dp"
-    android:layout_marginEnd="14dp"
-    android:layout_marginVertical="8dp"
-    app:cardCornerRadius="22dp"
-    app:cardElevation="8dp"
+    android:layout_width="180dp"
+    android:layout_height="120dp"
+    android:layout_marginEnd="16dp"
+    android:layout_marginVertical="10dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackgroundBorderless"
+    app:cardCornerRadius="24dp"
+    app:cardElevation="6dp"
+    app:cardBackgroundColor="#0B1220"
     app:strokeWidth="1dp"
-    app:strokeColor="#E6E6E6">
+    app:strokeColor="#1E293B">
 
-    <LinearLayout
-        android:layout_width="wrap_content"
+    <!-- ROOT CENTER FIX -->
+    <RelativeLayout
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="20dp"
-        android:orientation="horizontal">
+        android:padding="16dp">
 
-        <!-- ICON CIRCLE -->
+        <!-- ICON CIRCLE CENTER -->
         <FrameLayout
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:background="@drawable/bg_category_circle"
+            android:id="@+id/iconContainer"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/bg_discover_circle"
+            android:foregroundGravity="center"
             android:gravity="center">
 
             <ImageView
                 android:id="@+id/categoryIcon"
-                android:layout_width="26dp"
-                android:layout_height="26dp"
-                app:tint="@android:color/white"
-                android:src="@drawable/ic_offer" />
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_offer"
+                app:tint="@android:color/white"/>
 
         </FrameLayout>
 
-        <!-- TITLE -->
+        <!-- TITLE BELOW ICON -->
         <TextView
             android:id="@+id/categoryName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="14dp"
+            android:layout_below="@id/iconContainer"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="10dp"
             android:text="Shopping"
-            android:textSize="16sp"
+            android:textSize="15sp"
             android:textStyle="bold"
-            android:textColor="#111827" />
+            android:textColor="@android:color/white"
+            android:gravity="center"/>
 
-    </LinearLayout>
+    </RelativeLayout>
 
 </com.google.android.material.card.MaterialCardView>

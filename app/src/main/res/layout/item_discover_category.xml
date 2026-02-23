@@ -1,30 +1,55 @@
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="140dp"
-    android:layout_height="120dp"
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="20dp"
-    app:cardElevation="8dp">
+    android:layout_width="160dp"
+    android:layout_height="140dp"
+    android:layout_marginEnd="16dp"
+    android:layout_marginTop="4dp"
+    android:layout_marginBottom="4dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackgroundBorderless"
+    app:cardCornerRadius="28dp"
+    app:cardElevation="2dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="#1F2937"
+    app:cardBackgroundColor="#111827">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
         android:orientation="vertical"
-        android:padding="12dp">
+        android:padding="20dp">
 
-        <ImageView
-            android:id="@+id/imgCategoryIcon"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            app:tint="@color/black"/>
+        <!-- ICON -->
+        <FrameLayout
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:background="@drawable/bg_category_premium_circle"
+            android:gravity="center">
 
+            <ImageView
+                android:id="@+id/imgCategoryIcon"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:scaleType="centerInside"
+                app:tint="@android:color/white"/>
+        </FrameLayout>
+
+        <!-- TITLE -->
         <TextView
             android:id="@+id/tvCategoryTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text="Offers"
+            android:textSize="15sp"
             android:textStyle="bold"
-            android:layout_marginTop="8dp"/>
+            android:textColor="@android:color/white"
+            android:gravity="center"/>
+
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>

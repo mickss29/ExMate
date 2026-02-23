@@ -1,77 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@android:color/white">
+    android:background="@color/bg_app">
 
-    <!-- 🔥 Banner Slider -->
+    <!-- ===== Top Safe Space ===== -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="12dp"/>
+
+    <!-- ===== Banner ===== -->
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/bannerViewPager"
         android:layout_width="match_parent"
-        android:layout_height="200dp" />
+        android:layout_height="220dp"
+        android:layout_marginBottom="24dp" />
 
-    <!-- 🔥 Categories -->
+    <!-- ===== Categories ===== -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/categoryRecycler"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:padding="8dp"
+        android:layout_height="96dp"
+        android:paddingStart="20dp"
+        android:paddingEnd="4dp"
         android:clipToPadding="false"
-        android:overScrollMode="never" />
+        android:overScrollMode="never"
+        android:layout_marginBottom="28dp" />
 
-    <!-- 🔥 Shimmer Loading -->
+    <!-- ===== Shimmer Loading ===== -->
     <com.facebook.shimmer.ShimmerFrameLayout
         android:id="@+id/shimmerLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:layout_marginBottom="16dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="12dp">
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
-                android:background="#DDDDDD"
-                android:layout_marginBottom="16dp"/>
+                android:layout_marginBottom="16dp"
+                android:background="#1F2937"/>
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
-                android:background="#DDDDDD"/>
+                android:background="#1F2937"/>
 
         </LinearLayout>
 
     </com.facebook.shimmer.ShimmerFrameLayout>
 
-    <!-- 🔥 Offers -->
+    <!-- ===== Offers ===== -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/offerRecycler"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="8dp"/>
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:clipToPadding="false"
+        android:overScrollMode="never" />
 
-    <!-- 🔥 Empty State -->
+    <!-- ===== Empty State ===== -->
     <LinearLayout
         android:id="@+id/emptyLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
+        android:orientation="vertical"
         android:visibility="gone">
 
         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="No Offers Available"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="@android:color/darker_gray"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:textColor="@color/textMuted"/>
+
     </LinearLayout>
 
 </LinearLayout>
