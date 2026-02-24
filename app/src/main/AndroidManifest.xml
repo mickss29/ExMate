@@ -19,6 +19,8 @@
     <!-- Location -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS"/>
+    <uses-permission android:name="android.permission.READ_SMS"/>
 
     <!-- ========================================================= -->
 
@@ -30,6 +32,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ExMate"
         android:enableOnBackInvokedCallback="true">
+        <receiver
+            android:name=".SmsReceiver"
+            android:exported="true">
+            <intent-filter android:priority="999">
+                <action android:name="android.provider.Telephony.SMS_RECEIVED"/>
+            </intent-filter>
+        </receiver>
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
@@ -113,6 +122,7 @@
         <receiver android:name=".DailyReminderReceiver" android:exported="false" />
         <receiver android:name=".DailySummaryReceiver" android:exported="false" />
         <receiver android:name=".MorningGreetingReceiver" android:exported="false" />
+
 
     </application>
 

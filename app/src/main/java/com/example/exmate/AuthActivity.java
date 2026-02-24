@@ -149,6 +149,9 @@ public class AuthActivity extends AppCompatActivity {
 
                         String role = snapshot.getValue(String.class);
 
+// ✅ SAVE UID FOR SMS RECEIVER
+                        saveUidLocally(user.getUid());
+
                         startActivity(new Intent(AuthActivity.this,
                                 "admin".equals(role)
                                         ? AdminDashboardActivity.class
@@ -390,8 +393,13 @@ public class AuthActivity extends AppCompatActivity {
                     usersRef.child(user.getUid()).child("role")
                             .addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
+
                                 public void onDataChange(DataSnapshot snapshot) {
                                     loader.dismiss();
+
+                                    // ✅ SAVE UID
+                                    saveUidLocally(user.getUid());
+
                                     String role = snapshot.getValue(String.class);
                                     startActivity(new Intent(AuthActivity.this,
                                             "admin".equals(role)
@@ -399,7 +407,6 @@ public class AuthActivity extends AppCompatActivity {
                                                     : UserDashboardActivity.class));
                                     finish();
                                 }
-
                                 @Override
                                 public void onCancelled(DatabaseError error) {
                                     loader.dismiss();
@@ -796,6 +803,11 @@ public class AuthActivity extends AppCompatActivity {
         }
     }
 
-
+    private void saveUidLocally(String uid) {
+        getSharedPreferences("USER_PREF", MODE_PRIVATE)
+                .edit()
+                .putString("UID", uid)
+                .apply();
+    }
 
 }

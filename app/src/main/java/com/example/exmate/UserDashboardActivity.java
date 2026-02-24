@@ -35,12 +35,6 @@ public class UserDashboardActivity extends AppCompatActivity
     // 🔒 AppLock guard
     private boolean isLockScreenOpened = false;
 
-    // ✅ Cached fragments (polish)
-    private Fragment homeFragment;
-    private Fragment budgetFragment;
-    private Fragment reportsFragment;
-    private Fragment profileFragment;
-
     @Override
     protected void onPause() {
         super.onPause();
@@ -50,6 +44,9 @@ public class UserDashboardActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
+
+        // 🔥 SYNC QUEUED SMS AGAIN (SAFE RETRY)
+        syncSmsQueue();
 
         if (!isLockScreenOpened
                 && AppLockManager.isEnabled(this)
@@ -71,26 +68,32 @@ public class UserDashboardActivity extends AppCompatActivity
 
         bottomNav = findViewById(R.id.bottomNav);
 
-        // ✅ init cached fragments only once
-        if (homeFragment == null) homeFragment = new HomeFragment();
-        if (budgetFragment == null) budgetFragment = new BudgetFragment();
-        if (reportsFragment == null) reportsFragment = new ReportsFragment();
-        if (profileFragment == null) profileFragment = new ProfileFragment();
-
-        // Default fragment
         if (savedInstanceState == null) {
-            loadFragmentIfNeeded(homeFragment);
+            loadFragmentIfNeeded(new HomeFragment());
         }
 
         setupBottomNav();
 
-        // Notifications (UNCHANGED)
+        // 🔥 SYNC QUEUED SMS ON DASHBOARD OPEN
+        syncSmsQueue();
+
         createDailyReminderChannel();
         scheduleDailyReminder();
         createDailySummaryChannel();
         scheduleDailySummary();
         createMorningGreetingChannel();
         scheduleMorningGreeting();
+    }
+
+    // ================= 🔥 SMS QUEUE SYNC =================
+
+    private void syncSmsQueue() {
+        String uid = getSharedPreferences("USER_PREF", MODE_PRIVATE)
+                .getString("UID", null);
+
+        if (uid != null) {
+            SmsQueueSync.sync(this, uid);
+        }
     }
 
     // ================= NOTIFICATION PERMISSION =================
@@ -116,7 +119,7 @@ public class UserDashboardActivity extends AppCompatActivity
     @Override
     public void openReports() {
         bottomNav.setSelectedItemId(R.id.nav_reports);
-        loadFragmentIfNeeded(reportsFragment);
+        loadFragmentIfNeeded(new ReportsFragment());
     }
 
     @Override
@@ -136,7 +139,7 @@ public class UserDashboardActivity extends AppCompatActivity
             int id = item.getItemId();
 
             if (id == R.id.nav_dashboard) {
-                loadFragmentIfNeeded(homeFragment);
+                loadFragmentIfNeeded(new HomeFragment());
                 return true;
             }
 
@@ -151,12 +154,12 @@ public class UserDashboardActivity extends AppCompatActivity
             }
 
             if (id == R.id.nav_reports) {
-                loadFragmentIfNeeded(reportsFragment);
+                loadFragmentIfNeeded(new ReportsFragment());
                 return true;
             }
 
             if (id == R.id.nav_profile) {
-                loadFragmentIfNeeded(profileFragment);
+                loadFragmentIfNeeded(new ProfileFragment());
                 return true;
             }
 
@@ -164,7 +167,7 @@ public class UserDashboardActivity extends AppCompatActivity
         });
     }
 
-    // ================= BUDGET FLOW (UNCHANGED LOGIC) =================
+    // ================= BUDGET FLOW =================
 
     private void openBudgetFlow() {
 
@@ -181,8 +184,7 @@ public class UserDashboardActivity extends AppCompatActivity
         ref.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                // ✅ Same as your logic (always open BudgetFragment)
-                loadFragmentIfNeeded(budgetFragment);
+                loadFragmentIfNeeded(new BudgetFragment());
             }
 
             @Override
@@ -197,7 +199,7 @@ public class UserDashboardActivity extends AppCompatActivity
         ).format(new Date());
     }
 
-    // ================= FRAGMENT LOADER (POLISHED SAFE) =================
+    // ================= FRAGMENT LOADER =================
 
     private void loadFragmentIfNeeded(Fragment fragment) {
 
@@ -210,10 +212,6 @@ public class UserDashboardActivity extends AppCompatActivity
 
         getSupportFragmentManager()
                 .beginTransaction()
-                .setCustomAnimations(
-                        android.R.anim.fade_in,
-                        android.R.anim.fade_out
-                )
                 .replace(R.id.fragmentContainer, fragment)
                 .commit();
     }
