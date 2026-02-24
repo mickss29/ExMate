@@ -1,67 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:padding="16dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/bg_app"
+    android:padding="20dp">
 
     <LinearLayout
-        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/etTitle"
-            android:hint="Title"
+        <!-- Title -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:hint="Title">
 
-        <EditText
-            android:id="@+id/etSubtitle"
-            android:hint="Subtitle"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <View
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="16dp"/>
 
-        <EditText
-            android:id="@+id/etCategory"
-            android:hint="Category (Movies/Food/etc)"
+        <!-- Subtitle -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:hint="Subtitle">
 
-        <EditText
-            android:id="@+id/etCoupon"
-            android:hint="Coupon Code"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etSubtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <View
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="16dp"/>
 
-        <EditText
-            android:id="@+id/etDiscount"
-            android:hint="Discount Percent"
-            android:inputType="number"
+        <!-- Category Dropdown -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:hint="Select Category">
 
-        <EditText
-            android:id="@+id/etImageUrl"
-            android:hint="Image URL"
+            <AutoCompleteTextView
+                android:id="@+id/etCategory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <View
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="16dp"/>
 
-        <EditText
-            android:id="@+id/etAccentColor"
-            android:hint="#FFCDD2"
+        <!-- Coupon -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:hint="Coupon Code">
 
-        <Button
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etCoupon"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="16dp"/>
+
+        <!-- Discount -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Discount Percent">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etDiscount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="16dp"/>
+
+
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="16dp"/>
+
+
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="24dp"/>
+        <ImageView
+            android:id="@+id/ivPreview"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_gravity="center"
+            android:scaleType="centerCrop"
+            android:background="#CCCCCC"
+            android:src="@drawable/ic_upload"/>
+
+        <!-- Expiry Button -->
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSelectExpiry"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:text="Select Expiry Date &amp; Time"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            app:cornerRadius="16dp"/>
 
-        <Button
-            android:id="@+id/btnSaveOffer"
-            android:text="Save Offer"
+        <View
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="16dp"/>
+
+        <!-- Save Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSaveOffer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save Offer"
+            app:cornerRadius="16dp"
+            android:backgroundTint="@color/purple_500"/>
 
     </LinearLayout>
+
 </ScrollView>
