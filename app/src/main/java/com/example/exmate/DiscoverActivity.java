@@ -3,13 +3,13 @@ package com.example.exmate;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.viewpager2.widget.ViewPager2;
 
 import com.facebook.shimmer.ShimmerFrameLayout;
 import com.google.firebase.database.*;
@@ -19,46 +19,34 @@ import java.util.List;
 
 public class DiscoverActivity extends AppCompatActivity {
 
-    private ViewPager2 bannerViewPager;
     private RecyclerView categoryRecycler, offerRecycler;
     private ShimmerFrameLayout shimmerLayout;
     private LinearLayout emptyLayout;
+    private TextView offerTitle;
 
-    private BannerAdapter bannerAdapter;
     private DiscoverCategoryAdapter categoryAdapter;
     private OfferAdapter offerAdapter;
 
-    private final List<String> bannerList = new ArrayList<>();
-    private final List<String> categoryList = new ArrayList<>();
     private final List<DiscoverOfferModel> offerList = new ArrayList<>();
 
     private DatabaseReference offersRef;
-    private String selectedCategory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_discover);
 
-        selectedCategory = getIntent().getStringExtra("selectedCategory");
-
         initViews();
         setupRecyclerViews();
-        loadBanners();
-
-        if (selectedCategory != null && !selectedCategory.isEmpty()) {
-            loadOffersByCategory(selectedCategory);
-        } else {
-            loadOffers();
-        }
+        loadOffers();
     }
 
     private void initViews() {
-        bannerViewPager = findViewById(R.id.bannerViewPager);
         categoryRecycler = findViewById(R.id.categoryRecycler);
         offerRecycler = findViewById(R.id.offerRecycler);
         shimmerLayout = findViewById(R.id.shimmerLayout);
         emptyLayout = findViewById(R.id.emptyLayout);
+        offerTitle = findViewById(R.id.offerTitle);
 
         offersRef = FirebaseDatabase.getInstance()
                 .getReference("DiscoverOffers");
@@ -66,31 +54,22 @@ public class DiscoverActivity extends AppCompatActivity {
 
     private void setupRecyclerViews() {
 
-        // Banner
-        bannerAdapter = new BannerAdapter(this, bannerList);
-        bannerViewPager.setAdapter(bannerAdapter);
-
-        // Categories (Horizontal)
+        // Categories
         categoryAdapter = new DiscoverCategoryAdapter(
                 this,
                 createCategoryModelList(),
-                category -> loadOffersByCategory(category)
+                this::loadOffersByCategory
         );
 
         categoryRecycler.setLayoutManager(
                 new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false));
         categoryRecycler.setAdapter(categoryAdapter);
+        categoryRecycler.setHasFixedSize(true);
 
-        // Offers (Vertical)
+        // Offers
         offerAdapter = new OfferAdapter(this, offerList);
         offerRecycler.setLayoutManager(new LinearLayoutManager(this));
         offerRecycler.setAdapter(offerAdapter);
-
-        // 🔥 Stability Fixes (No Logic Change)
-        categoryRecycler.setNestedScrollingEnabled(false);
-        offerRecycler.setNestedScrollingEnabled(false);
-
-        categoryRecycler.setHasFixedSize(true);
         offerRecycler.setHasFixedSize(true);
     }
 
@@ -104,38 +83,33 @@ public class DiscoverActivity extends AppCompatActivity {
         return list;
     }
 
-    private void loadBanners() {
-        bannerList.clear();
-        bannerList.add("https://picsum.photos/800/400?1");
-        bannerList.add("https://picsum.photos/800/400?2");
-        bannerList.add("https://picsum.photos/800/400?3");
-        bannerAdapter.notifyDataSetChanged();
-    }
-
     private void loadOffers() {
 
-        shimmerLayout.startShimmer();
-        shimmerLayout.setVisibility(View.VISIBLE);
-        emptyLayout.setVisibility(View.GONE);
+        showLoading();
 
         Query query = offersRef
                 .orderByChild("isActive")
                 .equalTo(true);
 
-        fetchOffers(query);
+        fetchOffers(query, null);
     }
 
     private void loadOffersByCategory(String category) {
 
-        shimmerLayout.startShimmer();
-        shimmerLayout.setVisibility(View.VISIBLE);
-        emptyLayout.setVisibility(View.GONE);
+        showLoading();
+        offerTitle.setText(category + " Offers");
 
         Query query = offersRef
                 .orderByChild("isActive")
                 .equalTo(true);
 
+        fetchOffers(query, category);
+    }
+
+    private void fetchOffers(Query query, String categoryFilter) {
+
         query.addListenerForSingleValueEvent(new ValueEventListener() {
+
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
 
@@ -148,28 +122,20 @@ public class DiscoverActivity extends AppCompatActivity {
 
                     if (model == null) continue;
 
-                    if (model.getCategory() != null &&
-                            model.getCategory().equalsIgnoreCase(category)) {
-
+                    if (categoryFilter == null) {
+                        offerList.add(model);
+                    } else if (model.getCategory() != null &&
+                            model.getCategory().equalsIgnoreCase(categoryFilter)) {
                         offerList.add(model);
                     }
                 }
 
-                shimmerLayout.stopShimmer();
-                shimmerLayout.setVisibility(View.GONE);
-
-                if (offerList.isEmpty()) {
-                    emptyLayout.setVisibility(View.VISIBLE);
-                } else {
-                    offerAdapter.notifyDataSetChanged();
-                    offerRecycler.requestLayout(); // 🔥 layout refresh safety
-                }
+                hideLoading();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                shimmerLayout.stopShimmer();
-                shimmerLayout.setVisibility(View.GONE);
+                hideLoading();
                 Toast.makeText(DiscoverActivity.this,
                         error.getMessage(),
                         Toast.LENGTH_SHORT).show();
@@ -177,43 +143,23 @@ public class DiscoverActivity extends AppCompatActivity {
         });
     }
 
-    private void fetchOffers(Query query) {
+    private void showLoading() {
+        shimmerLayout.setVisibility(View.VISIBLE);
+        shimmerLayout.startShimmer();
+        emptyLayout.setVisibility(View.GONE);
+        offerRecycler.setVisibility(View.GONE);
+    }
 
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
+    private void hideLoading() {
 
-                offerList.clear();
+        shimmerLayout.stopShimmer();
+        shimmerLayout.setVisibility(View.GONE);
 
-                for (DataSnapshot data : snapshot.getChildren()) {
-
-                    DiscoverOfferModel model =
-                            data.getValue(DiscoverOfferModel.class);
-
-                    if (model != null && model.isActive()) {
-                        offerList.add(model);
-                    }
-                }
-
-                shimmerLayout.stopShimmer();
-                shimmerLayout.setVisibility(View.GONE);
-
-                if (offerList.isEmpty()) {
-                    emptyLayout.setVisibility(View.VISIBLE);
-                } else {
-                    offerAdapter.notifyDataSetChanged();
-                    offerRecycler.requestLayout(); // 🔥 layout refresh safety
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                shimmerLayout.stopShimmer();
-                shimmerLayout.setVisibility(View.GONE);
-                Toast.makeText(DiscoverActivity.this,
-                        error.getMessage(),
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
+        if (offerList.isEmpty()) {
+            emptyLayout.setVisibility(View.VISIBLE);
+        } else {
+            offerAdapter.notifyDataSetChanged();
+            offerRecycler.setVisibility(View.VISIBLE);
+        }
     }
 }
