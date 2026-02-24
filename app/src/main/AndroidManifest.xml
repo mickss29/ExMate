@@ -92,6 +92,11 @@
         <activity
             android:name=".DiscoverActivity"
             android:exported="false" />
+        <activity android:name=".DiscoverOfferActivity" android:exported="false"></activity>
+        <activity android:name=".DiscoverOfferDetailActivity" android:exported="false"></activity>
+        <activity android:name="AdminManageOffersActivity" android:exported="false"></activity>
+
+
 
         <!-- 📂 FILE PROVIDER -->
         <provider

@@ -98,7 +98,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
 
         if (cardOffers != null) {
             cardOffers.setOnClickListener(v ->
-                    startActivity(new Intent(this, AddOfferActivity.class)));
+                    startActivity(new Intent(this, AdminManageOffersActivity.class)));
         }
 
         loadDashboardData();

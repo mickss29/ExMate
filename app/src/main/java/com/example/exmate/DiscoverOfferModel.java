@@ -2,6 +2,9 @@ package com.example.exmate;
 
 public class DiscoverOfferModel {
 
+    // 🔥 IMPORTANT: Firebase key (not stored inside DB automatically)
+    private String id;
+
     private String title;
     private String subtitle;
     private String category;
@@ -9,16 +12,22 @@ public class DiscoverOfferModel {
     private String expiryDateTime;
     private String createdAt;
     private String imageUrl;
+
+    // Optional (remove if not using anymore)
     private String accentColor;
 
     private int discountPercent;
 
-    private boolean isActive; // MUST match database key exactly
+    private boolean isActive;
 
     // 🔥 REQUIRED empty constructor for Firebase
     public DiscoverOfferModel() {}
 
     // ================= GETTERS =================
+
+    public String getId() {
+        return id == null ? "" : id;
+    }
 
     public String getTitle() {
         return title == null ? "" : title;
@@ -60,16 +69,49 @@ public class DiscoverOfferModel {
         return isActive;
     }
 
-    // 🔥 Optional but recommended setters (Firebase sometimes needs them)
+    // ================= SETTERS =================
 
-    public void setTitle(String title) { this.title = title; }
-    public void setSubtitle(String subtitle) { this.subtitle = subtitle; }
-    public void setCategory(String category) { this.category = category; }
-    public void setCouponCode(String couponCode) { this.couponCode = couponCode; }
-    public void setExpiryDateTime(String expiryDateTime) { this.expiryDateTime = expiryDateTime; }
-    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
-    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
-    public void setAccentColor(String accentColor) { this.accentColor = accentColor; }
-    public void setDiscountPercent(int discountPercent) { this.discountPercent = discountPercent; }
-    public void setActive(boolean active) { isActive = active; }
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setSubtitle(String subtitle) {
+        this.subtitle = subtitle;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public void setCouponCode(String couponCode) {
+        this.couponCode = couponCode;
+    }
+
+    public void setExpiryDateTime(String expiryDateTime) {
+        this.expiryDateTime = expiryDateTime;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public void setAccentColor(String accentColor) {
+        this.accentColor = accentColor;
+    }
+
+    public void setDiscountPercent(int discountPercent) {
+        this.discountPercent = discountPercent;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
+    }
 }

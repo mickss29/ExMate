@@ -13,8 +13,8 @@ import android.widget.*;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import com.bumptech.glide.Glide;
+import com.google.firebase.database.*;
 
 import org.json.JSONObject;
 
@@ -26,22 +26,14 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.FormBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import okhttp3.*;
 
 public class AddOfferActivity extends AppCompatActivity {
 
     private static final int PICK_IMAGE_REQUEST = 101;
     private static final String IMGBB_API_KEY = "c2a57968ac9e3f5cf23caea37d08df2e";
 
-    private EditText etTitle, etSubtitle,
-            etCoupon, etDiscount;
-
+    private EditText etTitle, etSubtitle, etCoupon, etDiscount;
     private AutoCompleteTextView etCategory;
     private Button btnSelectExpiry, btnSave;
     private ImageView ivPreview;
@@ -50,6 +42,9 @@ public class AddOfferActivity extends AppCompatActivity {
     private String uploadedImageUrl = "";
     private Uri imageUri;
 
+    private String editingOfferId = null;
+    private boolean isEditMode = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,6 +52,14 @@ public class AddOfferActivity extends AppCompatActivity {
 
         initViews();
         setupCategoryDropdown();
+
+        editingOfferId = getIntent().getStringExtra("offerId");
+
+        if (editingOfferId != null) {
+            isEditMode = true;
+            btnSave.setText("Update Offer");
+            loadOfferData();
+        }
 
         ivPreview.setOnClickListener(v -> openGallery());
         btnSelectExpiry.setOnClickListener(v -> pickDateTime());
@@ -69,8 +72,6 @@ public class AddOfferActivity extends AppCompatActivity {
         etCategory = findViewById(R.id.etCategory);
         etCoupon = findViewById(R.id.etCoupon);
         etDiscount = findViewById(R.id.etDiscount);
-
-
         btnSelectExpiry = findViewById(R.id.btnSelectExpiry);
         btnSave = findViewById(R.id.btnSaveOffer);
         ivPreview = findViewById(R.id.ivPreview);
@@ -87,6 +88,42 @@ public class AddOfferActivity extends AppCompatActivity {
                         categories);
 
         etCategory.setAdapter(adapter);
+    }
+
+    private void loadOfferData() {
+
+        DatabaseReference ref = FirebaseDatabase.getInstance()
+                .getReference("DiscoverOffers")
+                .child(editingOfferId);
+
+        ref.get().addOnSuccessListener(snapshot -> {
+
+            if (snapshot.exists()) {
+
+                DiscoverOfferModel model =
+                        snapshot.getValue(DiscoverOfferModel.class);
+
+                if (model != null) {
+
+                    etTitle.setText(model.getTitle());
+                    etSubtitle.setText(model.getSubtitle());
+                    etCategory.setText(model.getCategory(), false);
+                    etCoupon.setText(model.getCouponCode());
+                    etDiscount.setText(
+                            String.valueOf(model.getDiscountPercent()));
+
+                    selectedExpiryString =
+                            model.getExpiryDateTime();
+                    btnSelectExpiry.setText(selectedExpiryString);
+
+                    uploadedImageUrl = model.getImageUrl();
+
+                    Glide.with(this)
+                            .load(uploadedImageUrl)
+                            .into(ivPreview);
+                }
+            }
+        });
     }
 
     private void openGallery() {
@@ -155,15 +192,6 @@ public class AddOfferActivity extends AppCompatActivity {
                 @Override
                 public void onResponse(Call call, Response response) {
                     try {
-
-                        if (!response.isSuccessful()) {
-                            runOnUiThread(() ->
-                                    Toast.makeText(AddOfferActivity.this,
-                                            "Upload error",
-                                            Toast.LENGTH_SHORT).show());
-                            return;
-                        }
-
                         String res = response.body().string();
                         JSONObject jsonObject = new JSONObject(res);
 
@@ -195,13 +223,11 @@ public class AddOfferActivity extends AppCompatActivity {
         String coupon = etCoupon.getText().toString().trim();
         String discountStr = etDiscount.getText().toString().trim();
 
-
         if (TextUtils.isEmpty(title) ||
                 TextUtils.isEmpty(subtitle) ||
                 TextUtils.isEmpty(category) ||
                 TextUtils.isEmpty(coupon) ||
                 TextUtils.isEmpty(discountStr) ||
-
                 TextUtils.isEmpty(selectedExpiryString) ||
                 TextUtils.isEmpty(uploadedImageUrl)) {
 
@@ -211,21 +237,11 @@ public class AddOfferActivity extends AppCompatActivity {
             return;
         }
 
-        int discountPercent;
-        try {
-            discountPercent = Integer.parseInt(discountStr);
-        } catch (Exception e) {
-            Toast.makeText(this,
-                    "Invalid discount value",
-                    Toast.LENGTH_SHORT).show();
-            return;
-        }
+        int discountPercent = Integer.parseInt(discountStr);
 
-        DatabaseReference ref = FirebaseDatabase.getInstance()
-                .getReference("DiscoverOffers");
-
-        String id = ref.push().getKey();
-        if (id == null) return;
+        DatabaseReference ref =
+                FirebaseDatabase.getInstance()
+                        .getReference("DiscoverOffers");
 
         Map<String, Object> map = new HashMap<>();
         map.put("title", title);
@@ -234,17 +250,34 @@ public class AddOfferActivity extends AppCompatActivity {
         map.put("couponCode", coupon);
         map.put("discountPercent", discountPercent);
         map.put("imageUrl", uploadedImageUrl);
-
         map.put("expiryDateTime", selectedExpiryString);
         map.put("isActive", true);
 
-        ref.child(id).setValue(map)
-                .addOnSuccessListener(unused -> {
-                    Toast.makeText(this,
-                            "Offer Added",
-                            Toast.LENGTH_SHORT).show();
-                    finish();
-                });
+        if (isEditMode) {
+
+            ref.child(editingOfferId)
+                    .updateChildren(map)
+                    .addOnSuccessListener(unused -> {
+                        Toast.makeText(this,
+                                "Offer Updated",
+                                Toast.LENGTH_SHORT).show();
+                        finish();
+                    });
+
+        } else {
+
+            String id = ref.push().getKey();
+            if (id == null) return;
+
+            ref.child(id)
+                    .setValue(map)
+                    .addOnSuccessListener(unused -> {
+                        Toast.makeText(this,
+                                "Offer Added",
+                                Toast.LENGTH_SHORT).show();
+                        finish();
+                    });
+        }
     }
 
     private void pickDateTime() {
