@@ -33,7 +33,7 @@ public class AddOfferActivity extends AppCompatActivity {
     private static final int PICK_IMAGE_REQUEST = 101;
     private static final String IMGBB_API_KEY = "c2a57968ac9e3f5cf23caea37d08df2e";
 
-    private EditText etTitle, etSubtitle, etCoupon, etDiscount;
+    private EditText etTitle, etSubtitle, etCoupon, etDiscount, etLink;
     private AutoCompleteTextView etCategory;
     private Button btnSelectExpiry, btnSave;
     private ImageView ivPreview;
@@ -72,6 +72,7 @@ public class AddOfferActivity extends AppCompatActivity {
         etCategory = findViewById(R.id.etCategory);
         etCoupon = findViewById(R.id.etCoupon);
         etDiscount = findViewById(R.id.etDiscount);
+        etLink = findViewById(R.id.etLink); // 🔥 NEW
         btnSelectExpiry = findViewById(R.id.btnSelectExpiry);
         btnSave = findViewById(R.id.btnSaveOffer);
         ivPreview = findViewById(R.id.ivPreview);
@@ -117,6 +118,7 @@ public class AddOfferActivity extends AppCompatActivity {
                     btnSelectExpiry.setText(selectedExpiryString);
 
                     uploadedImageUrl = model.getImageUrl();
+                    etLink.setText(model.getLink()); // 🔥 NEW
 
                     Glide.with(this)
                             .load(uploadedImageUrl)
@@ -222,6 +224,7 @@ public class AddOfferActivity extends AppCompatActivity {
         String category = etCategory.getText().toString().trim();
         String coupon = etCoupon.getText().toString().trim();
         String discountStr = etDiscount.getText().toString().trim();
+        String link = etLink.getText().toString().trim(); // 🔥 NEW
 
         if (TextUtils.isEmpty(title) ||
                 TextUtils.isEmpty(subtitle) ||
@@ -229,12 +232,17 @@ public class AddOfferActivity extends AppCompatActivity {
                 TextUtils.isEmpty(coupon) ||
                 TextUtils.isEmpty(discountStr) ||
                 TextUtils.isEmpty(selectedExpiryString) ||
-                TextUtils.isEmpty(uploadedImageUrl)) {
+                TextUtils.isEmpty(uploadedImageUrl) ||
+                TextUtils.isEmpty(link)) {
 
             Toast.makeText(this,
                     "Fill all fields & upload image",
                     Toast.LENGTH_SHORT).show();
             return;
+        }
+
+        if (!link.startsWith("http")) {
+            link = "https://" + link;
         }
 
         int discountPercent = Integer.parseInt(discountStr);
@@ -252,6 +260,7 @@ public class AddOfferActivity extends AppCompatActivity {
         map.put("imageUrl", uploadedImageUrl);
         map.put("expiryDateTime", selectedExpiryString);
         map.put("isActive", true);
+        map.put("link", link); // 🔥 NEW FIELD
 
         if (isEditMode) {
 

@@ -25,7 +25,7 @@ public class DiscoverActivity extends AppCompatActivity {
     private TextView offerTitle;
 
     private DiscoverCategoryAdapter categoryAdapter;
-    private OfferAdapter offerAdapter;
+    private DiscoverOfferAdapter offerAdapter;   // ✅ FIXED
 
     private final List<DiscoverOfferModel> offerList = new ArrayList<>();
 
@@ -66,8 +66,8 @@ public class DiscoverActivity extends AppCompatActivity {
         categoryRecycler.setAdapter(categoryAdapter);
         categoryRecycler.setHasFixedSize(true);
 
-        // Offers
-        offerAdapter = new OfferAdapter(this, offerList);
+        // Offers ✅ FIXED ADAPTER
+        offerAdapter = new DiscoverOfferAdapter(offerList);
         offerRecycler.setLayoutManager(new LinearLayoutManager(this));
         offerRecycler.setAdapter(offerAdapter);
         offerRecycler.setHasFixedSize(true);

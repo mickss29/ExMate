@@ -74,7 +74,7 @@ public class DiscoverFragment extends Fragment {
                     DiscoverOfferModel model =
                             ds.getValue(DiscoverOfferModel.class);
 
-                    if (model == null || !model.isActive())
+                    if (model == null || !model.getIsActive())
                         continue;
 
                     if (category != null &&

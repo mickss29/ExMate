@@ -2,7 +2,7 @@ package com.example.exmate;
 
 public class DiscoverOfferModel {
 
-    // 🔥 IMPORTANT: Firebase key (not stored inside DB automatically)
+    // Firebase node key (not stored automatically inside DB)
     private String id;
 
     private String title;
@@ -12,60 +12,64 @@ public class DiscoverOfferModel {
     private String expiryDateTime;
     private String createdAt;
     private String imageUrl;
-
-    // Optional (remove if not using anymore)
     private String accentColor;
+    private String link;   // 🔥 Offer link
 
     private int discountPercent;
-
     private boolean isActive;
 
     // 🔥 REQUIRED empty constructor for Firebase
-    public DiscoverOfferModel() {}
+    public DiscoverOfferModel() {
+    }
 
     // ================= GETTERS =================
 
     public String getId() {
-        return id == null ? "" : id;
+        return id != null ? id : "";
     }
 
     public String getTitle() {
-        return title == null ? "" : title;
+        return title != null ? title : "";
     }
 
     public String getSubtitle() {
-        return subtitle == null ? "" : subtitle;
+        return subtitle != null ? subtitle : "";
     }
 
     public String getCategory() {
-        return category == null ? "" : category;
+        return category != null ? category : "";
     }
 
     public String getCouponCode() {
-        return couponCode == null ? "" : couponCode;
+        return couponCode != null ? couponCode : "";
     }
 
     public String getExpiryDateTime() {
-        return expiryDateTime == null ? "" : expiryDateTime;
+        return expiryDateTime != null ? expiryDateTime : "";
     }
 
     public String getCreatedAt() {
-        return createdAt == null ? "" : createdAt;
+        return createdAt != null ? createdAt : "";
     }
 
     public String getImageUrl() {
-        return imageUrl == null ? "" : imageUrl;
+        return imageUrl != null ? imageUrl : "";
     }
 
     public String getAccentColor() {
-        return accentColor == null ? "#FFFFFF" : accentColor;
+        return accentColor != null ? accentColor : "#FFFFFF";
+    }
+
+    public String getLink() {
+        return link != null ? link : "";
     }
 
     public int getDiscountPercent() {
         return discountPercent;
     }
 
-    public boolean isActive() {
+    // IMPORTANT: Firebase boolean getter best practice
+    public boolean getIsActive() {
         return isActive;
     }
 
@@ -107,11 +111,15 @@ public class DiscoverOfferModel {
         this.accentColor = accentColor;
     }
 
+    public void setLink(String link) {
+        this.link = link;
+    }
+
     public void setDiscountPercent(int discountPercent) {
         this.discountPercent = discountPercent;
     }
 
-    public void setActive(boolean active) {
+    public void setIsActive(boolean active) {
         isActive = active;
     }
 }

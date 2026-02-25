@@ -5,140 +5,177 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg_app"
-    android:padding="20dp">
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="20dp">
 
-        <!-- Title -->
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        <!-- Header -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Create New Offer"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:layout_marginBottom="20dp"/>
+
+        <!-- Main Card Container -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Title">
+            app:cardCornerRadius="26dp"
+            app:cardElevation="10dp"
+            android:backgroundTint="@android:color/white">
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etTitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="16dp"/>
-
-        <!-- Subtitle -->
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Subtitle">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etSubtitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="16dp"/>
-
-        <!-- Category Dropdown -->
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Select Category">
-
-            <AutoCompleteTextView
-                android:id="@+id/etCategory"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="none"/>
-        </com.google.android.material.textfield.TextInputLayout>
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <!-- Title -->
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Offer Title">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Subtitle -->
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Subtitle"
+                    android:layout_marginTop="18dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etSubtitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Category -->
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Select Category"
+                    android:layout_marginTop="18dp">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/etCategory"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="none"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Coupon -->
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Coupon Code"
+                    android:layout_marginTop="18dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etCoupon"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Discount -->
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Discount %"
+                    android:layout_marginTop="18dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etDiscount"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="number"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Offer Link -->
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Offer Link (https://...)"
+                    android:layout_marginTop="18dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etLink"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textUri"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Expiry Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSelectExpiry"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="Select Expiry Date &amp; Time"
+                    android:layout_marginTop="24dp"
+                    app:cornerRadius="20dp"/>
+
+                <!-- Image Upload Section -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Offer Image"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="26dp"/>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="190dp"
+                    android:layout_marginTop="10dp"
+                    app:cardCornerRadius="22dp"
+                    app:cardElevation="4dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="@color/divider_color">
+
+                    <ImageView
+                        android:id="@+id/ivPreview"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:background="@color/light_gray"
+                        android:src="@drawable/ic_upload"/>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Save Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSaveOffer"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:text="Publish Offer 🚀"
+                    android:textSize="16sp"
+                    android:layout_marginTop="30dp"
+                    app:cornerRadius="24dp"/>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
 
         <View
             android:layout_width="match_parent"
-            android:layout_height="16dp"/>
-
-        <!-- Coupon -->
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Coupon Code">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etCoupon"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="16dp"/>
-
-        <!-- Discount -->
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Discount Percent">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etDiscount"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="number"/>
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="16dp"/>
-
-
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="16dp"/>
-
-
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="24dp"/>
-        <ImageView
-            android:id="@+id/ivPreview"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:layout_gravity="center"
-            android:scaleType="centerCrop"
-            android:background="#CCCCCC"
-            android:src="@drawable/ic_upload"/>
-
-        <!-- Expiry Button -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSelectExpiry"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Select Expiry Date &amp; Time"
-            app:cornerRadius="16dp"/>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="16dp"/>
-
-        <!-- Save Button -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSaveOffer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Save Offer"
-            app:cornerRadius="16dp"
-            android:backgroundTint="@color/purple_500"/>
+            android:layout_height="30dp"/>
 
     </LinearLayout>
 

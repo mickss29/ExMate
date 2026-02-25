@@ -3,8 +3,11 @@ package com.example.exmate;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.CountDownTimer;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -60,10 +63,8 @@ public class DiscoverOfferAdapter
     @NonNull
     @Override
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_discover_card, parent, false);
-
         return new VH(v);
     }
 
@@ -86,10 +87,8 @@ public class DiscoverOfferAdapter
                     Color.parseColor(m.getAccentColor()));
         } catch (Exception ignored) {}
 
-        // Show exact expiry date
         h.tvExpiryExact.setText("Expires on: " + m.getExpiryDateTime());
 
-        // Cancel old timer (important for RecyclerView reuse)
         if (h.countDownTimer != null) {
             h.countDownTimer.cancel();
         }
@@ -102,47 +101,47 @@ public class DiscoverOfferAdapter
             Date expiryDate =
                     sdf.parse(m.getExpiryDateTime());
 
-            if (expiryDate == null) return;
+            if (expiryDate != null) {
 
-            long expiryMillis = expiryDate.getTime();
-            long currentMillis = System.currentTimeMillis();
-            long remaining = expiryMillis - currentMillis;
+                long remaining =
+                        expiryDate.getTime() - System.currentTimeMillis();
 
-            if (remaining > 0) {
+                if (remaining > 0) {
 
-                h.countDownTimer =
-                        new CountDownTimer(remaining, 1000) {
+                    h.countDownTimer =
+                            new CountDownTimer(remaining, 1000) {
 
-                            @Override
-                            public void onTick(long millisUntilFinished) {
+                                @Override
+                                public void onTick(long millisUntilFinished) {
 
-                                long hours =
-                                        millisUntilFinished / (1000 * 60 * 60);
+                                    long hours =
+                                            millisUntilFinished / (1000 * 60 * 60);
 
-                                long minutes =
-                                        (millisUntilFinished / (1000 * 60)) % 60;
+                                    long minutes =
+                                            (millisUntilFinished / (1000 * 60)) % 60;
 
-                                long seconds =
-                                        (millisUntilFinished / 1000) % 60;
+                                    long seconds =
+                                            (millisUntilFinished / 1000) % 60;
 
-                                h.tvTimer.setText(
-                                        "Time Left: "
-                                                + hours + "h "
-                                                + minutes + "m "
-                                                + seconds + "s"
-                                );
-                            }
+                                    h.tvTimer.setText(
+                                            "Time Left: "
+                                                    + hours + "h "
+                                                    + minutes + "m "
+                                                    + seconds + "s"
+                                    );
+                                }
 
-                            @Override
-                            public void onFinish() {
-                                h.tvTimer.setText("Expired");
-                            }
-                        }.start();
+                                @Override
+                                public void onFinish() {
+                                    h.tvTimer.setText("Expired");
+                                }
+                            }.start();
+                }
             }
 
         } catch (Exception ignored) {}
 
-        // Coupon Copy Feature
+        // Coupon copy
         h.tvCoupon.setOnClickListener(v -> {
 
             ClipboardManager clipboard =
@@ -161,6 +160,39 @@ public class DiscoverOfferAdapter
                         Toast.LENGTH_SHORT).show();
             }
         });
+
+        // 🔥 CARD CLICK → OPEN LINK
+        h.cardAccent.setOnClickListener(v -> {
+
+            Toast.makeText(v.getContext(),
+                    "Opening offer...",
+                    Toast.LENGTH_SHORT).show();
+
+            String url = m.getLink();
+            Log.d("LINK_DEBUG", "URL = " + url);
+
+            if (url == null || url.trim().isEmpty()) {
+                Toast.makeText(v.getContext(),
+                        "No link found",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (!url.startsWith("http")) {
+                url = "https://" + url;
+            }
+
+            try {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse(url));
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                v.getContext().startActivity(intent);
+            } catch (Exception e) {
+                Toast.makeText(v.getContext(),
+                        "Cannot open link",
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override
@@ -171,7 +203,6 @@ public class DiscoverOfferAdapter
     @Override
     public void onViewRecycled(@NonNull VH holder) {
         super.onViewRecycled(holder);
-
         if (holder.countDownTimer != null) {
             holder.countDownTimer.cancel();
         }
