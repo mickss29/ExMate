@@ -1,84 +1,116 @@
 package com.example.exmate;
 
-import android.Manifest;
+import android.animation.ObjectAnimator;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.os.Build;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.animation.PathInterpolator;
+import android.view.View;
+import android.view.animation.OvershootInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 public class SplashActivity extends AppCompatActivity {
 
-    private static final int SMS_PERMISSION_CODE = 101;
+    private final Handler handler = new Handler();
+    private final String brand = "EXMATE";
+    private int index = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
+        View line = findViewById(R.id.lineView);
+        TextView brandText = findViewById(R.id.brandText);
         ImageView logo = findViewById(R.id.logo);
         TextView tagline = findViewById(R.id.tagline);
 
-        // 🍎 Apple-style natural easing curve
-        PathInterpolator premiumEase =
-                new PathInterpolator(0.22f, 1f, 0.36f, 1f);
-
-        // Initial state
-        logo.setAlpha(0f);
-        logo.setScaleX(0.94f);
-        logo.setScaleY(0.94f);
-        tagline.setAlpha(0f);
-
-        // 🔹 LOGO animation
-        logo.animate()
+        // 1️⃣ Line Slide From Left
+        line.animate()
+                .translationX(0f)
                 .alpha(1f)
-                .scaleX(1f)
-                .scaleY(1f)
-                .setDuration(1500)
-                .setInterpolator(premiumEase)
+                .setDuration(700)
+                .setInterpolator(new OvershootInterpolator(1.1f))
                 .start();
 
-        // 🔹 TAGLINE animation
-        tagline.animate()
-                .alpha(1f)
-                .setStartDelay(1000)
-                .setDuration(800)
-                .setInterpolator(premiumEase)
-                .start();
+        // 2️⃣ Rotate Line
+        handler.postDelayed(() -> {
+            ObjectAnimator rotate = ObjectAnimator.ofFloat(line, "rotation", 0f, 720f);
+            rotate.setDuration(700);
+            rotate.start();
+        }, 700);
 
-        // 🔐 Request SMS permission silently (no UI break)
-        requestSmsPermissionIfNeeded();
+        // 3️⃣ Reveal EXMATE Text
+        handler.postDelayed(() -> {
+            line.animate().alpha(0f).setDuration(300).start();
+            brandText.setAlpha(1f);
+            startTypingBrand(brandText);
+        }, 1400);
 
-        // 🔹 Move to Auth screen
-        new Handler().postDelayed(() -> {
-            startActivity(new Intent(SplashActivity.this, AuthActivity.class));
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        // 4️⃣ Convert Text → Logo
+        handler.postDelayed(() -> {
+
+            brandText.animate()
+                    .scaleX(1.2f)
+                    .scaleY(1.2f)
+                    .alpha(0f)
+                    .setDuration(600)
+                    .start();
+
+            logo.animate()
+                    .alpha(1f)
+                    .scaleX(1f)
+                    .scaleY(1f)
+                    .setDuration(900)
+                    .setInterpolator(new OvershootInterpolator(1.2f))
+                    .start();
+
+        }, 2300);
+
+        // 5️⃣ Tagline Splash Entry
+        handler.postDelayed(() -> {
+            tagline.animate()
+                    .alpha(1f)
+                    .translationY(0f)
+                    .setDuration(700)
+                    .setInterpolator(new OvershootInterpolator(1.1f))
+                    .start();
+        }, 3200);
+
+        // 6️⃣ FINAL NAVIGATION CHECK (NO LOGIN FLASH)
+        handler.postDelayed(() -> {
+
+            if (isUserLoggedIn()) {
+                startActivity(new Intent(SplashActivity.this, HomeFragment.class));
+            } else {
+                startActivity(new Intent(SplashActivity.this, AuthActivity.class));
+            }
+
             finish();
-        }, 2800);
+
+        }, 4500);
     }
 
-    private void requestSmsPermissionIfNeeded() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+    // 🔐 LOGIN STATE CHECK
+    private boolean isUserLoggedIn() {
+        SharedPreferences prefs = getSharedPreferences("exmate_prefs", MODE_PRIVATE);
+        return prefs.getBoolean("is_logged_in", false);
+    }
 
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS)
-                    != PackageManager.PERMISSION_GRANTED) {
-
-                ActivityCompat.requestPermissions(
-                        this,
-                        new String[]{
-                                Manifest.permission.READ_SMS,
-                                Manifest.permission.RECEIVE_SMS
-                        },
-                        SMS_PERMISSION_CODE
-                );
+    // ✍️ Typing Animation
+    private void startTypingBrand(TextView textView) {
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (index <= brand.length()) {
+                    textView.setText(brand.substring(0, index));
+                    index++;
+                    handler.postDelayed(this, 80);
+                }
             }
-        }
+        }, 0);
     }
 }

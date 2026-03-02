@@ -94,6 +94,34 @@
     <color name="purple_500">#7C3AED</color>
 
 
+        <!-- ================= BACKGROUND ================= -->
+
+        <color name="bg_dark_top">#0B1220</color>
+        <color name="bg_dark_bottom">#131C31</color>
+        <color name="bg_dark_solid">#0B1220</color>
+
+        <!-- ================= PRIMARY (Finance Blue) ================= -->
+
+        <color name="primary_blue">#2563EB</color>
+        <color name="primary_blue_pressed">#1D4ED8</color>
+        <color name="primary_blue_light">#3B82F6</color>
+
+        <!-- ================= INPUT SURFACE ================= -->
+
+        <color name="input_surface">#151C2F</color>
+        <color name="input_focus_stroke">#2563EB</color>
+
+        <!-- ================= TEXT ================= -->
+
+        <color name="text_primary">#F9FAFB</color>
+        <color name="text_secondary">#9CA3AF</color>
+        <color name="text_muted">#6B7280</color>
+
+        <!-- ================= DIVIDERS / BORDERS ================= -->
+
+        <color name="divider_dark">#1F2937</color>
+
+        <!-- ================= SUCCESS (Future Dashboard Use) ================= -->
 
 
 

@@ -8,6 +8,7 @@
     android:background="@drawable/bg_exmate_auth_purple">
 
     <!-- ================= BACKGROUND BLOBS ================= -->
+
     <View
         android:id="@+id/shapeCircle"
         android:layout_width="240dp"
@@ -29,13 +30,14 @@
         app:layout_constraintBottom_toBottomOf="parent" />
 
     <!-- ================= BRAND HEADER ================= -->
+
     <LinearLayout
         android:id="@+id/layoutBrand"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"
-        android:layout_marginTop="28dp"
+        android:layout_marginTop="48dp"
         android:orientation="vertical"
         android:gravity="center_horizontal"
         app:layout_constraintTop_toTopOf="parent"
@@ -44,8 +46,8 @@
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardLogo"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
             app:cardCornerRadius="22dp"
             app:cardElevation="16dp"
             app:strokeWidth="1dp"
@@ -56,7 +58,7 @@
                 android:id="@+id/imgLogo"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:padding="12dp"
+                android:padding="14dp"
                 android:src="@drawable/exmate_logo"
                 android:scaleType="fitCenter" />
         </com.google.android.material.card.MaterialCardView>
@@ -65,7 +67,7 @@
             android:id="@+id/tvBrandName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="14dp"
             android:text="ExMate"
             android:textColor="@android:color/white"
             android:textStyle="bold"
@@ -76,7 +78,7 @@
             android:id="@+id/tvBrandTagline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
+            android:layout_marginTop="6dp"
             android:text="Save Better • Spend Better"
             android:textColor="#AFC6FF"
             android:textSize="13sp"
@@ -85,6 +87,7 @@
     </LinearLayout>
 
     <!-- ================= FOOTER ================= -->
+
     <TextView
         android:id="@+id/tvFooter"
         android:layout_width="wrap_content"
@@ -92,32 +95,31 @@
         android:text="Fast • Secure • Private"
         android:textColor="#80FFFFFF"
         android:textSize="12sp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="24dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- ================= MAIN AUTH CARD ================= -->
+
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/containerCard"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="18dp"
-        android:layout_marginEnd="18dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="12dp"
-        app:cardCornerRadius="24dp"
-        app:cardElevation="18dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="24dp"
+        app:cardCornerRadius="28dp"
+        app:cardElevation="20dp"
         app:strokeWidth="1dp"
-        app:strokeColor="#1B2B4B"
-        app:cardBackgroundColor="@android:color/transparent"
-        android:background="@drawable/card_glass_midnight"
+        app:strokeColor="#1E3A6D"
+        app:cardBackgroundColor="#0C1F3F"
         app:layout_constraintTop_toBottomOf="@id/layoutBrand"
         app:layout_constraintBottom_toTopOf="@id/tvFooter"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- ONLY THIS PART SCROLLS -->
         <androidx.core.widget.NestedScrollView
             android:id="@+id/cardScroll"
             android:layout_width="match_parent"
@@ -131,7 +133,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="18dp">
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:paddingTop="26dp"
+                android:paddingBottom="28dp">
+
+                <!-- (ALL YOUR ORIGINAL LOGIN + SIGNUP CONTENT REMAINS SAME BELOW) -->
 
                 <!-- Title -->
                 <TextView
