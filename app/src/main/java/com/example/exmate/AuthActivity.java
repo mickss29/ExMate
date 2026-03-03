@@ -42,10 +42,17 @@ public class AuthActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        AppLockManager.markBackgroundTime(this);
+
+        if (!isFinishing()) {
+            AppLockManager.markBackgroundTime(this);
+        }
     }
 
+    private static final int MAX_LOGIN_ATTEMPTS = 5;
+    private static final long LOCK_DURATION = 30000; // 30 seconds
 
+    private int failedAttempts = 0;
+    private long lockUntil = 0;
     // UI
     private LinearLayout layoutLogin, layoutSignup;
     private TextView tabLogin, tabSignup, tvForgotPassword;
@@ -58,8 +65,7 @@ public class AuthActivity extends AppCompatActivity {
     private View shapeCircle, shapeTriangle;
     private View toggleIndicator;
     private int toggleWidth = 0;
-    private float swipeDownX;
-    private static final int SWIPE_THRESHOLD = 120;
+
     private float swipeStartX;
     private long swipeStartTime;
 
@@ -72,7 +78,7 @@ public class AuthActivity extends AppCompatActivity {
 
     private TextInputEditText etLoginEmail, etLoginPassword;
     private TextInputEditText etFullName, etSignupEmail,
-            etSignupPassword, etSignupConfirmPassword, etSignupPhone;
+            etSignupPassword, etSignupConfirmPassword;
     private Button btnLogin, btnSignup;
 
     // Firebase
@@ -83,9 +89,7 @@ public class AuthActivity extends AppCompatActivity {
     private Dialog loader;
 
     // Drag + Haptic
-    private float startX;
-    private boolean hapticDone = false;
-    private static final int DRAG_THRESHOLD = 180;
+
 
     private Vibrator vibrator;
     private boolean isLoginVisible = true;
@@ -94,8 +98,7 @@ public class AuthActivity extends AppCompatActivity {
     private static final Pattern NAME_PATTERN =
             Pattern.compile("^[a-zA-Z ]+$");
 
-    private static final Pattern PHONE_PATTERN =
-            Pattern.compile("^[0-9]{10}$");
+
 
     private static final Pattern STRONG_PASSWORD_PATTERN =
             Pattern.compile(
@@ -108,52 +111,6 @@ public class AuthActivity extends AppCompatActivity {
                             ".{8,}" +               // min 8 chars
                             "$"
             );
-    private void autoLoginIfPossible() {
-
-        FirebaseUser user = auth.getCurrentUser();
-        if (user == null) return;
-
-        if (!user.isEmailVerified()) {
-            auth.signOut();
-            return;
-        }
-
-        // 🔐 FIRST CHECK → APP LOCK
-        if (AppLockManager.isEnabled(this) && !AppLockManager.isUnlocked(this)) {
-            startActivity(new Intent(this, AppLockActivity.class));
-            finish();
-            return;
-        }
-
-        // 🔓 ELSE → GO TO DASHBOARD
-        usersRef.child(user.getUid()).child("role")
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot snapshot) {
-                        loader.dismiss();
-                        migrateOldUsers(snapshot); // 🔥 auto-fix old users
-
-
-                        // 🔐 RESTORE APP LOCK AFTER CLEAR DATA
-                        restoreAppLockFromServer();
-
-                        String role = snapshot.getValue(String.class);
-
-// ✅ SAVE UID FOR SMS RECEIVER
-                        saveUidLocally(user.getUid());
-
-                        startActivity(new Intent(AuthActivity.this,
-                                "admin".equals(role)
-                                        ? AdminDashboardActivity.class
-                                        : UserDashboardActivity.class));
-                        finish();
-                    }
-
-
-                    @Override
-                    public void onCancelled(DatabaseError error) {}
-                });
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -215,8 +172,6 @@ public class AuthActivity extends AppCompatActivity {
     }
     private void initUI() {
 
-        setContentView(R.layout.activity_auth);
-
         vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
 
         rootLayout = findViewById(R.id.rootLayout);
@@ -238,13 +193,20 @@ public class AuthActivity extends AppCompatActivity {
         etSignupConfirmPassword = findViewById(R.id.etSignupConfirmPassword);
 
 
+
         btnLogin = findViewById(R.id.btnLogin);
         btnSignup = findViewById(R.id.btnSignup);
         toggleIndicator = findViewById(R.id.toggleIndicator);
+        toggleIndicator.post(() -> {
+            toggleWidth = ((View) toggleIndicator.getParent()).getWidth() / 2;
+            toggleIndicator.getLayoutParams().width = toggleWidth;
+            toggleIndicator.requestLayout();
+        });
         tvSwipeHint = findViewById(R.id.tvSwipeHint);
 
+
         setupLoader();
-        setupDragWithHaptic();
+
         setupAuthCardSwipe();
 
         showLogin(false);
@@ -256,17 +218,15 @@ public class AuthActivity extends AppCompatActivity {
         tvForgotPassword.setOnClickListener(v -> showForgotPasswordDialog());
     }
 
-
     // ================= VALIDATED REGISTER =================
     private void registerUser() {
 
         String name = etFullName.getText().toString().trim();
         String email = etSignupEmail.getText().toString().trim();
-        String phone = etSignupPhone.getText().toString().trim();
         String pass = etSignupPassword.getText().toString().trim();
         String cpass = etSignupConfirmPassword.getText().toString().trim();
 
-        if (name.isEmpty() || email.isEmpty() || phone.isEmpty()
+        if (name.isEmpty() || email.isEmpty()
                 || pass.isEmpty() || cpass.isEmpty()) {
             toast("Fill all required fields");
             return;
@@ -282,11 +242,6 @@ public class AuthActivity extends AppCompatActivity {
             return;
         }
 
-        if (!PHONE_PATTERN.matcher(phone).matches()) {
-            toast("Phone number must be 10 digits");
-            return;
-        }
-
         if (!STRONG_PASSWORD_PATTERN.matcher(pass).matches()) {
             toast("Password must contain uppercase, lowercase, number & special character");
             return;
@@ -296,6 +251,10 @@ public class AuthActivity extends AppCompatActivity {
             toast("Passwords do not match");
             return;
         }
+        if (!isInternetAvailable()) {
+            toast("No internet connection");
+            return;
+        }
 
         loader.show();
 
@@ -303,18 +262,23 @@ public class AuthActivity extends AppCompatActivity {
                 .addOnCompleteListener(task -> {
 
                     if (!task.isSuccessful()) {
-                        loader.dismiss();
+                        if (loader != null && loader.isShowing()) {
+                            loader.dismiss();
+                        }
                         toast(task.getException().getMessage());
                         return;
                     }
 
                     FirebaseUser user = auth.getCurrentUser();
                     if (user == null) {
-                        loader.dismiss();
+                        if (loader != null && loader.isShowing()) {
+                            loader.dismiss();
+                        }
                         return;
                     }
 
-                    user.sendEmailVerification();
+                    user.sendEmailVerification()
+                            .addOnFailureListener(e -> toast("Failed to send verification"));
 
                     String uid = user.getUid();
 
@@ -322,31 +286,28 @@ public class AuthActivity extends AppCompatActivity {
                     map.put("uid", uid);
                     map.put("name", name);
                     map.put("email", email);
-                    map.put("phone", phone);
                     map.put("role", "user");
 
-// 🔥 CREATED DATE (HUMAN READABLE)
                     String createdAtText = new java.text.SimpleDateFormat(
                             "dd MMM yyyy, hh:mm a",
                             java.util.Locale.getDefault()
                     ).format(new java.util.Date());
 
-// 🔥 CREATED DATE (FOR FILTER LOGIC)
                     long createdAtMillis = System.currentTimeMillis();
 
                     map.put("createdAtText", createdAtText);
                     map.put("createdAtMillis", createdAtMillis);
 
-
                     usersRef.child(uid).setValue(map).addOnCompleteListener(dbTask -> {
-                        loader.dismiss();
+                        if (loader != null && loader.isShowing()) {
+                            loader.dismiss();
+                        }
                         auth.signOut();
                         toast("Verification email sent. Please verify.");
                         showLogin(true);
                     });
                 });
     }
-
     // ================= LOGIN (UNCHANGED) =================
     private void loginUser() {
 
@@ -358,25 +319,52 @@ public class AuthActivity extends AppCompatActivity {
             return;
         }
 
+
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             toast("Enter valid email");
             return;
         }
+        if (System.currentTimeMillis() < lockUntil) {
+            long remaining = (lockUntil - System.currentTimeMillis()) / 1000;
+            toast("Too many attempts. Try again in " + remaining + " sec");
+            return;
+        }
+        if (!isInternetAvailable()) {
+            toast("No internet connection");
+            return;
+        }
 
         loader.show();
-
         auth.signInWithEmailAndPassword(email, pass)
                 .addOnCompleteListener(task -> {
 
                     if (!task.isSuccessful()) {
-                        loader.dismiss();
-                        toast(task.getException().getMessage());
-                        return;
+
+                        failedAttempts++;
+
+                        if (failedAttempts >= MAX_LOGIN_ATTEMPTS) {
+                            lockUntil = System.currentTimeMillis() + LOCK_DURATION;
+                            failedAttempts = 0;
+                            toast("Too many failed attempts. Locked for 30 seconds.");
+                        } else {
+                            toast("Invalid credentials. Attempts left: "
+                                    + (MAX_LOGIN_ATTEMPTS - failedAttempts));
+                        }
+
+                        if (loader != null && loader.isShowing()) {
+                            loader.dismiss();
+                        }
+
+                        return; // 🔥 VERY IMPORTANT
                     }
 
                     FirebaseUser user = auth.getCurrentUser();
                     if (user == null || !user.isEmailVerified()) {
-                        loader.dismiss();
+
+                        if (loader != null && loader.isShowing()) {
+                            loader.dismiss();
+                        }
+
                         auth.signOut();
                         toast("Email not verified");
                         return;
@@ -384,12 +372,16 @@ public class AuthActivity extends AppCompatActivity {
 
                     usersRef.child(user.getUid()).child("role")
                             .addListenerForSingleValueEvent(new ValueEventListener() {
+
                                 @Override
-
                                 public void onDataChange(DataSnapshot snapshot) {
-                                    loader.dismiss();
 
-                                    // ✅ SAVE UID
+                                    if (loader != null && loader.isShowing()) {
+                                        loader.dismiss();
+                                    }
+
+                                    failedAttempts = 0; // reset after success
+
                                     saveUidLocally(user.getUid());
 
                                     String role = snapshot.getValue(String.class);
@@ -399,9 +391,14 @@ public class AuthActivity extends AppCompatActivity {
                                                     : UserDashboardActivity.class));
                                     finish();
                                 }
+
                                 @Override
                                 public void onCancelled(DatabaseError error) {
-                                    loader.dismiss();
+
+                                    if (loader != null && loader.isShowing()) {
+                                        loader.dismiss();
+                                    }
+
                                     toast("Login failed");
                                 }
                             });
@@ -413,46 +410,11 @@ public class AuthActivity extends AppCompatActivity {
     }
 
     // ================= UI / ANIMATION (UNCHANGED) =================
-    private void setupDragWithHaptic() {
-        View.OnTouchListener dragListener = (v, event) -> {
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    startX = event.getRawX();
-                    hapticDone = false;
-                    return true;
-                case MotionEvent.ACTION_MOVE:
-                    float diffX = event.getRawX() - startX;
-                    v.setTranslationX(diffX);
-                    v.setRotation(diffX / 35f);
-                    if (!hapticDone && Math.abs(diffX) > DRAG_THRESHOLD) {
-                        performHaptic();
-                        hapticDone = true;
-                    }
-                    return true;
-                case MotionEvent.ACTION_UP:
-                    resetPosition(v);
-                    return true;
-            }
-            return false;
-        };
-        layoutLogin.setOnTouchListener(dragListener);
-        layoutSignup.setOnTouchListener(dragListener);
-    }
 
-    private void performHaptic() {
-        if (vibrator == null) return;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-            vibrator.vibrate(VibrationEffect.createOneShot(20,
-                    VibrationEffect.DEFAULT_AMPLITUDE));
-        else vibrator.vibrate(20);
-    }
 
-    private void resetPosition(View view) {
-        view.animate().translationX(0).rotation(0)
-                .setDuration(200)
-                .setInterpolator(new DecelerateInterpolator())
-                .start();
-    }
+
+
+
 
     private void showLogin(boolean animate) {
         isLoginVisible = true;
@@ -556,6 +518,12 @@ public class AuthActivity extends AppCompatActivity {
                     if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
                         Toast.makeText(this,
                                 "Enter valid email",
+                                Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (!isInternetAvailable()) {
+                        Toast.makeText(this,
+                                "No internet connection",
                                 Toast.LENGTH_SHORT).show();
                         return;
                     }
@@ -748,58 +716,41 @@ public class AuthActivity extends AppCompatActivity {
                 .start();
     }
 
-    private void restoreAppLockFromServer() {
 
-        String uid = FirebaseAuth.getInstance().getUid();
-        if (uid == null) return;
 
-        DatabaseReference ref = FirebaseDatabase.getInstance()
-                .getReference("users")
-                .child(uid)
-                .child("appLock");
-
-        ref.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-
-                Boolean enabled = snapshot.child("enabled").getValue(Boolean.class);
-                String pinHash = snapshot.child("pinHash").getValue(String.class);
-
-                if (enabled != null && enabled && pinHash != null) {
-                    AppLockManager.restoreFromServer(AuthActivity.this, pinHash);
-                }
-            }
-
-            @Override public void onCancelled(DatabaseError error) {}
-        });
-    }
-    private void migrateOldUsers(DataSnapshot snapshot) {
-
-        for (DataSnapshot s : snapshot.getChildren()) {
-
-            if (!s.hasChild("createdAtMillis")) {
-
-                long now = System.currentTimeMillis();
-
-                String text = new java.text.SimpleDateFormat(
-                        "dd MMM yyyy, hh:mm a",
-                        java.util.Locale.getDefault()
-                ).format(new java.util.Date(now));
-
-                Map<String, Object> update = new HashMap<>();
-                update.put("createdAtMillis", now);
-                update.put("createdAtText", text);
-
-                s.getRef().updateChildren(update);
-            }
-        }
-    }
 
     private void saveUidLocally(String uid) {
         getSharedPreferences("USER_PREF", MODE_PRIVATE)
                 .edit()
                 .putString("UID", uid)
                 .apply();
+    }
+
+    private boolean isInternetAvailable() {
+
+        android.net.ConnectivityManager cm =
+                (android.net.ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+
+        if (cm == null) return false;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+            android.net.Network network = cm.getActiveNetwork();
+            if (network == null) return false;
+
+            android.net.NetworkCapabilities capabilities =
+                    cm.getNetworkCapabilities(network);
+
+            return capabilities != null &&
+                    (capabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI)
+                            || capabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_CELLULAR)
+                            || capabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_ETHERNET));
+
+        } else {
+
+            android.net.NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+            return activeNetwork != null && activeNetwork.isConnected();
+        }
     }
 
 }
