@@ -36,17 +36,7 @@ import java.util.regex.Pattern;
 
 public class AuthActivity extends AppCompatActivity {
 
-    @Override
-    protected void onResume() {
-        super.onResume();
 
-        if (FirebaseAuth.getInstance().getCurrentUser() == null) return;
-
-        if (AppLockManager.isEnabled(this) && !AppLockManager.isUnlocked(this)) {
-            startActivity(new Intent(this, AppLockActivity.class));
-            finish();
-        }
-    }
 
 
     @Override
@@ -167,22 +157,68 @@ public class AuthActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
+
+        auth = FirebaseAuth.getInstance();
+        usersRef = FirebaseDatabase.getInstance().getReference("users");
+
+        FirebaseUser user = auth.getCurrentUser();
+
+        // ✅ If user already logged in
+        if (user != null && user.isEmailVerified()) {
+
+            // 🔐 Check AppLock FIRST
+            if (AppLockManager.isEnabled(this) && !AppLockManager.isUnlocked(this)) {
+                startActivity(new Intent(this, AppLockActivity.class));
+                finish();
+                return;
+            }
+
+            // 🔓 Direct Dashboard (NO LOGIN SCREEN FLASH)
+            redirectToDashboard(user);
+            return;
+        }
+
+        // ⬇ Only if NOT logged in → load UI
         setContentView(R.layout.activity_auth);
 
-        auth = FirebaseAuth.getInstance();
-        usersRef = FirebaseDatabase.getInstance().getReference("users");
+        initUI();   // we will create this method below
+    }
+
+    private void redirectToDashboard(FirebaseUser user) {
+
+        usersRef.child(user.getUid()).child("role")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+
+                    @Override
+                    public void onDataChange(DataSnapshot snapshot) {
+
+                        String role = snapshot.getValue(String.class);
+
+                        saveUidLocally(user.getUid());
+
+                        startActivity(new Intent(AuthActivity.this,
+                                "admin".equals(role)
+                                        ? AdminDashboardActivity.class
+                                        : UserDashboardActivity.class));
+
+                        finish();
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError error) {
+                        Toast.makeText(AuthActivity.this,
+                                "Something went wrong",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+    private void initUI() {
+
+        setContentView(R.layout.activity_auth);
 
         vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-        auth = FirebaseAuth.getInstance();
-        usersRef = FirebaseDatabase.getInstance().getReference("users");
 
-// ✅ AUTO LOGIN CHECK
-        autoLoginIfPossible();
-
-
-        // UI init
         rootLayout = findViewById(R.id.rootLayout);
         layoutLogin = findViewById(R.id.layoutLogin);
         layoutSignup = findViewById(R.id.layoutSignup);
@@ -201,67 +237,23 @@ public class AuthActivity extends AppCompatActivity {
         etSignupPassword = findViewById(R.id.etSignupPassword);
         etSignupConfirmPassword = findViewById(R.id.etSignupConfirmPassword);
 
+
         btnLogin = findViewById(R.id.btnLogin);
         btnSignup = findViewById(R.id.btnSignup);
         toggleIndicator = findViewById(R.id.toggleIndicator);
         tvSwipeHint = findViewById(R.id.tvSwipeHint);
 
-
-// Set indicator width AFTER layout is drawn
-        toggleIndicator.post(() -> {
-            toggleWidth = ((View) toggleIndicator.getParent()).getWidth() / 2;
-
-            // Apply width
-            toggleIndicator.getLayoutParams().width = toggleWidth;
-            toggleIndicator.requestLayout();
-
-            // Default position (Login)
-            toggleIndicator.setTranslationX(0);
-        });
-
-
         setupLoader();
         setupDragWithHaptic();
         setupAuthCardSwipe();
 
-
         showLogin(false);
         animateDarkBlueBackground();
         startFloatingParallax();
-        tabLogin.setOnClickListener(v -> {
-            if (!isLoginVisible) {
-                performToggleHaptic();
-                animateAuthSwapSimple(false, () -> showLogin(false));
-            }
-        });
-
-        tabSignup.setOnClickListener(v -> {
-            if (isLoginVisible) {
-                performToggleHaptic();
-                animateAuthSwapSimple(true, () -> showSignup(false));
-            }
-        });
-
-
 
         btnSignup.setOnClickListener(v -> registerUser());
         btnLogin.setOnClickListener(v -> loginUser());
         tvForgotPassword.setOnClickListener(v -> showForgotPasswordDialog());
-        SharedPreferences prefs =
-                getSharedPreferences(PREF_ONBOARDING, MODE_PRIVATE);
-
-        boolean shown = prefs.getBoolean(KEY_SWIPE_HINT_SHOWN, false);
-
-        if (!shown) {
-            layoutLogin.postDelayed(() -> {
-                showSwipeOnboardingHint();
-
-                prefs.edit()
-                        .putBoolean(KEY_SWIPE_HINT_SHOWN, true)
-                        .apply();
-            }, 700);
-        }
-
     }
 
 
