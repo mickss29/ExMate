@@ -1,238 +1,319 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0E1621"
-    android:fillViewport="true">
+    android:background="#0D1117">
 
-    <LinearLayout
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingBottom="90dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- ═══ HEADER ═══ -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="#111827"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:paddingTop="20dp"
+                android:paddingBottom="24dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Budget Planner"
+                    android:textColor="#FFFFFF"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.01" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Track your monthly spending limits"
+                    android:textColor="#6B7280"
+                    android:textSize="13sp"
+                    android:layout_marginTop="2dp" />
+
+                <!-- Month Navigator -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="16dp"
+                    android:background="#1F2937"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp">
+
+                    <ImageView
+                        android:id="@+id/btnPrevMonth"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/ic_arrow_back"
+                        android:tint="#9CA3AF"
+                        android:padding="8dp"
+                        android:background="?attr/selectableItemBackgroundBorderless" />
+
+                    <TextView
+                        android:id="@+id/tvMonthTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="March 2026"
+                        android:textColor="#FFFFFF"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <ImageView
+                        android:id="@+id/btnNextMonth"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/ic_arrow_forward"
+                        android:tint="#9CA3AF"
+                        android:padding="8dp"
+                        android:background="?attr/selectableItemBackgroundBorderless" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- ═══ DONUT CHART CARD ═══ -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/layoutChart"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="24dp"
+                app:cardBackgroundColor="#111827"
+                app:cardElevation="8dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <!-- Pie Chart -->
+                    <com.github.mikephil.charting.charts.PieChart
+                        android:id="@+id/pieChart"
+                        android:layout_width="200dp"
+                        android:layout_height="200dp"
+                        android:layout_gravity="center_horizontal" />
+
+                    <!-- 3 Summary Chips -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="12dp"
+                        android:weightSum="3">
+
+                        <!-- Total Budget -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:background="#1F2937"
+                            android:padding="10dp"
+                            android:layout_marginEnd="4dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Budget"
+                                android:textColor="#6B7280"
+                                android:textSize="10sp" />
+
+                            <TextView
+                                android:id="@+id/tvTotalBudget"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="₹0"
+                                android:textColor="#60A5FA"
+                                android:textStyle="bold"
+                                android:textSize="14sp"
+                                android:layout_marginTop="2dp" />
+
+                        </LinearLayout>
+
+                        <!-- Spent -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:background="#1F2937"
+                            android:padding="10dp"
+                            android:layout_marginStart="4dp"
+                            android:layout_marginEnd="4dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Spent"
+                                android:textColor="#6B7280"
+                                android:textSize="10sp" />
+
+                            <TextView
+                                android:id="@+id/tvSpent"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="₹0"
+                                android:textColor="#F87171"
+                                android:textStyle="bold"
+                                android:textSize="14sp"
+                                android:layout_marginTop="2dp" />
+
+                        </LinearLayout>
+
+                        <!-- Available -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:background="#1F2937"
+                            android:padding="10dp"
+                            android:layout_marginStart="4dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Left"
+                                android:textColor="#6B7280"
+                                android:textSize="10sp" />
+
+                            <TextView
+                                android:id="@+id/tvAvailable"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="₹0"
+                                android:textColor="#4ADE80"
+                                android:textStyle="bold"
+                                android:textSize="14sp"
+                                android:layout_marginTop="2dp" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ═══ EMPTY STATE ═══ -->
+            <LinearLayout
+                android:id="@+id/layoutEmptyState"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="40dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="💰"
+                    android:textSize="48sp" />
+
+                <TextView
+                    android:id="@+id/tvEmptyBudget"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="No budget set for this month"
+                    android:textColor="#9CA3AF"
+                    android:textSize="15sp"
+                    android:layout_marginTop="12dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tap a category below to set limits"
+                    android:textColor="#4B5563"
+                    android:textSize="13sp"
+                    android:layout_marginTop="4dp" />
+
+            </LinearLayout>
+
+            <!-- ═══ CATEGORIES HEADER ═══ -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:paddingTop="20dp"
+                android:paddingBottom="8dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Categories"
+                    android:textColor="#FFFFFF"
+                    android:textSize="17sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvUnallocated"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="₹0 unallocated"
+                    android:textColor="#FBBF24"
+                    android:textSize="12sp" />
+
+            </LinearLayout>
+
+            <!-- ═══ CATEGORY LIST ═══ -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvCategories"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:clipToPadding="false" />
+
+            <!-- Bottom spacer -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="16dp" />
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- ═══ FAB — Add Category ═══ -->
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/fabAddCategory"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_gravity="bottom|end"
+        android:layout_margin="20dp"
+        android:text="Add Category"
+        android:textColor="#FFFFFF"
+        app:icon="@drawable/ic_add"
+        app:iconTint="#FFFFFF"
+        app:backgroundTint="#6366F1" />
 
-        <!-- ================= TITLE ================= -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Create Budget"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/white" />
-
-        <!-- ================= PERIOD TYPE ================= -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/btnMonthly"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:text="Monthly"
-                android:backgroundTint="#1E88E5"
-                android:textColor="@android:color/white" />
-
-            <Button
-                android:id="@+id/btnYearly"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:layout_marginStart="8dp"
-                android:text="Yearly"
-                android:backgroundTint="#1F2A38"
-                android:textColor="@android:color/white" />
-        </LinearLayout>
-
-        <!-- ================= MONTH / YEAR ================= -->
-        <TextView
-            android:id="@+id/tvSelectedMonth"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="16dp"
-            android:gravity="center_vertical"
-            android:padding="12dp"
-            android:text="January 2026"
-            android:textColor="@android:color/white"
-            android:background="#1F2A38" />
-
-        <!-- ================= TOTAL BUDGET ================= -->
-        <TextView
-            android:layout_marginTop="20dp"
-            android:text="Total Budget"
-            android:textColor="#B0BEC5"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <EditText
-            android:id="@+id/etTotalBudget"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:hint="Enter amount"
-            android:inputType="number"
-            android:textColor="@android:color/white"
-            android:textColorHint="#78909C"
-            android:background="#1F2A38"
-            android:padding="12dp" />
-
-        <!-- ================= CARRY FORWARD ================= -->
-        <CheckBox
-            android:id="@+id/cbCarryForward"
-            android:layout_marginTop="12dp"
-            android:text="Carry forward unused budget"
-            android:textColor="@android:color/white"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <!-- ================= SAVE BUDGET ================= -->
-        <Button
-            android:id="@+id/btnSaveBudget"
-            android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:layout_marginTop="24dp"
-            android:text="SAVE BUDGET"
-            android:backgroundTint="#1E88E5"
-            android:textColor="@android:color/white" />
-
-        <!-- ================= SUMMARY CARD ================= -->
-        <LinearLayout
-            android:id="@+id/cardBudgetSummary"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:orientation="vertical"
-            android:padding="16dp"
-            android:background="#162434"
-            android:visibility="gone">
-
-            <TextView
-                android:text="Budget Summary"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/white"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-            <TextView
-                android:id="@+id/tvSummaryMonth"
-                android:text="January 2026"
-                android:textColor="#B0BEC5"
-                android:layout_marginTop="4dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-            <TextView
-                android:id="@+id/tvSummaryAmount"
-                android:text="₹ 0"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/white"
-                android:layout_marginTop="12dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-            <TextView
-                android:id="@+id/tvSummaryCarry"
-                android:text="Carry forward: No"
-                android:textColor="#90CAF9"
-                android:layout_marginTop="6dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-
-        <!-- ================= CATEGORY WISE ================= -->
-        <TextView
-            android:layout_marginTop="24dp"
-            android:text="Category-wise Budget"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/white"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <!-- CATEGORY ROWS ONLY -->
-        <LinearLayout
-            android:id="@+id/layoutCategoryBudgets"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="8dp">
-
-            <!-- Food -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:padding="8dp">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Food"
-                    android:textColor="@android:color/white" />
-
-                <EditText
-                    android:layout_width="100dp"
-                    android:layout_height="40dp"
-                    android:hint="₹"
-                    android:inputType="number"
-                    android:textColor="@android:color/white"
-                    android:textColorHint="#78909C"
-                    android:background="#1F2A38"
-                    android:padding="8dp" />
-            </LinearLayout>
-
-            <!-- Transport -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:padding="8dp">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Transport"
-                    android:textColor="@android:color/white" />
-
-                <EditText
-                    android:layout_width="100dp"
-                    android:layout_height="40dp"
-                    android:hint="₹"
-                    android:inputType="number"
-                    android:textColor="@android:color/white"
-                    android:textColorHint="#78909C"
-                    android:background="#1F2A38"
-                    android:padding="8dp" />
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <!-- ================= REMAINING & SAVE CATEGORY ================= -->
-        <TextView
-            android:id="@+id/tvRemainingBudget"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Remaining: ₹ 0"
-            android:textColor="#90CAF9"
-            android:layout_marginTop="6dp"
-            android:textSize="14sp" />
-
-        <Button
-            android:id="@+id/btnSaveCategoryBudget"
-            android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:layout_marginTop="24dp"
-            android:text="SAVE CATEGORY BUDGET"
-            android:backgroundTint="#512DA8"
-            android:textColor="@android:color/white" />
-
-    </LinearLayout>
-</ScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
