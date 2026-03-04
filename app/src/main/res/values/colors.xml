@@ -120,6 +120,8 @@
         <!-- ================= DIVIDERS / BORDERS ================= -->
 
         <color name="divider_dark">#1F2937</color>
+    <color name="chip_unselected">#1F2937</color>
+    <color name="chip_selected">#22D3EE</color>
 
         <!-- ================= SUCCESS (Future Dashboard Use) ================= -->
 
