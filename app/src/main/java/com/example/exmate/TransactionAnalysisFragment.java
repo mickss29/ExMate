@@ -85,10 +85,11 @@ public class TransactionAnalysisFragment extends Fragment {
     private final OkHttpClient httpClient = new OkHttpClient();
 
     // !! Replace with your key from aistudio.google.com !!
-    private static final String GEMINI_API_KEY = "AIzaSyAXdnsrwIKEblkW0jjzFyBR6n0ZdoTnXO0";
+    private static final String GEMINI_API_KEY = "AIzaSyAXIWgGLV7v6jGKn_vwkklFGWNL2_wZaVg";
+
     private static final String GEMINI_URL =
             "https://generativelanguage.googleapis.com/v1beta/models/" +
-                    "gemini-2.0-flash-lite:generateContent?key=" + GEMINI_API_KEY;
+                    "gemini-2.0-flash:generateContent?key=" + GEMINI_API_KEY;
 
     @Nullable
     @Override
@@ -1027,82 +1028,12 @@ public class TransactionAnalysisFragment extends Fragment {
         aiLoadingLayout.setVisibility(View.VISIBLE);
         tvAiInsight.setText("");
 
-        try {
-            JSONObject requestBody = new JSONObject();
-            JSONArray  contents    = new JSONArray();
-            JSONObject content     = new JSONObject();
-            JSONArray  parts       = new JSONArray();
-            JSONObject part        = new JSONObject();
-
-            part.put("text", buildGeminiPrompt());
-            parts.put(part);
-            content.put("parts", parts);
-            contents.put(content);
-            requestBody.put("contents", contents);
-
-            JSONObject genConfig = new JSONObject();
-            genConfig.put("temperature", 0.7);
-            genConfig.put("maxOutputTokens", 400);
-            requestBody.put("generationConfig", genConfig);
-
-            RequestBody body = RequestBody.create(
-                    requestBody.toString(),
-                    MediaType.parse("application/json")
-            );
-
-            Request request = new Request.Builder()
-                    .url(GEMINI_URL)
-                    .post(body)
-                    .build();
-
-            httpClient.newCall(request).enqueue(new Callback() {
-
-                @Override
-                public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                    requireActivity().runOnUiThread(() -> {
-                        resetAiButton();
-                        tvAiInsight.setText("⚠️ Network error. Check your connection and try again.");
-                    });
-                }
-
-                @Override
-                public void onResponse(@NonNull Call call, @NonNull Response response)
-                        throws IOException {
-                    String responseBody = response.body() != null
-                            ? response.body().string() : "";
-                    requireActivity().runOnUiThread(() -> {
-                        resetAiButton();
-                        try {
-                            JSONObject json = new JSONObject(responseBody);
-                            String text = json
-                                    .getJSONArray("candidates")
-                                    .getJSONObject(0)
-                                    .getJSONObject("content")
-                                    .getJSONArray("parts")
-                                    .getJSONObject(0)
-                                    .getString("text");
-                            tvAiInsight.setText(text.trim());
-                        } catch (Exception e) {
-                            try {
-                                // Try to show the actual API error
-                                JSONObject errJson = new JSONObject(responseBody);
-                                String errMsg = errJson
-                                        .getJSONObject("error")
-                                        .getString("message");
-                                tvAiInsight.setText("⚠️ API Error: " + errMsg);
-                            } catch (Exception e2) {
-                                // Show raw response so you can debug
-                                tvAiInsight.setText("⚠️ Raw response:\n" + responseBody);
-                            }
-                        }
-                    });
-                }
-            });
-
-        } catch (Exception e) {
+        // Simulate brief thinking delay for UX
+        new android.os.Handler().postDelayed(() -> {
+            String insights = generateLocalInsights();
+            tvAiInsight.setText(insights);
             resetAiButton();
-            tvAiInsight.setText("⚠️ Error: " + e.getMessage());
-        }
+        }, 1200);
     }
 
     private void resetAiButton() {
@@ -1111,25 +1042,82 @@ public class TransactionAnalysisFragment extends Fragment {
         btnGetInsights.setText("✨ Refresh Insights");
     }
 
-    private String buildGeminiPrompt() {
+    private String generateLocalInsights() {
+
         StringBuilder sb = new StringBuilder();
-        sb.append("You are a personal finance advisor. Analyze this user's spending data and give ");
-        sb.append("3-4 short, specific, actionable insights. Be friendly and concise. Use emojis.\n\n");
-        sb.append("SPENDING DATA:\n");
-        sb.append("- Total Income this period: ₹").append(formatAmount(totalIncome)).append("\n");
-        sb.append("- Total Expenses this period: ₹").append(formatAmount(totalExpense)).append("\n");
-        sb.append("- Savings: ₹").append(formatAmount(totalIncome - totalExpense)).append("\n\n");
-        sb.append("SPENDING BY CATEGORY:\n");
-        for (Map.Entry<String, Float> entry : latestCategoryMap.entrySet()) {
-            float pct = totalExpense > 0 ? (entry.getValue() / totalExpense) * 100f : 0f;
-            sb.append("- ").append(entry.getKey())
-                    .append(": ₹").append(formatAmount(entry.getValue()))
-                    .append(" (").append((int) pct).append("% of total)\n");
+        float savings     = totalIncome - totalExpense;
+        float savingsRate = totalIncome > 0 ? (savings / totalIncome) * 100f : 0f;
+
+        // ── Insight 1: Savings rate ──
+        if (totalIncome == 0) {
+            sb.append("💡 No income recorded this period. Add your income to get full insights.\n\n");
+        } else if (savingsRate >= 30) {
+            sb.append("🌟 Great job! You're saving ").append((int) savingsRate)
+                    .append("% of your income (₹").append(formatAmount(savings))
+                    .append("). Keep it up!\n\n");
+        } else if (savingsRate >= 10) {
+            sb.append("✅ You're saving ").append((int) savingsRate)
+                    .append("% of your income. Aim for 30%+ by reducing top expenses.\n\n");
+        } else if (savingsRate > 0) {
+            sb.append("⚠️ You're only saving ").append((int) savingsRate)
+                    .append("% of income. Try to cut at least one expense category.\n\n");
+        } else {
+            sb.append("🔴 You're spending more than you earn by ₹")
+                    .append(formatAmount(Math.abs(savings)))
+                    .append(". Immediate budget review needed!\n\n");
         }
-        sb.append("\nKeep your response under 150 words. Focus on what stands out most.");
+
+        // ── Insight 2: Top spending category ──
+        if (!latestCategoryMap.isEmpty()) {
+            String topCategory   = "";
+            float  topAmount     = 0f;
+            for (Map.Entry<String, Float> e : latestCategoryMap.entrySet()) {
+                if (e.getValue() > topAmount) {
+                    topAmount   = e.getValue();
+                    topCategory = e.getKey();
+                }
+            }
+            float topPct = totalExpense > 0 ? (topAmount / totalExpense) * 100f : 0f;
+            if (topPct > 40) {
+                sb.append("📊 ").append(topCategory).append(" is eating ")
+                        .append((int) topPct).append("% of your budget (₹")
+                        .append(formatAmount(topAmount)).append("). Consider setting a limit.\n\n");
+            } else {
+                sb.append("📊 Your biggest spend is ").append(topCategory)
+                        .append(" at ₹").append(formatAmount(topAmount))
+                        .append(" (").append((int) topPct).append("% of total).\n\n");
+            }
+        }
+
+        // ── Insight 3: Number of categories ──
+        int catCount = latestCategoryMap.size();
+        if (catCount >= 5) {
+            sb.append("💳 You spent across ").append(catCount)
+                    .append(" categories. Consolidating to 3-4 helps you stay focused.\n\n");
+        } else if (catCount > 0) {
+            sb.append("👍 Spending in ").append(catCount)
+                    .append(" categories — well focused.\n\n");
+        }
+
+        // ── Insight 4: Daily average advice ──
+        Calendar cal  = Calendar.getInstance();
+        int today     = cal.get(Calendar.DAY_OF_MONTH);
+        float dailyAvg = today > 0 ? totalExpense / today : 0f;
+        float monthlyProjected = dailyAvg * cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+
+        if (totalIncome > 0 && monthlyProjected > totalIncome) {
+            sb.append("⚡ At ₹").append(formatAmount(dailyAvg)).append("/day, you'll exceed income by ₹")
+                    .append(formatAmount(monthlyProjected - totalIncome))
+                    .append(" this month. Reduce daily spend to ₹")
+                    .append(formatAmount(totalIncome / cal.getActualMaximum(Calendar.DAY_OF_MONTH)))
+                    .append(" to break even.");
+        } else {
+            sb.append("📅 Daily average: ₹").append(formatAmount(dailyAvg))
+                    .append(". Projected month-end spend: ₹").append(formatAmount(monthlyProjected)).append(".");
+        }
+
         return sb.toString();
     }
-
     // ═══════════════════════════════════════════════════════════
     //  UTIL
     // ═══════════════════════════════════════════════════════════
