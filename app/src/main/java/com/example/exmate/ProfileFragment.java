@@ -37,6 +37,7 @@ public class ProfileFragment extends Fragment {
     private View itemProfileInfo,
             itemAppLock,
             itemSubscription,
+            itemAnalysis,     // ⭐ NEW
             itemAbout,
             itemTerms,
             itemPrivacy;
@@ -80,6 +81,7 @@ public class ProfileFragment extends Fragment {
         itemProfileInfo  = view.findViewById(R.id.itemProfileInfo);
         itemAppLock      = view.findViewById(R.id.itemAppLock);
         itemSubscription = view.findViewById(R.id.itemSubscription);
+        itemAnalysis     = view.findViewById(R.id.itemAnalysis); // ⭐ NEW
         itemAbout        = view.findViewById(R.id.itemAbout);
         itemTerms        = view.findViewById(R.id.itemTerms);
         itemPrivacy      = view.findViewById(R.id.itemPrivacy);
@@ -92,6 +94,10 @@ public class ProfileFragment extends Fragment {
         bindRow(root, R.id.itemProfileInfo, R.drawable.ic_user, "Profile Info");
         bindRow(root, R.id.itemAppLock, R.drawable.ic_lock, "App Lock");
         bindRow(root, R.id.itemSubscription, R.drawable.ic_subscription, "Subscription");
+
+        // ⭐ NEW ANALYSIS ROW
+        bindRow(root, R.id.itemAnalysis, R.drawable.ic_stats, "Analyze Transactions");
+
         bindRow(root, R.id.itemAbout, R.drawable.ic_info, "About Us");
         bindRow(root, R.id.itemTerms, R.drawable.ic_terms, "Terms & Conditions");
         bindRow(root, R.id.itemPrivacy, R.drawable.ic_privacy, "Privacy Policy");
@@ -132,11 +138,9 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
 
-                // Name
                 String name = snapshot.child("name").getValue(String.class);
                 tvUserName.setText(TextUtils.isEmpty(name) ? "User" : name);
 
-                // Profile image (URI string)
                 String profileImage = snapshot.child("profileImage").getValue(String.class);
 
                 if (!TextUtils.isEmpty(profileImage) && isAdded()) {
@@ -154,19 +158,15 @@ public class ProfileFragment extends Fragment {
 
     private void setupClicks() {
 
-        // ✅ Avatar click (Gallery open)
         imgAvatar.setOnClickListener(v -> openGallery());
 
-        // Edit icon click (Gallery open)
         if (btnEditAvatar != null) {
             btnEditAvatar.setOnClickListener(v -> openGallery());
         }
 
-        // Profile edit
         itemProfileInfo.setOnClickListener(v ->
                 startActivity(new Intent(requireContext(), EditProfileActivity.class)));
 
-        // 🔒 App Lock (OLD LOGIC)
         itemAppLock.setOnClickListener(v -> {
             if (AppLockManager.isEnabled(requireContext())) {
                 Toast.makeText(getContext(),
@@ -177,27 +177,30 @@ public class ProfileFragment extends Fragment {
             }
         });
 
-        // Subscription
         itemSubscription.setOnClickListener(v ->
                 startActivity(new Intent(requireContext(), SubscriptionActivity.class)));
 
-        // About
+        // ⭐ OPEN TRANSACTION ANALYSIS SCREEN
+        itemAnalysis.setOnClickListener(v -> {
+
+            getParentFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragmentContainer, new TransactionAnalysisFragment())
+                    .addToBackStack(null)
+                    .commit();
+        });
+
         itemAbout.setOnClickListener(v ->
                 startActivity(new Intent(requireContext(), AboutActivity.class)));
 
-        // Terms
         itemTerms.setOnClickListener(v ->
                 startActivity(new Intent(requireContext(), TermsActivity.class)));
 
-        // Privacy
         itemPrivacy.setOnClickListener(v ->
                 startActivity(new Intent(requireContext(), PrivacyActivity.class)));
 
-        // Logout
         btnLogout.setOnClickListener(v -> logoutUser());
     }
-
-    // ===================== AVATAR PICK =====================
 
     private void openGallery() {
 
@@ -220,7 +223,6 @@ public class ProfileFragment extends Fragment {
             Uri uri = data.getData();
             if (uri == null) return;
 
-            // Show instantly
             if (isAdded()) {
                 Glide.with(requireContext())
                         .load(uri)
@@ -228,12 +230,9 @@ public class ProfileFragment extends Fragment {
                         .into(imgAvatar);
             }
 
-            // Save in Firebase Realtime DB
             userRef.child("profileImage").setValue(uri.toString());
         }
     }
-
-    // ===================== LOGOUT =====================
 
     private void logoutUser() {
         auth.signOut();

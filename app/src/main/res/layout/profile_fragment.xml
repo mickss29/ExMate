@@ -120,7 +120,10 @@
             android:id="@+id/itemSubscription"
             layout="@layout/row_profile_item"
             android:background="@drawable/bg_row_card" />
-
+        <include
+            android:id="@+id/itemAnalysis"
+            layout="@layout/row_profile_item"
+            android:background="@drawable/bg_row_card" />
         <include
             android:id="@+id/itemAbout"
             layout="@layout/row_profile_item"
