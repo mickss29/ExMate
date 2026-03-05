@@ -16,476 +16,590 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="20dp">
+            android:orientation="vertical">
 
-            <!-- ================= TOP PILL (BRAND + MIC) ================= -->
-            <com.google.android.material.card.MaterialCardView
+            <!-- ═══════════════════════════════════════════
+                 HERO HEADER  (dark full-width band)
+            ═══════════════════════════════════════════ -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardBackgroundColor="@color/primaryDark"
-                app:cardCornerRadius="28dp"
-                app:cardElevation="10dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="@color/strokeDark">
+                android:background="@color/primaryDark"
+                android:orientation="vertical"
+                android:paddingStart="22dp"
+                android:paddingEnd="22dp"
+                android:paddingTop="22dp"
+                android:paddingBottom="52dp">
 
+                <!-- ── Brand pill row ── -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingHorizontal="18dp"
-                    android:paddingVertical="14dp">
+                    android:gravity="center_vertical">
 
+                    <!-- Left: app name + sub -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
 
-                        <TextView
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="38dp"
+                            android:layout_height="38dp"
+                            app:cardBackgroundColor="@color/accentBlue"
+                            app:cardCornerRadius="12dp"
+                            app:cardElevation="0dp">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:padding="9dp"
+                                android:src="@drawable/ic_wallet"
+                                app:tint="@android:color/white"/>
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="ExMate"
-                            android:textColor="@color/textLight"
-                            android:textSize="16sp"
-                            android:textStyle="bold"/>
+                            android:layout_marginStart="10dp"
+                            android:orientation="vertical">
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="3dp"
-                            android:text="Tap mic to add income or expense"
-                            android:textColor="@color/textLight2"
-                            android:textSize="11sp"/>
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="ExMate"
+                                android:textColor="@color/textLight"
+                                android:textSize="17sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.03"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Smart expense tracker"
+                                android:textColor="@color/textLight2"
+                                android:textSize="10sp"/>
+                        </LinearLayout>
                     </LinearLayout>
 
+                    <!-- Right: Mic FAB -->
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/fabVoiceDashboard"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
+                        android:layout_width="46dp"
+                        android:layout_height="46dp"
                         android:clickable="true"
                         android:focusable="true"
                         app:cardBackgroundColor="@color/accentBlue"
-                        app:cardCornerRadius="24dp"
-                        app:cardElevation="12dp">
+                        app:cardCornerRadius="23dp"
+                        app:cardElevation="10dp">
 
                         <FrameLayout
                             android:layout_width="match_parent"
                             android:layout_height="match_parent">
 
                             <ImageView
-                                android:layout_width="22dp"
-                                android:layout_height="22dp"
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
                                 android:layout_gravity="center"
                                 android:src="@android:drawable/ic_btn_speak_now"
-                                android:tint="@android:color/white"/>
+                                app:tint="@android:color/white"/>
                         </FrameLayout>
                     </com.google.android.material.card.MaterialCardView>
-
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- ================= USER ROW ================= -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="52dp"
-                    android:layout_height="52dp"
-                    app:cardBackgroundColor="@color/bg_card"
-                    app:cardCornerRadius="26dp"
-                    app:cardElevation="8dp"
-                    app:strokeWidth="1dp"
-                    app:strokeColor="#DCE3EE">
-
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:padding="12dp"
-                        android:src="@drawable/ic_user"
-                        android:tint="@color/textPrimary"/>
-                </com.google.android.material.card.MaterialCardView>
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="14dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Welcome back,"
-                        android:textColor="@color/textMuted"
-                        android:textSize="12sp"/>
-
-                    <TextView
-                        android:id="@+id/tvUserName"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text=""
-                        android:textColor="@color/textPrimary"
-                        android:textSize="22sp"
-                        android:textStyle="bold"/>
                 </LinearLayout>
 
-            </LinearLayout>
-
-            <!-- ================= HERO BALANCE CARD ================= -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
-                app:cardBackgroundColor="@color/primaryDark"
-                app:cardCornerRadius="28dp"
-                app:cardElevation="14dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="@color/strokeDark">
-
+                <!-- ── User greeting + balance ── -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="22dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-
-                        <ImageView
-                            android:layout_width="18dp"
-                            android:layout_height="18dp"
-                            android:src="@drawable/ic_calender"
-                            android:tint="@color/textLight"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
-                            android:text="This Month"
-                            android:textColor="@color/textLight"
-                            android:textSize="14sp"
-                            android:textStyle="bold"/>
-
-                        <View
-                            android:layout_width="0dp"
-                            android:layout_height="0dp"
-                            android:layout_weight="1"/>
-
-                        <ImageView
-                            android:layout_width="18dp"
-                            android:layout_height="18dp"
-                            android:src="@drawable/ic_arrow_right"
-                            android:tint="@color/textLight2"/>
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:layout_marginBottom="14dp"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-
-                        <com.google.android.material.card.MaterialCardView
-                            android:layout_width="46dp"
-                            android:layout_height="46dp"
-                            app:cardCornerRadius="23dp"
-                            app:cardBackgroundColor="@color/primaryDark2"
-                            app:cardElevation="0dp"
-                            app:strokeWidth="1dp"
-                            app:strokeColor="@color/strokeDark">
-
-                            <ImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:padding="12dp"
-                                android:src="@drawable/ic_wallet"
-                                android:tint="@color/textLight"/>
-                        </com.google.android.material.card.MaterialCardView>
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="14dp"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Current Balance"
-                                android:textColor="@color/textLight2"
-                                android:textSize="12sp"/>
-
-                            <TextView
-                                android:id="@+id/tvCurrentBalance"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="₹0"
-                                android:textColor="@color/textLight"
-                                android:textSize="32sp"
-                                android:textStyle="bold"/>
-                        </LinearLayout>
-
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-
-                        <com.google.android.material.card.MaterialCardView
-                            android:id="@+id/cardAddIncome"
-                            android:layout_width="0dp"
-                            android:layout_height="60dp"
-                            android:layout_weight="1"
-                            android:layout_marginEnd="8dp"
-                            android:clickable="true"
-                            android:focusable="true"
-                            app:cardBackgroundColor="@color/accentBlue"
-                            app:cardCornerRadius="28dp"
-                            app:cardElevation="10dp">
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:orientation="horizontal"
-                                android:gravity="center">
-
-                                <ImageView
-                                    android:layout_width="18dp"
-                                    android:layout_height="18dp"
-                                    android:layout_marginEnd="8dp"
-                                    android:src="@drawable/ic_arrow_up"
-                                    android:tint="@android:color/white"/>
-
-                                <TextView
-                                    android:id="@+id/tvIncome"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Income ₹0"
-                                    android:textColor="@android:color/white"
-                                    android:textSize="15sp"
-                                    android:textStyle="bold"/>
-                            </LinearLayout>
-                        </com.google.android.material.card.MaterialCardView>
-
-                        <com.google.android.material.card.MaterialCardView
-                            android:id="@+id/cardAddExpense"
-                            android:layout_width="0dp"
-                            android:layout_height="60dp"
-                            android:layout_weight="1"
-                            android:layout_marginStart="8dp"
-                            android:clickable="true"
-                            android:focusable="true"
-                            app:cardBackgroundColor="@color/redExpense"
-                            app:cardCornerRadius="28dp"
-                            app:cardElevation="10dp">
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:orientation="horizontal"
-                                android:gravity="center">
-
-                                <ImageView
-                                    android:layout_width="18dp"
-                                    android:layout_height="18dp"
-                                    android:layout_marginEnd="8dp"
-                                    android:src="@drawable/ic_arrow_down"
-                                    android:tint="@android:color/white"/>
-
-                                <TextView
-                                    android:id="@+id/tvExpense"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Expense ₹0"
-                                    android:textColor="@android:color/white"
-                                    android:textSize="15sp"
-                                    android:textStyle="bold"/>
-                            </LinearLayout>
-                        </com.google.android.material.card.MaterialCardView>
-
-                    </LinearLayout>
-
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- ================= MINI BUDGET SUMMARY ================= -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardBudgetSummary"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
-                android:clickable="true"
-                android:focusable="true"
-                app:cardBackgroundColor="@color/primaryDark"
-                app:cardCornerRadius="28dp"
-                app:cardElevation="12dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="@color/strokeDark">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_marginTop="28dp"
                     android:orientation="horizontal"
-                    android:padding="18dp"
                     android:gravity="center_vertical">
 
-                    <FrameLayout
-                        android:layout_width="66dp"
-                        android:layout_height="66dp">
+                    <!-- Avatar circle -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        app:cardBackgroundColor="@color/primaryDark2"
+                        app:cardCornerRadius="22dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="@color/strokeDark">
 
-                        <View
+                        <ImageView
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:background="@drawable/bg_donut_placeholder"/>
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:gravity="center"
-                            android:text="80%"
-                            android:textStyle="bold"
-                            android:textColor="@color/greenIncome"
-                            android:textSize="14sp"/>
-                    </FrameLayout>
+                            android:padding="11dp"
+                            android:src="@drawable/ic_user"
+                            app:tint="@color/textLight2"/>
+                    </com.google.android.material.card.MaterialCardView>
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:layout_marginStart="14dp"
+                        android:layout_marginStart="12dp"
                         android:orientation="vertical">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="January Budget"
-                            android:textStyle="bold"
-                            android:textColor="@color/textLight"
-                            android:textSize="15sp"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="₹40,000 left of ₹50,000"
+                            android:text="Welcome back,"
                             android:textColor="@color/textLight2"
                             android:textSize="12sp"/>
 
                         <TextView
+                            android:id="@+id/tvUserName"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
-                            android:text="View budget details →"
-                            android:textColor="@color/accentBlue"
-                            android:textStyle="bold"
+                            android:text=""
+                            android:textColor="@color/textLight"
+                            android:textSize="20sp"
+                            android:textStyle="bold"/>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- ── Balance ── -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="22dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="CURRENT BALANCE"
+                        android:textColor="@color/textLight2"
+                        android:textSize="10sp"
+                        android:letterSpacing="0.12"/>
+
+                    <TextView
+                        android:id="@+id/tvCurrentBalance"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="₹ 0"
+                        android:textColor="@color/textLight"
+                        android:textSize="38sp"
+                        android:textStyle="bold"/>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:src="@drawable/ic_calender"
+                            app:tint="@color/textLight2"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="5dp"
+                            android:text="This month's overview"
+                            android:textColor="@color/textLight2"
                             android:textSize="12sp"/>
                     </LinearLayout>
-
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
 
-            <!-- ================= DISCOVER SECTION (ABOVE RECENT) ================= -->
-            <!-- ================= DISCOVER SECTION ================= -->
-
-            <TextView
-                android:id="@+id/tvDiscoverTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Discover"
-                android:textColor="@color/textPrimary"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:layout_marginTop="24dp"/>
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvDiscover"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
-                android:overScrollMode="never"
-                android:nestedScrollingEnabled="false"
-                android:clipToPadding="false"/>
-            <!-- ================= RECENT HEADER ================= -->
+            <!-- ═══════════════════════════════════════════
+                 FLOATING INCOME / EXPENSE CARDS
+                 (negative margin pulls them over the header)
+            ═══════════════════════════════════════════ -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="22dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:layout_marginTop="-30dp"
+                android:paddingStart="22dp"
+                android:paddingEnd="22dp"
+                android:orientation="horizontal">
 
+                <!-- Income -->
                 <com.google.android.material.card.MaterialCardView
-                    android:layout_width="34dp"
-                    android:layout_height="34dp"
+                    android:id="@+id/cardAddIncome"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
                     app:cardBackgroundColor="@color/bg_card"
-                    app:cardCornerRadius="17dp"
-                    app:cardElevation="6dp">
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="16dp">
 
-                    <ImageView
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:padding="8dp"
-                        android:src="@drawable/ic_transaction"
-                        android:tint="@color/textPrimary"/>
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
 
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="34dp"
+                            android:layout_height="34dp"
+                            app:cardBackgroundColor="#1A22C55E"
+                            app:cardCornerRadius="10dp"
+                            app:cardElevation="0dp">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:padding="8dp"
+                                android:src="@drawable/ic_arrow_up"
+                                app:tint="@color/greenIncome"/>
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:text="Income"
+                            android:textColor="@color/textMuted"
+                            android:textSize="11sp"
+                            android:letterSpacing="0.04"/>
+
+                        <TextView
+                            android:id="@+id/tvIncome"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="3dp"
+                            android:text="₹0"
+                            android:textColor="@color/greenIncome"
+                            android:textSize="17sp"
+                            android:textStyle="bold"
+                            android:maxLines="1"
+                            android:ellipsize="end"/>
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:text="Recent Transactions"
-                    android:textColor="@color/textPrimary"
-                    android:textSize="18sp"
-                    android:textStyle="bold"/>
-
-                <View
+                <!-- Expense -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardAddExpense"
                     android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"/>
-
-                <TextView
-                    android:id="@+id/btnViewAll"
-                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="View all"
-                    android:textColor="@color/accentBlue"
-                    android:textStyle="bold"/>
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardBackgroundColor="@color/bg_card"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="34dp"
+                            android:layout_height="34dp"
+                            app:cardBackgroundColor="#1AF87171"
+                            app:cardCornerRadius="10dp"
+                            app:cardElevation="0dp">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:padding="8dp"
+                                android:src="@drawable/ic_arrow_down"
+                                app:tint="@color/redExpense"/>
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:text="Expenses"
+                            android:textColor="@color/textMuted"
+                            android:textSize="11sp"
+                            android:letterSpacing="0.04"/>
+
+                        <TextView
+                            android:id="@+id/tvExpense"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="3dp"
+                            android:text="₹0"
+                            android:textColor="@color/redExpense"
+                            android:textSize="17sp"
+                            android:textStyle="bold"
+                            android:maxLines="1"
+                            android:ellipsize="end"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
-            <!-- ================= RECENT LIST CARD ================= -->
-            <com.google.android.material.card.MaterialCardView
+            <!-- ═══════════════════════════════════════════
+                 BODY CONTENT
+            ═══════════════════════════════════════════ -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
-                app:cardBackgroundColor="@color/primaryDark"
-                app:cardCornerRadius="28dp"
-                app:cardElevation="12dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="@color/strokeDark">
+                android:orientation="vertical"
+                android:paddingStart="22dp"
+                android:paddingEnd="22dp"
+                android:paddingTop="20dp">
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvRecent"
+                <!-- ── Budget Summary Card ── -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardBudgetSummary"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:nestedScrollingEnabled="false"
-                    android:overScrollMode="never"
-                    android:padding="12dp"/>
-            </com.google.android.material.card.MaterialCardView>
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardBackgroundColor="@color/primaryDark"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="10dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="@color/strokeDark">
 
-            <!-- bottom spacing -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="26dp"/>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="18dp">
+
+                        <!-- Card header row -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:layout_width="30dp"
+                                android:layout_height="30dp"
+                                app:cardBackgroundColor="@color/accentBlue"
+                                app:cardCornerRadius="9dp"
+                                app:cardElevation="0dp">
+
+                                <ImageView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:padding="7dp"
+                                    android:src="@drawable/ic_wallet"
+                                    app:tint="@android:color/white"/>
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="10dp"
+                                android:text="Budget Overview"
+                                android:textColor="@color/textLight"
+                                android:textSize="15sp"
+                                android:textStyle="bold"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Details →"
+                                android:textColor="@color/accentBlue"
+                                android:textSize="12sp"
+                                android:textStyle="bold"/>
+                        </LinearLayout>
+
+                        <!-- Divider -->
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginTop="14dp"
+                            android:layout_marginBottom="14dp"
+                            android:background="@color/strokeDark"/>
+
+                        <!-- Budget body -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <FrameLayout
+                                android:layout_width="56dp"
+                                android:layout_height="56dp">
+
+                                <View
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:background="@drawable/bg_donut_placeholder"/>
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:gravity="center"
+                                    android:text="80%"
+                                    android:textStyle="bold"
+                                    android:textColor="@color/greenIncome"
+                                    android:textSize="12sp"/>
+                            </FrameLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="14dp"
+                                android:orientation="vertical">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical">
+
+                                    <TextView
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:text="Monthly Budget"
+                                        android:textColor="@color/textLight2"
+                                        android:textSize="12sp"/>
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="₹40,000 / ₹50,000"
+                                        android:textColor="@color/textLight"
+                                        android:textStyle="bold"
+                                        android:textSize="13sp"/>
+                                </LinearLayout>
+
+                                <ProgressBar
+                                    android:layout_width="match_parent"
+                                    android:layout_height="6dp"
+                                    android:layout_marginTop="10dp"
+                                    android:max="100"
+                                    android:progress="80"
+                                    style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                                    android:progressTint="@color/greenIncome"
+                                    android:progressBackgroundTint="@color/strokeDark"/>
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="6dp"
+                                    android:text="₹10,000 spent this month"
+                                    android:textColor="@color/textLight2"
+                                    android:textSize="11sp"/>
+                            </LinearLayout>
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- ── Discover Section ── -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="28dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/tvDiscoverTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Explore"
+                        android:textColor="@color/textPrimary"
+                        android:textSize="18sp"
+                        android:textStyle="bold"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="See all →"
+                        android:textColor="@color/accentBlue"
+                        android:textSize="12sp"
+                        android:textStyle="bold"/>
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvDiscover"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:overScrollMode="never"
+                    android:nestedScrollingEnabled="false"
+                    android:clipToPadding="false"/>
+
+                <!-- ── Recent Transactions Header ── -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="28dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        app:cardBackgroundColor="@color/primaryDark"
+                        app:cardCornerRadius="10dp"
+                        app:cardElevation="4dp">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="7dp"
+                            android:src="@drawable/ic_transaction"
+                            app:tint="@color/textLight"/>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="10dp"
+                        android:text="Recent Transactions"
+                        android:textColor="@color/textPrimary"
+                        android:textSize="18sp"
+                        android:textStyle="bold"/>
+
+                    <TextView
+                        android:id="@+id/btnViewAll"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="View all →"
+                        android:textColor="@color/accentBlue"
+                        android:textStyle="bold"
+                        android:textSize="13sp"/>
+                </LinearLayout>
+
+                <!-- ── Recent List Card ── -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    app:cardBackgroundColor="@color/bg_card"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="6dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="#DCE3EE">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvRecent"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:nestedScrollingEnabled="false"
+                        android:overScrollMode="never"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="8dp"/>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Bottom nav spacing -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp"/>
+
+            </LinearLayout>
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

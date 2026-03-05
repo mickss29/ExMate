@@ -22,7 +22,6 @@ import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 import android.widget.Toast;
 
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
@@ -51,7 +50,9 @@ import java.util.Map;
 
 public class HomeFragment extends Fragment {
 
-    // ================= NAVIGATION =================
+    // =====================================================================
+    // NAVIGATION
+    // =====================================================================
     public interface HomeNavigationListener {
         void openReports();
         void openBudget();
@@ -59,118 +60,118 @@ public class HomeFragment extends Fragment {
 
     private HomeNavigationListener navigationListener;
 
-    // ================= UI =================
+    // =====================================================================
+    // UI VIEWS
+    // =====================================================================
     private RecyclerView rvRecent;
     private TextView tvIncome, tvExpense;
     private TextView tvCurrentBalance;
     private TextView tvUserName, btnViewAll;
     private MaterialCardView cardAddIncome, cardAddExpense, cardBudgetSummary;
-
-    // 🎙️ Dashboard Mic
     private View fabVoiceDashboard;
-
-    // ================= PERMISSION =================
-    private static final int REQ_AUDIO_PERMISSION = 9001;
-
-    private View pulse3;
-    private View micCard;
-    private TextView tvDots;
-    private Animation micBounceAnim, dotsAnim;
-    private float lastRms = 0f;
-
     private RecyclerView rvDiscover;
 
+    // =====================================================================
+    // VOICE DIALOG VIEWS
+    // =====================================================================
+    private Dialog voiceDialog;
+    private View pulse1, pulse2, pulse3, micCard;
+    private TextView tvDots;
 
+    // =====================================================================
+    // VOICE DIALOG ANIMATIONS
+    // =====================================================================
+    private Animation pulseAnim1, pulseAnim2, pulseAnim3; // BUG FIX: pulseAnim3 is now a proper field
+    private Animation micBounceAnim, dotsAnim;
 
+    // =====================================================================
+    // PERMISSION
+    // =====================================================================
+    private static final int REQ_AUDIO_PERMISSION = 9001;
 
-
-    // ================= FIREBASE =================
+    // =====================================================================
+    // FIREBASE
+    // =====================================================================
     private DatabaseReference userRef;
     private DatabaseReference incomeRef;
     private DatabaseReference expenseRef;
     private String userId;
 
-    // ================= DATA =================
+    // =====================================================================
+    // DATA
+    // =====================================================================
     private final List<TransactionModel> transactionList = new ArrayList<>();
     private RecentTransactionAdapter adapter;
 
-    private double totalIncome = 0;
+    private double totalIncome  = 0;
     private double totalExpense = 0;
-    private double lastBalance = 0;
+    private double lastBalance  = 0;
 
     private final DecimalFormat moneyFormat = new DecimalFormat("#,##0.##");
 
-    // ================= VOICE (CUSTOM) =================
+    // =====================================================================
+    // VOICE (SPEECH RECOGNIZER)
+    // =====================================================================
     private SpeechRecognizer speechRecognizer;
     private Intent speechIntent;
 
-    // ================= VOICE DIALOG UI =================
-    private Dialog voiceDialog;
-    private View pulse1, pulse2;
-    private Animation pulseAnim1, pulseAnim2;
-
-    // ================= SINGLE REALTIME LISTENER =================
+    // =====================================================================
+    // SINGLE REALTIME LISTENER
+    // =====================================================================
     private final ValueEventListener dashboardListener = new ValueEventListener() {
         @Override
         public void onDataChange(@NonNull DataSnapshot snapshot) {
 
             transactionList.clear();
-            totalIncome = 0;
+            totalIncome  = 0;
             totalExpense = 0;
 
-            DataSnapshot incomeSnap = snapshot.child("incomes");
-            DataSnapshot expenseSnap = snapshot.child("expenses");
-
-            // INCOME
-            for (DataSnapshot snap : incomeSnap.getChildren()) {
+            // ── Income ──
+            for (DataSnapshot snap : snapshot.child("incomes").getChildren()) {
                 Double amount = snap.child("amount").getValue(Double.class);
-                Long time = snap.child("time").getValue(Long.class);
+                Long   time   = snap.child("time").getValue(Long.class);
                 String source = snap.child("source").getValue(String.class);
 
                 if (amount == null || time == null) continue;
 
                 totalIncome += amount;
-
                 transactionList.add(new TransactionModel(
-                        "Income",
-                        amount,
-                        time,
+                        "Income", amount, time,
                         source != null ? source : "Income"
                 ));
             }
 
-            // EXPENSE
-            for (DataSnapshot snap : expenseSnap.getChildren()) {
-                Double amount = snap.child("amount").getValue(Double.class);
-                Long time = snap.child("time").getValue(Long.class);
+            // ── Expense ──
+            for (DataSnapshot snap : snapshot.child("expenses").getChildren()) {
+                Double amount   = snap.child("amount").getValue(Double.class);
+                Long   time     = snap.child("time").getValue(Long.class);
                 String category = snap.child("category").getValue(String.class);
 
                 if (amount == null || time == null) continue;
 
                 totalExpense += amount;
-
                 transactionList.add(new TransactionModel(
-                        "Expense",
-                        amount,
-                        time,
+                        "Expense", amount, time,
                         category != null ? category : "Expense",
                         true
                 ));
             }
 
-            tvIncome.setText("Income  ₹" + moneyFormat.format(totalIncome));
-            tvExpense.setText("Expenses  ₹" + moneyFormat.format(totalExpense));
+            // BUG FIX: tvIncome / tvExpense now show clean amounts to match new UI labels
+            if (tvIncome  != null) tvIncome.setText("₹" + moneyFormat.format(totalIncome));
+            if (tvExpense != null) tvExpense.setText("₹" + moneyFormat.format(totalExpense));
 
             updateBalances();
             finalizeList();
         }
 
         @Override
-        public void onCancelled(@NonNull DatabaseError error) {}
+        public void onCancelled(@NonNull DatabaseError error) { /* no-op */ }
     };
 
-
-    // =========================================================================================
+    // =====================================================================
+    // FRAGMENT LIFECYCLE
+    // =====================================================================
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -195,8 +196,6 @@ public class HomeFragment extends Fragment {
         loadUserProfile();
         playEntryAnimation();
         setupDiscoverSection();
-
-        // 🎙️ Setup dashboard mic
         setupDashboardVoice();
 
         return view;
@@ -205,71 +204,69 @@ public class HomeFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-
         if (userRef != null) {
             userRef.addValueEventListener(dashboardListener);
         }
-
-
     }
-
 
     @Override
     public void onStop() {
         super.onStop();
-
         if (userRef != null) {
             userRef.removeEventListener(dashboardListener);
         }
-
-
     }
-
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
 
+        // Stop voice first (stops listening + hides dialog)
         stopDashboardVoice();
 
+        // BUG FIX: destroy recognizer and null both references so they
+        //          are fully recreated next time the fragment resumes
         if (speechRecognizer != null) {
             speechRecognizer.destroy();
             speechRecognizer = null;
         }
+        speechIntent = null;
+
+        // BUG FIX: null-out voiceDialog so it is rebuilt fresh on next show;
+        //          prevents window leak when the fragment is detached
+        voiceDialog = null;
     }
 
-    // =========================================================================================
+    // =====================================================================
+    // INIT
+    // =====================================================================
 
     private void initViews(View view) {
-        rvRecent = view.findViewById(R.id.rvRecent);
-        tvIncome = view.findViewById(R.id.tvIncome);
-        tvExpense = view.findViewById(R.id.tvExpense);
+        rvRecent         = view.findViewById(R.id.rvRecent);
+        tvIncome         = view.findViewById(R.id.tvIncome);
+        tvExpense        = view.findViewById(R.id.tvExpense);
         tvCurrentBalance = view.findViewById(R.id.tvCurrentBalance);
-        tvUserName = view.findViewById(R.id.tvUserName);
-        btnViewAll = view.findViewById(R.id.btnViewAll);
-        cardAddIncome = view.findViewById(R.id.cardAddIncome);
-        cardAddExpense = view.findViewById(R.id.cardAddExpense);
-        cardBudgetSummary = view.findViewById(R.id.cardBudgetSummary);
-        rvDiscover = view.findViewById(R.id.rvDiscover);
-
-        fabVoiceDashboard = view.findViewById(R.id.fabVoiceDashboard);
+        tvUserName       = view.findViewById(R.id.tvUserName);
+        btnViewAll       = view.findViewById(R.id.btnViewAll);
+        cardAddIncome    = view.findViewById(R.id.cardAddIncome);
+        cardAddExpense   = view.findViewById(R.id.cardAddExpense);
+        cardBudgetSummary= view.findViewById(R.id.cardBudgetSummary);
+        rvDiscover       = view.findViewById(R.id.rvDiscover);
+        fabVoiceDashboard= view.findViewById(R.id.fabVoiceDashboard);
     }
 
     private void setupFirebase() {
         userId = FirebaseAuth.getInstance().getUid();
         if (userId == null) return;
 
-        userRef = FirebaseDatabase.getInstance()
-                .getReference("users")
-                .child(userId);
-
-        incomeRef = userRef.child("incomes");
+        userRef    = FirebaseDatabase.getInstance().getReference("users").child(userId);
+        incomeRef  = userRef.child("incomes");
         expenseRef = userRef.child("expenses");
-
-        // 🔥 ADD THIS
     }
 
-    // =========================================================================================
+    // =====================================================================
+    // USER PROFILE
+    // =====================================================================
 
     private void loadUserProfile() {
         if (userRef == null) return;
@@ -281,21 +278,19 @@ public class HomeFragment extends Fragment {
                 if (TextUtils.isEmpty(name)) {
                     name = snapshot.child("username").getValue(String.class);
                 }
-
                 if (!TextUtils.isEmpty(name)) {
                     tvUserName.setText(capitalize(name));
                     fadeIn(tvUserName);
                 } else {
-                    tvUserName.setText("Welcome 👋");
+                    tvUserName.setText("Friend 👋");
                 }
             }
-
-            @Override public void onCancelled(@NonNull DatabaseError error) {}
+            @Override public void onCancelled(@NonNull DatabaseError error) { }
         });
     }
 
     private String capitalize(String text) {
-        if (text.length() == 0) return text;
+        if (TextUtils.isEmpty(text)) return text;
         return text.substring(0, 1).toUpperCase() + text.substring(1);
     }
 
@@ -305,7 +300,9 @@ public class HomeFragment extends Fragment {
         view.startAnimation(anim);
     }
 
-    // =========================================================================================
+    // =====================================================================
+    // BALANCE
+    // =====================================================================
 
     private void updateBalances() {
         double newBalance = totalIncome - totalExpense;
@@ -315,9 +312,7 @@ public class HomeFragment extends Fragment {
                 : Color.parseColor("#F87171");
 
         tvCurrentBalance.setTextColor(color);
-
         animateBalance(tvCurrentBalance, lastBalance, newBalance);
-
         lastBalance = newBalance;
     }
 
@@ -331,19 +326,20 @@ public class HomeFragment extends Fragment {
     }
 
     private void finalizeList() {
-
-        // newest first
+        // Newest first
         Collections.sort(transactionList, (a, b) -> Long.compare(b.getTime(), a.getTime()));
 
-        // show only last 6
-        int limit = 6;
-        if (transactionList.size() > limit) {
-            transactionList.subList(limit, transactionList.size()).clear();
+        // Show only last 6
+        if (transactionList.size() > 6) {
+            transactionList.subList(6, transactionList.size()).clear();
         }
 
         adapter.notifyDataSetChanged();
+    }
 
-}
+    // =====================================================================
+    // RECENT LIST
+    // =====================================================================
 
     private void setupRecentList() {
         adapter = new RecentTransactionAdapter(transactionList);
@@ -351,35 +347,34 @@ public class HomeFragment extends Fragment {
         rvRecent.setAdapter(adapter);
     }
 
+    // =====================================================================
+    // DISCOVER SECTION
+    // =====================================================================
+
     private void setupDiscoverSection() {
-
         List<DiscoverCategoryModel> categoryList = new ArrayList<>();
-
-        categoryList.add(new DiscoverCategoryModel("Shopping", R.drawable.ic_offer));
-        categoryList.add(new DiscoverCategoryModel("Food", R.drawable.ic_food));
-        categoryList.add(new DiscoverCategoryModel("Travel", R.drawable.ic_travel));
-        categoryList.add(new DiscoverCategoryModel("Movies", R.drawable.ic_movie));
+        categoryList.add(new DiscoverCategoryModel("Shopping",    R.drawable.ic_offer));
+        categoryList.add(new DiscoverCategoryModel("Food",        R.drawable.ic_food));
+        categoryList.add(new DiscoverCategoryModel("Travel",      R.drawable.ic_travel));
+        categoryList.add(new DiscoverCategoryModel("Movies",      R.drawable.ic_movie));
         categoryList.add(new DiscoverCategoryModel("Electronics", R.drawable.ic_stocks));
-        categoryList.add(new DiscoverCategoryModel("Health", R.drawable.ic_gym));
+        categoryList.add(new DiscoverCategoryModel("Health",      R.drawable.ic_gym));
 
-        DiscoverCategoryAdapter adapter =
+        DiscoverCategoryAdapter discoverAdapter =
                 new DiscoverCategoryAdapter(requireContext(), categoryList, category -> {
-
                     Intent intent = new Intent(requireContext(), DiscoverActivity.class);
                     intent.putExtra("selectedCategory", category);
                     startActivity(intent);
                 });
 
         rvDiscover.setLayoutManager(
-                new LinearLayoutManager(getContext(),
-                        LinearLayoutManager.HORIZONTAL,
-                        false));
-
-        rvDiscover.setAdapter(adapter);
+                new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+        rvDiscover.setAdapter(discoverAdapter);
     }
 
-
-    // =========================================================================================
+    // =====================================================================
+    // CARD CLICKS
+    // =====================================================================
 
     private void setupCardClicks() {
 
@@ -396,40 +391,34 @@ public class HomeFragment extends Fragment {
         });
 
         btnViewAll.setOnClickListener(v -> {
-            if (navigationListener != null) {
-                navigationListener.openReports();
-            }
+            if (navigationListener != null) navigationListener.openReports();
         });
 
         if (cardBudgetSummary != null) {
             cardBudgetSummary.setOnClickListener(v -> {
-                if (navigationListener != null) {
-                    navigationListener.openBudget();
-                }
+                if (navigationListener != null) navigationListener.openBudget();
             });
         }
     }
 
+    // =====================================================================
+    // ENTRY ANIMATION
+    // =====================================================================
+
     private void playEntryAnimation() {
         if (getContext() == null) return;
 
-        Animation anim = AnimationUtils.loadAnimation(
-                getContext(),
-                R.anim.card_fade_slide
-        );
+        Animation anim = AnimationUtils.loadAnimation(getContext(), R.anim.card_fade_slide);
 
-        cardAddIncome.startAnimation(anim);
-        cardAddExpense.startAnimation(anim);
-        rvRecent.startAnimation(anim);
-
-        if (fabVoiceDashboard != null) {
-            fabVoiceDashboard.startAnimation(anim);
-        }
+        if (cardAddIncome    != null) cardAddIncome.startAnimation(anim);
+        if (cardAddExpense   != null) cardAddExpense.startAnimation(anim);
+        if (rvRecent         != null) rvRecent.startAnimation(anim);
+        if (fabVoiceDashboard!= null) fabVoiceDashboard.startAnimation(anim);
     }
 
-    // =========================================================================================
-    // 🎙️ DASHBOARD VOICE (CUSTOM + DIALOG)
-    // =========================================================================================
+    // =====================================================================
+    // VOICE – DASHBOARD MIC SETUP
+    // =====================================================================
 
     private void setupDashboardVoice() {
         if (fabVoiceDashboard == null) return;
@@ -442,90 +431,31 @@ public class HomeFragment extends Fragment {
 
     private void startDashboardVoice() {
 
-        // ✅ Permission check
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.RECORD_AUDIO)
                 != PackageManager.PERMISSION_GRANTED) {
-
             ActivityCompat.requestPermissions(
                     requireActivity(),
                     new String[]{Manifest.permission.RECORD_AUDIO},
                     REQ_AUDIO_PERMISSION
             );
-
             Toast.makeText(requireContext(), "Allow mic permission first", Toast.LENGTH_SHORT).show();
             return;
         }
 
         try {
-
             if (!SpeechRecognizer.isRecognitionAvailable(requireContext())) {
-                Toast.makeText(requireContext(), "Voice input not supported", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Voice input not supported on this device",
+                        Toast.LENGTH_SHORT).show();
                 return;
             }
 
+            // BUG FIX: always create a fresh recognizer (old one was destroyed in onDestroyView)
             if (speechRecognizer == null) {
-
                 speechRecognizer = SpeechRecognizer.createSpeechRecognizer(requireContext());
-
-                speechRecognizer.setRecognitionListener(new RecognitionListener() {
-
-                    @Override
-                    public void onReadyForSpeech(Bundle params) {
-                        showVoiceDialog();
-                    }
-
-                    @Override
-                    public void onResults(Bundle results) {
-                        hideVoiceDialog();
-
-                        ArrayList<String> matches =
-                                results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-
-                        if (matches != null && !matches.isEmpty()) {
-                            handleDashboardVoice(matches.get(0));
-                        }
-                    }
-
-                    @Override
-                    public void onError(int error) {
-                        hideVoiceDialog();
-                        Toast.makeText(requireContext(), "Try again 😅", Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void onEndOfSpeech() {
-                        // if user stops speaking, dialog will hide via onResults/onError
-                    }
-
-                    // required but unused
-                    @Override public void onBeginningOfSpeech() {}
-                    @Override
-                    public void onRmsChanged(float rmsdB) {
-
-                        if (micCard == null) return;
-
-                        // rmsdB usually: 0 to 10 (kabhi 0 to 15)
-                        float normalized = Math.min(10f, Math.max(0f, rmsdB));
-
-                        // Smooth scale range
-                        float scale = 1.0f + (normalized / 50f); // 1.0 to 1.2 approx
-
-                        // Smooth transition
-                        micCard.animate()
-                                .scaleX(scale)
-                                .scaleY(scale)
-                                .setDuration(120)
-                                .start();
-
-                        lastRms = rmsdB;
-                    }
-
-                    @Override public void onBufferReceived(byte[] buffer) {}
-                    @Override public void onPartialResults(Bundle partialResults) {}
-                    @Override public void onEvent(int eventType, Bundle params) {}
-                });
+                speechRecognizer.setRecognitionListener(buildRecognitionListener());
             }
 
+            // BUG FIX: always build intent fresh if null
             if (speechIntent == null) {
                 speechIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
                 speechIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
@@ -542,18 +472,64 @@ public class HomeFragment extends Fragment {
         }
     }
 
+    /** Extracted to a helper method to keep startDashboardVoice() clean. */
+    private RecognitionListener buildRecognitionListener() {
+        return new RecognitionListener() {
+
+            @Override
+            public void onReadyForSpeech(Bundle params) {
+                showVoiceDialog();
+            }
+
+            @Override
+            public void onResults(Bundle results) {
+                hideVoiceDialog();
+                ArrayList<String> matches =
+                        results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                if (matches != null && !matches.isEmpty()) {
+                    handleDashboardVoice(matches.get(0));
+                }
+            }
+
+            @Override
+            public void onError(int error) {
+                hideVoiceDialog();
+                Toast.makeText(requireContext(), "Couldn't hear you, try again 😅",
+                        Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onRmsChanged(float rmsdB) {
+                if (micCard == null) return;
+                float normalized = Math.min(10f, Math.max(0f, rmsdB));
+                float scale = 1.0f + (normalized / 50f); // 1.0 → ~1.2
+                micCard.animate()
+                        .scaleX(scale).scaleY(scale)
+                        .setDuration(120)
+                        .start();
+            }
+
+            // Required but unused callbacks
+            @Override public void onBeginningOfSpeech()  { }
+            @Override public void onEndOfSpeech()        { }
+            @Override public void onBufferReceived(byte[] buffer) { }
+            @Override public void onPartialResults(Bundle partialResults) { }
+            @Override public void onEvent(int eventType, Bundle params) { }
+        };
+    }
+
     private void stopDashboardVoice() {
         try {
             if (speechRecognizer != null) {
                 speechRecognizer.stopListening();
                 speechRecognizer.cancel();
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) { }
 
         hideVoiceDialog();
     }
 
-    // ✅ Permission callback
+    // Permission callback
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions,
@@ -569,13 +545,16 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    // =========================================================================================
-    // 🎨 VOICE LISTENING DIALOG UI
-    // =========================================================================================
+    // =====================================================================
+    // VOICE DIALOG  –  SHOW / HIDE
+    // =====================================================================
 
     private void showVoiceDialog() {
         if (getContext() == null) return;
 
+        // BUG FIX: voiceDialog is nulled in onDestroyView, so it is always
+        //          rebuilt when the fragment is re-attached, preventing a
+        //          window-already-added crash.
         if (voiceDialog == null) {
             voiceDialog = new Dialog(requireContext());
             voiceDialog.setContentView(R.layout.dialog_voice_listening);
@@ -589,16 +568,16 @@ public class HomeFragment extends Fragment {
                 voiceDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
             }
 
-            pulse1 = voiceDialog.findViewById(R.id.pulse1);
-            pulse2 = voiceDialog.findViewById(R.id.pulse2);
-            pulse3 = voiceDialog.findViewById(R.id.pulse3);
-
+            pulse1  = voiceDialog.findViewById(R.id.pulse1);
+            pulse2  = voiceDialog.findViewById(R.id.pulse2);
+            pulse3  = voiceDialog.findViewById(R.id.pulse3);
             micCard = voiceDialog.findViewById(R.id.micCard);
+            tvDots  = voiceDialog.findViewById(R.id.tvDots);
 
             TextView btnCancel = voiceDialog.findViewById(R.id.btnCancelVoice);
+            if (btnCancel != null) btnCancel.setOnClickListener(v -> stopDashboardVoice());
 
-            tvDots = voiceDialog.findViewById(R.id.tvDots);
-
+            // ── Pulse animations ──
             pulseAnim1 = AnimationUtils.loadAnimation(requireContext(), R.anim.pulse_scale);
             pulseAnim1.setRepeatCount(Animation.INFINITE);
 
@@ -606,64 +585,50 @@ public class HomeFragment extends Fragment {
             pulseAnim2.setRepeatCount(Animation.INFINITE);
             pulseAnim2.setStartOffset(220);
 
-            Animation pulseAnim3 = AnimationUtils.loadAnimation(requireContext(), R.anim.pulse_scale);
+            // BUG FIX: pulseAnim3 is now stored in its own field (was incorrectly
+            //          assigned via a tag, and pulseAnim2 was self-assigned).
+            pulseAnim3 = AnimationUtils.loadAnimation(requireContext(), R.anim.pulse_scale);
             pulseAnim3.setRepeatCount(Animation.INFINITE);
             pulseAnim3.setStartOffset(420);
 
-            // store as pulseAnim2? (simple) -> use pulse3 directly
-            pulseAnim2 = pulseAnim2;
-
             micBounceAnim = AnimationUtils.loadAnimation(requireContext(), R.anim.mic_bounce);
-            dotsAnim = AnimationUtils.loadAnimation(requireContext(), R.anim.dots_fade);
-
-            btnCancel.setOnClickListener(v -> stopDashboardVoice());
-
-            // start third pulse later
-            if (pulse3 != null) pulse3.setTag(pulseAnim3);
+            dotsAnim      = AnimationUtils.loadAnimation(requireContext(), R.anim.dots_fade);
         }
 
         try {
             if (!voiceDialog.isShowing()) voiceDialog.show();
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) { }
 
-        if (pulse1 != null) pulse1.startAnimation(pulseAnim1);
-        if (pulse2 != null) pulse2.startAnimation(pulseAnim2);
-
-        if (pulse3 != null && pulse3.getTag() instanceof Animation) {
-            pulse3.startAnimation((Animation) pulse3.getTag());
-        }
-
+        if (pulse1  != null) pulse1.startAnimation(pulseAnim1);
+        if (pulse2  != null) pulse2.startAnimation(pulseAnim2);
+        if (pulse3  != null) pulse3.startAnimation(pulseAnim3); // BUG FIX: uses field directly
         if (micCard != null) micCard.startAnimation(micBounceAnim);
-        if (tvDots != null) tvDots.startAnimation(dotsAnim);
+        if (tvDots  != null) tvDots.startAnimation(dotsAnim);
     }
-
 
     private void hideVoiceDialog() {
         try {
-            if (pulse1 != null) pulse1.clearAnimation();
-            if (pulse2 != null) pulse2.clearAnimation();
-            if (pulse3 != null) pulse3.clearAnimation();
-
-            if (micCard != null) micCard.clearAnimation();
-            if (tvDots != null) tvDots.clearAnimation();
+            if (pulse1  != null) pulse1.clearAnimation();
+            if (pulse2  != null) pulse2.clearAnimation();
+            if (pulse3  != null) pulse3.clearAnimation();
+            if (micCard != null) {
+                micCard.clearAnimation();
+                micCard.setScaleX(1f);
+                micCard.setScaleY(1f);
+            }
+            if (tvDots  != null) tvDots.clearAnimation();
 
             if (voiceDialog != null && voiceDialog.isShowing()) {
-                if (micCard != null) {
-                    micCard.setScaleX(1f);
-                    micCard.setScaleY(1f);
-                }
-
                 voiceDialog.dismiss();
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) { }
     }
 
-    // =========================================================================================
-    // 🧠 VOICE HANDLING (SAME LOGIC)
-    // =========================================================================================
+    // =====================================================================
+    // VOICE COMMAND HANDLER
+    // =====================================================================
 
     private void handleDashboardVoice(String rawText) {
-
         if (userId == null || userRef == null) return;
 
         String text = rawText.toLowerCase(Locale.ROOT);
@@ -671,87 +636,83 @@ public class HomeFragment extends Fragment {
         double amount = extractAmount(text);
         if (amount <= 0) {
             Toast.makeText(requireContext(),
-                    "Couldn't detect amount 😅",
-                    Toast.LENGTH_SHORT).show();
+                    "Couldn't detect amount 😅", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        boolean isIncome = isIncomeText(text);
+        long   time     = detectDateMillis(text);
+        boolean income  = isIncomeText(text);
 
-        long time = detectDateMillis(text);
-
-        if (isIncome) {
-            String source = detectIncomeSource(text);
-            String pay = detectPaymentMode(text);
-            String note = cleanNote(text);
-
-            saveIncome(amount, time, source, pay, note);
+        if (income) {
+            saveIncome(amount, time,
+                    detectIncomeSource(text),
+                    detectPaymentMode(text),
+                    cleanNote(text));
         } else {
-            String category = detectExpenseCategory(text);
-            String pay = detectPaymentMode(text);
-            String note = cleanNote(text);
-
-            saveExpense(amount, time, category, pay, note);
+            saveExpense(amount, time,
+                    detectExpenseCategory(text),
+                    detectPaymentMode(text),
+                    cleanNote(text));
         }
     }
 
-    // ================= SAVE FROM DASHBOARD =================
+    // =====================================================================
+    // FIREBASE SAVE
+    // =====================================================================
 
-    private void saveIncome(double amount, long time, String source, String paymentMode, String note) {
-
+    private void saveIncome(double amount, long time,
+                            String source, String paymentMode, String note) {
         if (incomeRef == null) return;
 
         Map<String, Object> map = new HashMap<>();
-        map.put("amount", amount);
-        map.put("time", time);
-        map.put("source", source);
+        map.put("amount",      amount);
+        map.put("time",        time);
+        map.put("source",      source);
         map.put("paymentMode", paymentMode);
-        map.put("note", note);
+        map.put("note",        note);
 
         incomeRef.push().setValue(map)
                 .addOnSuccessListener(unused -> {
                     NotificationHelper.showIncomeSummaryNotification(
-                            requireContext(),
-                            amount,
-                            source
-                    );
+                            requireContext(), amount, source);
                     Toast.makeText(requireContext(),
                             "Income added: ₹" + moneyFormat.format(amount),
                             Toast.LENGTH_SHORT).show();
                 })
-                .addOnFailureListener(e -> Toast.makeText(requireContext(),
-                        "Failed: " + e.getMessage(),
-                        Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e ->
+                        Toast.makeText(requireContext(),
+                                "Failed: " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show());
     }
 
-    private void saveExpense(double amount, long time, String category, String paymentMode, String note) {
-
+    private void saveExpense(double amount, long time,
+                             String category, String paymentMode, String note) {
         if (expenseRef == null) return;
 
         Map<String, Object> map = new HashMap<>();
-        map.put("amount", amount);
-        map.put("time", time);
-        map.put("category", category);
+        map.put("amount",      amount);
+        map.put("time",        time);
+        map.put("category",    category);
         map.put("paymentMode", paymentMode);
-        map.put("note", note);
+        map.put("note",        note);
 
         expenseRef.push().setValue(map)
                 .addOnSuccessListener(unused -> {
                     NotificationHelper.showExpenseSummaryNotification(
-                            requireContext(),
-                            amount,
-                            category
-                    );
+                            requireContext(), amount, category);
                     Toast.makeText(requireContext(),
                             "Expense added: ₹" + moneyFormat.format(amount),
                             Toast.LENGTH_SHORT).show();
                 })
-                .addOnFailureListener(e -> Toast.makeText(requireContext(),
-                        "Failed: " + e.getMessage(),
-                        Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e ->
+                        Toast.makeText(requireContext(),
+                                "Failed: " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show());
     }
 
-    // ================= SMART HELPERS =================
+    // =====================================================================
+    // SMART NLP HELPERS
+    // =====================================================================
 
     private boolean isIncomeText(String text) {
         return text.contains("salary")
@@ -766,16 +727,15 @@ public class HomeFragment extends Fragment {
 
     private double extractAmount(String text) {
         try {
-            java.util.regex.Pattern p = java.util.regex.Pattern.compile("(\\d+(?:\\.\\d{1,2})?)");
-            java.util.regex.Matcher m = p.matcher(text);
+            java.util.regex.Matcher m =
+                    java.util.regex.Pattern.compile("(\\d+(?:\\.\\d{1,2})?)").matcher(text);
             if (m.find()) return Double.parseDouble(m.group(1));
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) { }
         return 0;
     }
 
     private long detectDateMillis(String text) {
         Calendar cal = Calendar.getInstance();
-
         if (text.contains("parso") || text.contains("day before yesterday")) {
             cal.add(Calendar.DAY_OF_YEAR, -2);
         } else if (text.contains("kal") || text.contains("yesterday")) {
@@ -785,106 +745,77 @@ public class HomeFragment extends Fragment {
     }
 
     private String detectPaymentMode(String text) {
-
-        if (text.contains("upi") || text.contains("gpay") || text.contains("phonepe") || text.contains("paytm")) {
-            return "UPI";
-        }
-        if (text.contains("cash")) return "Cash";
-        if (text.contains("card") || text.contains("credit") || text.contains("debit")) return "Card";
-        if (text.contains("bank") || text.contains("transfer")) return "Bank Transfer";
-        if (text.contains("cheque")) return "Cheque";
-
+        if (text.contains("upi")   || text.contains("gpay")
+                || text.contains("phonepe") || text.contains("paytm")) return "UPI";
+        if (text.contains("cash"))                                       return "Cash";
+        if (text.contains("card")  || text.contains("credit")
+                || text.contains("debit"))                               return "Card";
+        if (text.contains("bank")  || text.contains("transfer"))         return "Bank Transfer";
+        if (text.contains("cheque"))                                      return "Cheque";
         return "Cash";
     }
 
     private String detectIncomeSource(String text) {
-
-        if (text.contains("salary")) return "Salary";
-        if (text.contains("business")) return "Business";
-        if (text.contains("freelance")) return "Freelance";
-        if (text.contains("investment") || text.contains("stock") || text.contains("profit")) return "Investment";
-        if (text.contains("rent") || text.contains("rental")) return "Rental Income";
-        if (text.contains("bonus")) return "Bonus";
-        if (text.contains("gift")) return "Gift";
-
+        if (text.contains("salary"))                                             return "Salary";
+        if (text.contains("business"))                                           return "Business";
+        if (text.contains("freelance"))                                          return "Freelance";
+        if (text.contains("investment") || text.contains("stock")
+                || text.contains("profit"))                                      return "Investment";
+        if (text.contains("rent") || text.contains("rental"))                   return "Rental Income";
+        if (text.contains("bonus"))                                              return "Bonus";
+        if (text.contains("gift"))                                               return "Gift";
         return "Other";
     }
 
     private String detectExpenseCategory(String text) {
+        if (text.contains("uber")  || text.contains("ola")    || text.contains("metro")
+                || text.contains("bus")  || text.contains("train")  || text.contains("petrol")
+                || text.contains("fuel"))                                        return "Transport";
 
-        if (text.contains("uber") || text.contains("ola") || text.contains("metro") || text.contains("bus")
-                || text.contains("train") || text.contains("petrol") || text.contains("fuel")) {
-            return "Transport";
-        }
+        if (text.contains("dominos") || text.contains("pizza") || text.contains("cafe")
+                || text.contains("coffee") || text.contains("restaurant")
+                || text.contains("chai") || text.contains("tea")
+                || text.contains("mcd") || text.contains("kfc"))                return "Food";
 
-        if (text.contains("dominos") || text.contains("pizza") || text.contains("cafe") || text.contains("coffee")
-                || text.contains("restaurant") || text.contains("chai") || text.contains("tea")
-                || text.contains("mcd") || text.contains("kfc")) {
-            return "Food";
-        }
+        if (text.contains("amazon") || text.contains("flipkart")
+                || text.contains("shopping") || text.contains("mall")
+                || text.contains("store"))                                       return "Shopping";
 
-        if (text.contains("amazon") || text.contains("flipkart") || text.contains("shopping")
-                || text.contains("mall") || text.contains("store")) {
-            return "Shopping";
-        }
+        if (text.contains("netflix") || text.contains("movie")
+                || text.contains("pvr") || text.contains("cinema"))             return "Entertainment";
 
-        if (text.contains("netflix") || text.contains("movie") || text.contains("pvr") || text.contains("cinema")) {
-            return "Entertainment";
-        }
+        if (text.contains("doctor") || text.contains("hospital")
+                || text.contains("medicine") || text.contains("clinic")
+                || text.contains("pharmacy"))                                    return "Health";
 
-        if (text.contains("doctor") || text.contains("hospital") || text.contains("medicine")
-                || text.contains("clinic") || text.contains("pharmacy")) {
-            return "Health";
-        }
+        if (text.contains("fees") || text.contains("college")
+                || text.contains("school") || text.contains("course")
+                || text.contains("gym"))                                         return "Education";
 
-        if (text.contains("fees") || text.contains("college") || text.contains("school")
-                || text.contains("course") || text.contains("gym")) {
-            return "Education";
-        }
-
-        if (text.contains("bill") || text.contains("electricity") || text.contains("recharge")
-                || text.contains("wifi") || text.contains("rent")) {
-            return "Bills";
-        }
+        if (text.contains("bill") || text.contains("electricity")
+                || text.contains("recharge") || text.contains("wifi")
+                || text.contains("rent"))                                        return "Bills";
 
         return "Other";
     }
 
-
     private String cleanNote(String text) {
-
-        String clean = text;
-
-        clean = clean.replace("today", "")
-                .replace("aaj", "")
-                .replace("yesterday", "")
-                .replace("kal", "")
-                .replace("parso", "")
-                .replace("day before yesterday", "");
-
-        clean = clean.replace("upi", "")
-                .replace("gpay", "")
-                .replace("phonepe", "")
-                .replace("paytm", "")
-                .replace("cash", "")
-                .replace("card", "")
-                .replace("debit", "")
-                .replace("credit", "")
-                .replace("bank transfer", "")
-                .replace("transfer", "")
-                .replace("bank", "")
-                .replace("cheque", "");
-
-        clean = clean.replace("rupees", "")
-                .replace("rupaye", "")
-                .replace("rs", "")
-                .replace("₹", "");
-
-        clean = clean.replaceAll("(\\d+(?:\\.\\d{1,2})?)", "");
-        clean = clean.replaceAll("\\s+", " ").trim();
+        String clean = text
+                .replace("day before yesterday", "").replace("yesterday", "")
+                .replace("today", "").replace("aaj", "")
+                .replace("kal",   "").replace("parso", "")
+                .replace("upi",   "").replace("gpay",  "")
+                .replace("phonepe","").replace("paytm","")
+                .replace("cash",   "").replace("card",  "")
+                .replace("debit",  "").replace("credit","")
+                .replace("bank transfer","").replace("transfer","")
+                .replace("bank",  "").replace("cheque","")
+                .replace("rupees","").replace("rupaye","")
+                .replace("rs",    "").replace("₹",     "")
+                .replaceAll("(\\d+(?:\\.\\d{1,2})?)", "")
+                .replaceAll("\\s+", " ").trim();
 
         if (clean.isEmpty()) return "Transaction";
-
         return clean.substring(0, 1).toUpperCase() + clean.substring(1);
     }
 }
