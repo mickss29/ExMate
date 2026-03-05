@@ -14,6 +14,7 @@ import com.google.android.material.card.MaterialCardView;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -21,161 +22,94 @@ import java.util.Locale;
 public class RecentTransactionAdapter
         extends RecyclerView.Adapter<RecentTransactionAdapter.ViewHolder> {
 
-    // ================= DATA =================
-    private final List<TransactionModel> list;
+    // =========================================================================
+    // PALETTE
+    // =========================================================================
+    private static final int COLOR_GREEN         = Color.parseColor("#00C896");
+    private static final int COLOR_GREEN_BADGE   = Color.parseColor("#0D2E1E");
+    private static final int COLOR_GREEN_PILL    = Color.parseColor("#0A2018");
+    private static final int COLOR_RED           = Color.parseColor("#FF5A5A");
+    private static final int COLOR_RED_BADGE     = Color.parseColor("#2E0D0D");
+    private static final int COLOR_RED_PILL      = Color.parseColor("#200A0A");
+    private static final int COLOR_ICON_RING     = Color.parseColor("#141929");
 
+    // =========================================================================
+    // DATA
+    // =========================================================================
+    private final List<TransactionModel> list;
     private final DecimalFormat moneyFormat = new DecimalFormat("#,##0.##");
 
     public RecentTransactionAdapter(List<TransactionModel> list) {
         this.list = list;
-        setHasStableIds(true); // ⭐ performance boost
+        setHasStableIds(true);
     }
 
-    // ================= VIEW HOLDER =================
+    // =========================================================================
+    // VIEW HOLDER
+    // =========================================================================
     static class ViewHolder extends RecyclerView.ViewHolder {
 
-        ImageView imgType, imgArrow;
-        TextView tvTitle, tvSub, tvAmount;
-
-        MaterialCardView iconHolder;
-        MaterialCardView iconOuter;
-        MaterialCardView chipSub;
+        View             accentBar;
+        ImageView        imgType, imgArrow;
+        TextView         tvTitle, tvSub, tvAmount, tvTypePill;
+        MaterialCardView iconHolder, iconOuter, chipSub, cardTypePill, badgeCard;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
-
-            imgType  = itemView.findViewById(R.id.imgType);
-            imgArrow = itemView.findViewById(R.id.imgArrow);
-
-            tvTitle  = itemView.findViewById(R.id.tvTitle);
-            tvSub    = itemView.findViewById(R.id.tvSub);
-            tvAmount = itemView.findViewById(R.id.tvAmount);
-
-            iconHolder = itemView.findViewById(R.id.iconHolder);
-            iconOuter  = itemView.findViewById(R.id.iconOuter);
-            chipSub    = itemView.findViewById(R.id.chipSub);
+            accentBar    = itemView.findViewById(R.id.accentBar);
+            imgType      = itemView.findViewById(R.id.imgType);
+            imgArrow     = itemView.findViewById(R.id.imgArrow);
+            tvTitle      = itemView.findViewById(R.id.tvTitle);
+            tvSub        = itemView.findViewById(R.id.tvSub);
+            tvAmount     = itemView.findViewById(R.id.tvAmount);
+            tvTypePill   = itemView.findViewById(R.id.tvTypePill);
+            iconHolder   = itemView.findViewById(R.id.iconHolder);
+            iconOuter    = itemView.findViewById(R.id.iconOuter);
+            chipSub      = itemView.findViewById(R.id.chipSub);
+            cardTypePill = itemView.findViewById(R.id.cardTypePill);
+            badgeCard    = itemView.findViewById(R.id.badgeCard);
         }
     }
 
-    // ================= ADAPTER =================
+    // =========================================================================
+    // ADAPTER
+    // =========================================================================
+
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(
-            @NonNull ViewGroup parent,
-            int viewType
-    ) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_user_transection, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(
-            @NonNull ViewHolder holder,
-            int position
-    ) {
+    public void onBindViewHolder(@NonNull ViewHolder h, int position) {
 
-        TransactionModel model = list.get(position);
+        TransactionModel model    = list.get(position);
+        boolean          isIncome = "Income".equalsIgnoreCase(model.getType());
 
-        boolean isIncome = "Income".equalsIgnoreCase(model.getType());
+        // ── Title ──
+        h.tvTitle.setText(isIncome
+                ? safeText(model.getSource(),   "Income")
+                : safeText(model.getCategory(), "Expense"));
 
-        // ---------- TITLE ----------
-        if (isIncome) {
-            holder.tvTitle.setText(safeText(model.getSource(), "Income"));
-        } else {
-            holder.tvTitle.setText(safeText(model.getCategory(), "Expense"));
-        }
+        // ── Date ──
+        h.tvSub.setText(formatTime(model.getTime()));
 
-        // ---------- DATE / TIME ----------
-        holder.tvSub.setText(formatTime(model.getTime()));
+        // ── Amount ──
+        String amt = moneyFormat.format(model.getAmount());
+        h.tvAmount.setText(isIncome ? "+ ₹" + amt : "- ₹" + amt);
 
-        // ---------- AMOUNT ----------
-        String formattedAmount = moneyFormat.format(model.getAmount());
+        // ── Colour scheme ──
+        applyTheme(h, isIncome);
 
-        if (isIncome) {
-            holder.tvAmount.setText("+ ₹" + formattedAmount);
-        } else {
-            holder.tvAmount.setText("- ₹" + formattedAmount);
-        }
-
-        // ---------- UI BASED ON TYPE ----------
-        if (isIncome) {
-
-            // Amount color
-            holder.tvAmount.setTextColor(
-                    holder.itemView.getContext().getColor(R.color.greenIncome)
-            );
-
-            // Arrow
-            if (holder.imgArrow != null) {
-                holder.imgArrow.setImageResource(R.drawable.ic_arrow_up);
-                holder.imgArrow.setColorFilter(
-                        holder.itemView.getContext().getColor(R.color.greenIncome)
-                );
-            }
-
-            // Main icon
-            holder.imgType.setImageResource(R.drawable.ic_income);
-
-            // Glass badge colors
-            if (holder.iconOuter != null) {
-                holder.iconOuter.setCardBackgroundColor(Color.parseColor("#0F172A"));
-            }
-
-            if (holder.iconHolder != null) {
-                holder.iconHolder.setCardBackgroundColor(
-                        holder.itemView.getContext().getColor(R.color.greenIncomeDark)
-                );
-            }
-
-        } else {
-
-            holder.tvAmount.setTextColor(
-                    holder.itemView.getContext().getColor(R.color.redExpense)
-            );
-
-            if (holder.imgArrow != null) {
-                holder.imgArrow.setImageResource(R.drawable.ic_arrow_down);
-                holder.imgArrow.setColorFilter(
-                        holder.itemView.getContext().getColor(R.color.redExpense)
-                );
-            }
-
-            holder.imgType.setImageResource(R.drawable.ic_expense);
-
-            if (holder.iconOuter != null) {
-                holder.iconOuter.setCardBackgroundColor(Color.parseColor("#0F172A"));
-            }
-
-            if (holder.iconHolder != null) {
-                holder.iconHolder.setCardBackgroundColor(
-                        holder.itemView.getContext().getColor(R.color.redExpenseDark)
-                );
-            }
-        }
-
-        // ---------- CHIP POLISH ----------
-        // (optional future: show paymentMode also)
-        if (holder.chipSub != null) {
-            holder.chipSub.setStrokeWidth(1);
-            holder.chipSub.setStrokeColor(Color.parseColor("#1E293B"));
-        }
-
-        // ---------- CLICK (SMOOTH PREMIUM FEEL) ----------
-        holder.itemView.setOnClickListener(v -> {
-            v.animate()
-                    .scaleX(0.98f)
-                    .scaleY(0.98f)
-                    .setDuration(90)
-                    .withEndAction(() -> v.animate()
-                            .scaleX(1f)
-                            .scaleY(1f)
-                            .setDuration(90)
-                            .start())
-                    .start();
-
-            // Later: open details bottom sheet
-        });
+        // ── Press scale animation ──
+        h.itemView.setOnClickListener(v ->
+                v.animate().scaleX(0.97f).scaleY(0.97f).setDuration(80)
+                        .withEndAction(() ->
+                                v.animate().scaleX(1f).scaleY(1f).setDuration(110).start())
+                        .start());
     }
 
     @Override
@@ -185,11 +119,54 @@ public class RecentTransactionAdapter
 
     @Override
     public long getItemId(int position) {
-        // stable unique
         return list.get(position).getTime();
     }
 
-    // ================= HELPERS =================
+    // =========================================================================
+    // THEME HELPER — centralised so both income and expense
+    //                never diverge across adapters
+    // =========================================================================
+    private void applyTheme(ViewHolder h, boolean isIncome) {
+
+        int mainColor  = isIncome ? COLOR_GREEN       : COLOR_RED;
+        int badgeBg    = isIncome ? COLOR_GREEN_BADGE  : COLOR_RED_BADGE;
+        int pillBg     = isIncome ? COLOR_GREEN_PILL   : COLOR_RED_PILL;
+        String pillTxt = isIncome ? "INCOME"           : "EXPENSE";
+        int arrowRes   = isIncome ? R.drawable.ic_arrow_up   : R.drawable.ic_arrow_down;
+        int iconRes    = isIncome ? R.drawable.ic_income      : R.drawable.ic_expense;
+
+        // Left bar
+        if (h.accentBar    != null) h.accentBar.setBackgroundColor(mainColor);
+
+        // Amount
+        h.tvAmount.setTextColor(mainColor);
+
+        // Arrow badge
+        if (h.imgArrow != null) {
+            h.imgArrow.setImageResource(arrowRes);
+            h.imgArrow.setColorFilter(mainColor);
+        }
+
+        // Category icon
+        h.imgType.setImageResource(iconRes);
+        h.imgType.setColorFilter(mainColor);
+
+        // Icon circles
+        if (h.iconOuter  != null) h.iconOuter.setCardBackgroundColor(COLOR_ICON_RING);
+        if (h.iconHolder != null) h.iconHolder.setCardBackgroundColor(badgeBg);
+
+        // Type pill
+        if (h.cardTypePill != null) h.cardTypePill.setCardBackgroundColor(pillBg);
+        if (h.tvTypePill   != null) {
+            h.tvTypePill.setText(pillTxt);
+            h.tvTypePill.setTextColor(mainColor);
+        }
+    }
+
+    // =========================================================================
+    // HELPERS
+    // =========================================================================
+
     private String safeText(String t, String fallback) {
         if (t == null) return fallback;
         String s = t.trim();
@@ -197,42 +174,29 @@ public class RecentTransactionAdapter
     }
 
     private String formatTime(long millis) {
-
-        java.util.Calendar now = java.util.Calendar.getInstance();
-        java.util.Calendar date = java.util.Calendar.getInstance();
+        Calendar now       = Calendar.getInstance();
+        Calendar date      = Calendar.getInstance();
         date.setTimeInMillis(millis);
 
-        boolean sameYear = now.get(java.util.Calendar.YEAR) == date.get(java.util.Calendar.YEAR);
+        boolean sameYear   = now.get(Calendar.YEAR) == date.get(Calendar.YEAR);
+        boolean isToday    = sameYear &&
+                now.get(Calendar.DAY_OF_YEAR) == date.get(Calendar.DAY_OF_YEAR);
 
-        boolean isToday =
-                now.get(java.util.Calendar.YEAR) == date.get(java.util.Calendar.YEAR) &&
-                        now.get(java.util.Calendar.DAY_OF_YEAR) == date.get(java.util.Calendar.DAY_OF_YEAR);
-
-        java.util.Calendar yesterday = java.util.Calendar.getInstance();
-        yesterday.add(java.util.Calendar.DAY_OF_YEAR, -1);
-
+        Calendar yesterday = Calendar.getInstance();
+        yesterday.add(Calendar.DAY_OF_YEAR, -1);
         boolean isYesterday =
-                yesterday.get(java.util.Calendar.YEAR) == date.get(java.util.Calendar.YEAR) &&
-                        yesterday.get(java.util.Calendar.DAY_OF_YEAR) == date.get(java.util.Calendar.DAY_OF_YEAR);
+                yesterday.get(Calendar.YEAR)        == date.get(Calendar.YEAR) &&
+                        yesterday.get(Calendar.DAY_OF_YEAR) == date.get(Calendar.DAY_OF_YEAR);
 
-        SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm a", Locale.getDefault());
+        SimpleDateFormat timeFmt = new SimpleDateFormat("hh:mm a", Locale.getDefault());
 
-        if (isToday) {
-            return "Today • " + timeFormat.format(new Date(millis));
-        }
+        if (isToday)     return "Today · "     + timeFmt.format(new Date(millis));
+        if (isYesterday) return "Yesterday · " + timeFmt.format(new Date(millis));
 
-        if (isYesterday) {
-            return "Yesterday • " + timeFormat.format(new Date(millis));
-        }
+        SimpleDateFormat fullFmt = sameYear
+                ? new SimpleDateFormat("EEE, dd MMM · hh:mm a", Locale.getDefault())
+                : new SimpleDateFormat("dd MMM yyyy · hh:mm a", Locale.getDefault());
 
-        SimpleDateFormat fullFormat;
-
-        if (sameYear) {
-            fullFormat = new SimpleDateFormat("dd MMM • hh:mm a", Locale.getDefault());
-        } else {
-            fullFormat = new SimpleDateFormat("dd MMM yyyy • hh:mm a", Locale.getDefault());
-        }
-
-        return fullFormat.format(new Date(millis));
+        return fullFmt.format(new Date(millis));
     }
 }

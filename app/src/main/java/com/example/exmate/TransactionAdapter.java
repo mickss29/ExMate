@@ -1,155 +1,185 @@
 package com.example.exmate;
 
-import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.card.MaterialCardView;
 
 import java.util.List;
 
 public class TransactionAdapter
         extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
+    // =========================================================================
+    // PALETTE
+    // =========================================================================
+    private static final int COLOR_GREEN       = Color.parseColor("#00C896");
+    private static final int COLOR_GREEN_BADGE = Color.parseColor("#0D2E1E");
+    private static final int COLOR_GREEN_PILL  = Color.parseColor("#0A2018");
+    private static final int COLOR_RED         = Color.parseColor("#FF5A5A");
+    private static final int COLOR_RED_BADGE   = Color.parseColor("#2E0D0D");
+    private static final int COLOR_RED_PILL    = Color.parseColor("#200A0A");
+    private static final int COLOR_ICON_RING   = Color.parseColor("#141929");
+
+    // =========================================================================
+    // DATA
+    // =========================================================================
     private final List<TransactionListItem> list;
 
     public TransactionAdapter(List<TransactionListItem> list) {
         this.list = list;
     }
 
-    // ---------------- VIEW TYPES ----------------
-
+    // =========================================================================
+    // VIEW TYPES
+    // =========================================================================
     @Override
     public int getItemViewType(int position) {
         return list.get(position).getType();
     }
 
-    // ---------------- CREATE ----------------
-
+    // =========================================================================
+    // CREATE
+    // =========================================================================
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(
-            @NonNull ViewGroup parent,
-            int viewType) {
+            @NonNull ViewGroup parent, int viewType) {
 
-        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+        LayoutInflater inf = LayoutInflater.from(parent.getContext());
 
         if (viewType == TransactionListItem.TYPE_DATE) {
-            View view = inflater.inflate(
-                    R.layout.item_date_header, parent, false);
-            return new DateViewHolder(view);
+            return new DateViewHolder(
+                    inf.inflate(R.layout.item_date_header, parent, false));
         } else {
-            View view = inflater.inflate(
-                    R.layout.item_transection, parent, false);
-            return new TransactionViewHolder(view);
+            return new TxnViewHolder(
+                    inf.inflate(R.layout.item_user_transection, parent, false));
         }
     }
 
-    // ---------------- BIND ----------------
-
+    // =========================================================================
+    // BIND
+    // =========================================================================
     @Override
     public void onBindViewHolder(
-            @NonNull RecyclerView.ViewHolder holder,
-            int position) {
+            @NonNull RecyclerView.ViewHolder holder, int position) {
 
         TransactionListItem item = list.get(position);
 
+        // ── Date section header ──
         if (holder instanceof DateViewHolder) {
-
-            ((DateViewHolder) holder)
-                    .txtDateHeader
-                    .setText(item.getDateTitle());
-
-        } else if (holder instanceof TransactionViewHolder) {
-
-            TransactionViewHolder vh =
-                    (TransactionViewHolder) holder;
-
-            Context ctx = vh.itemView.getContext();
-
-            vh.txtCategory.setText(item.getCategory());
-            vh.txtNote.setText(item.getNote());
-            vh.txtAmount.setText(item.getAmount());
-            vh.txtMeta.setText(item.getMeta());
-
-            // ================= FIXED AMOUNT COLOR LOGIC =================
-            // ✅ Use real transaction type (NOT string check)
-            if (item.isIncome()) {
-                vh.txtAmount.setTextColor(
-                        ContextCompat.getColor(
-                                ctx,
-                                android.R.color.holo_green_dark
-                        )
-                );
-            } else {
-                vh.txtAmount.setTextColor(
-                        ContextCompat.getColor(
-                                ctx,
-                                android.R.color.holo_red_dark
-                        )
-                );
-            }
-
-            // ================= BADGE =================
-            if (item.isHighSpend()) {
-                vh.txtBadge.setVisibility(View.VISIBLE);
-            } else {
-                vh.txtBadge.setVisibility(View.GONE);
-            }
-
-            // ================= PREMIUM TOUCH =================
-            vh.itemView.setAlpha(0f);
-            vh.itemView.animate()
-                    .alpha(1f)
-                    .setDuration(250)
-                    .start();
+            ((DateViewHolder) holder).txtDateHeader.setText(item.getDateTitle());
+            return;
         }
-    }
 
-    // ---------------- COUNT ----------------
+        // ── Transaction card ──
+        TxnViewHolder h       = (TxnViewHolder) holder;
+        boolean       income  = item.isIncome();
+
+        int   mainColor  = income ? COLOR_GREEN       : COLOR_RED;
+        int   badgeBg    = income ? COLOR_GREEN_BADGE  : COLOR_RED_BADGE;
+        int   pillBg     = income ? COLOR_GREEN_PILL   : COLOR_RED_PILL;
+        String pillTxt   = income ? "INCOME"           : "EXPENSE";
+        int   arrowRes   = income ? R.drawable.ic_arrow_up   : R.drawable.ic_arrow_down;
+        int   iconRes    = income ? R.drawable.ic_income      : R.drawable.ic_expense;
+
+        // Title
+        h.tvTitle.setText(item.getCategory());
+
+        // Date chip
+        h.tvSub.setText(item.getMeta());
+
+        // Amount
+        h.tvAmount.setText(item.getAmount());
+        h.tvAmount.setTextColor(mainColor);
+
+        // Left accent bar
+        if (h.accentBar    != null) h.accentBar.setBackgroundColor(mainColor);
+
+        // Icon
+        h.imgType.setImageResource(iconRes);
+        h.imgType.setColorFilter(mainColor);
+
+        // Arrow badge
+        if (h.imgArrow != null) {
+            h.imgArrow.setImageResource(arrowRes);
+            h.imgArrow.setColorFilter(mainColor);
+        }
+
+        // Icon circles
+        if (h.iconOuter  != null) h.iconOuter.setCardBackgroundColor(COLOR_ICON_RING);
+        if (h.iconHolder != null) h.iconHolder.setCardBackgroundColor(badgeBg);
+
+        // Type pill
+        if (h.cardTypePill != null) h.cardTypePill.setCardBackgroundColor(pillBg);
+        if (h.tvTypePill   != null) {
+            h.tvTypePill.setText(pillTxt);
+            h.tvTypePill.setTextColor(mainColor);
+        }
+
+        // HIGH SPEND badge
+        if (h.badgeCard != null) {
+            h.badgeCard.setVisibility(item.isHighSpend() ? View.VISIBLE : View.GONE);
+        }
+
+        // Fade-in entrance
+        h.itemView.setAlpha(0f);
+        h.itemView.animate().alpha(1f).setDuration(220).start();
+
+        // Press animation
+        h.itemView.setOnClickListener(v ->
+                v.animate().scaleX(0.97f).scaleY(0.97f).setDuration(80)
+                        .withEndAction(() ->
+                                v.animate().scaleX(1f).scaleY(1f).setDuration(110).start())
+                        .start());
+    }
 
     @Override
     public int getItemCount() {
-        return list.size();
+        return list == null ? 0 : list.size();
     }
 
-    // ================= VIEW HOLDERS =================
+    // =========================================================================
+    // VIEW HOLDERS
+    // =========================================================================
 
-    static class DateViewHolder
-            extends RecyclerView.ViewHolder {
-
+    /** Date section header */
+    static class DateViewHolder extends RecyclerView.ViewHolder {
         TextView txtDateHeader;
-
-        DateViewHolder(@NonNull View itemView) {
-            super(itemView);
-            txtDateHeader =
-                    itemView.findViewById(R.id.txtDateHeader);
+        DateViewHolder(@NonNull View v) {
+            super(v);
+            txtDateHeader = v.findViewById(R.id.txtDateHeader);
         }
     }
 
-    static class TransactionViewHolder
-            extends RecyclerView.ViewHolder {
+    /** Transaction card */
+    static class TxnViewHolder extends RecyclerView.ViewHolder {
+        View             accentBar;
+        ImageView        imgType, imgArrow;
+        TextView         tvTitle, tvSub, tvAmount, tvTypePill;
+        MaterialCardView iconHolder, iconOuter, chipSub, cardTypePill, badgeCard;
 
-        TextView txtCategory, txtNote,
-                txtAmount, txtMeta, txtBadge;
-
-        TransactionViewHolder(@NonNull View itemView) {
-            super(itemView);
-
-            txtCategory =
-                    itemView.findViewById(R.id.txtCategory);
-            txtNote =
-                    itemView.findViewById(R.id.txtNote);
-            txtAmount =
-                    itemView.findViewById(R.id.txtAmount);
-            txtMeta =
-                    itemView.findViewById(R.id.txtMeta);
-            txtBadge =
-                    itemView.findViewById(R.id.txtBadge);
+        TxnViewHolder(@NonNull View v) {
+            super(v);
+            accentBar    = v.findViewById(R.id.accentBar);
+            imgType      = v.findViewById(R.id.imgType);
+            imgArrow     = v.findViewById(R.id.imgArrow);
+            tvTitle      = v.findViewById(R.id.tvTitle);
+            tvSub        = v.findViewById(R.id.tvSub);
+            tvAmount     = v.findViewById(R.id.tvAmount);
+            tvTypePill   = v.findViewById(R.id.tvTypePill);
+            iconHolder   = v.findViewById(R.id.iconHolder);
+            iconOuter    = v.findViewById(R.id.iconOuter);
+            chipSub      = v.findViewById(R.id.chipSub);
+            cardTypePill = v.findViewById(R.id.cardTypePill);
+            badgeCard    = v.findViewById(R.id.badgeCard);
         }
     }
 }
