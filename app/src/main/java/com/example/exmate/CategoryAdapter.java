@@ -14,11 +14,11 @@ import java.util.List;
 
 public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHolder> {
 
-    private Context context;
-    private List<String> categories;
+    private final Context       context;
+    private final List<String>  categories;
 
     public CategoryAdapter(Context context, List<String> categories) {
-        this.context = context;
+        this.context    = context;
         this.categories = categories;
     }
 
@@ -34,9 +34,8 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
 
         String category = categories.get(position);
-        holder.categoryName.setText(category);
 
-        // SET ICON BASED ON CATEGORY
+        holder.categoryName.setText(category);
         holder.categoryIcon.setImageResource(getCategoryIcon(category));
 
         // Long press → delete
@@ -53,47 +52,38 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
         return categories.size();
     }
 
-    // ================= ICON MAPPING =================
+    // =========================================================================
+    // ICON MAPPING
+    // =========================================================================
 
     private int getCategoryIcon(String category) {
-
         switch (category.toLowerCase()) {
-
-            case "food":
-                return R.drawable.ic_food;
-
-            case "transport":
-                return R.drawable.ic_transport;
-
-            case "shopping":
-                return R.drawable.ic_shopping;
-
-            case "bills":
-                return R.drawable.ic_bills;
-
-            case "entertainment":
-                return R.drawable.ic_entertainment;
-
-            case "health":
-                return R.drawable.ic_health;
-
-            case "education":
-                return R.drawable.ic_education;
-
-            default:
-                return R.drawable.ic_category_default;
+            case "food":          return R.drawable.ic_food;
+            case "transport":     return R.drawable.ic_transport;
+            case "shopping":      return R.drawable.ic_shopping;
+            case "bills":         return R.drawable.ic_bills;
+            case "entertainment": return R.drawable.ic_entertainment;
+            case "health":        return R.drawable.ic_health;
+            case "education":     return R.drawable.ic_education;
+            default:              return R.drawable.ic_category_default;
         }
     }
 
+    // =========================================================================
+    // VIEW HOLDER
+    // BUG FIX: IDs updated to match item_category.xml
+    //   R.id.categoryName  →  R.id.tvCategoryTitle
+    //   R.id.categoryIcon  →  R.id.imgCategoryIcon
+    // =========================================================================
     static class ViewHolder extends RecyclerView.ViewHolder {
 
-        TextView categoryName;
-        ImageView categoryIcon;
+        final TextView   categoryName;
+        final ImageView  categoryIcon;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
-            categoryName = itemView.findViewById(R.id.categoryName);
-            categoryIcon = itemView.findViewById(R.id.categoryIcon);
+            categoryName = itemView.findViewById(R.id.tvCategoryTitle);   // FIXED
+            categoryIcon = itemView.findViewById(R.id.imgCategoryIcon);   // FIXED
         }
     }
 }

@@ -1,124 +1,275 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    item_discover_card.xml
+    Full-width vertical offer card — Obsidian Finance theme.
+    Sections:
+      1. Top row  : icon  |  title + subtitle  |  discount badge
+      2. Divider
+      3. Coupon chip + timer row
+      4. Expiry footer
+-->
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/cardDiscoverAccent"
-    android:layout_width="280dp"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="14dp"
+    android:layout_marginBottom="14dp"
     android:clickable="true"
     android:focusable="true"
-    android:foreground="?attr/selectableItemBackgroundBorderless"
-    app:cardCornerRadius="28dp"
-    app:cardElevation="6dp"
+    app:cardCornerRadius="24dp"
+    app:cardBackgroundColor="#0F1421"
+    app:cardElevation="0dp"
     app:strokeWidth="1dp"
-    app:strokeColor="#30FFFFFF"
-    app:cardBackgroundColor="#111827">
+    app:strokeColor="#1E2A3E">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="20dp">
+        android:orientation="vertical">
 
-        <!-- TOP ROW -->
+        <!-- ══════════════════════════════════════
+             TOP ROW — icon / title / discount
+        ══════════════════════════════════════ -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:padding="18dp">
 
-            <!-- PREMIUM ICON -->
-            <FrameLayout
-                android:layout_width="52dp"
-                android:layout_height="52dp"
-                android:background="@drawable/bg_discover_glow_circle"
-                android:gravity="center">
+            <!-- Brand / category icon -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="54dp"
+                android:layout_height="54dp"
+                app:cardCornerRadius="16dp"
+                app:cardBackgroundColor="#141929"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="#1E2A3E">
 
                 <ImageView
                     android:id="@+id/imgDiscoverIcon"
-                    android:layout_width="26dp"
-                    android:layout_height="26dp"
-                    android:scaleType="centerInside"
-                    app:tint="@android:color/white"/>
-            </FrameLayout>
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="12dp"
+                    android:scaleType="centerInside"/>
 
-            <!-- TITLE + SUB -->
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Title + subtitle -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="vertical"
-                android:layout_marginStart="14dp">
+                android:layout_marginStart="14dp"
+                android:layout_marginEnd="10dp">
 
                 <TextView
                     android:id="@+id/tvDiscoverTitle"
-                    android:text="Offer Title"
-                    android:textSize="17sp"
-                    android:textStyle="bold"
-                    android:textColor="@android:color/white"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:text="Offer Title"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end"/>
 
                 <TextView
                     android:id="@+id/tvDiscoverSub"
-                    android:text="Offer subtitle here"
-                    android:textSize="13sp"
-                    android:textColor="#9CA3AF"
-                    android:layout_marginTop="4dp"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Subtitle goes here"
+                    android:textColor="#8899B4"
+                    android:textSize="12sp"
+                    android:maxLines="2"
+                    android:ellipsize="end"/>
+
             </LinearLayout>
+
+            <!-- Discount badge — gold pill -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardBackgroundColor="#1A1608"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="#2A2210">
+
+                <TextView
+                    android:id="@+id/tvDiscount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp"
+                    android:text="50% OFF"
+                    android:textColor="#D4A853"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.02"/>
+
+            </com.google.android.material.card.MaterialCardView>
+
         </LinearLayout>
 
-        <!-- DISCOUNT BADGE STYLE -->
-        <TextView
-            android:id="@+id/tvDiscount"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="50% OFF"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/white"
-            android:background="@drawable/bg_discount_badge"
-            android:stateListAnimator="@animator/lift_on_press"
-            android:paddingHorizontal="14dp"
-            android:paddingVertical="6dp"
-            android:layout_marginTop="16dp"/>
+        <!-- ══════════════════════════════════════
+             THIN DIVIDER
+        ══════════════════════════════════════ -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginStart="18dp"
+            android:layout_marginEnd="18dp"
+            android:background="#1E2A3E"/>
 
-        <!-- COUPON CHIP -->
-        <TextView
-            android:id="@+id/tvCoupon"
-            android:layout_width="wrap_content"
+        <!-- ══════════════════════════════════════
+             COUPON + TIMER ROW
+        ══════════════════════════════════════ -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Use Code: SAVE50"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            android:textColor="#60A5FA"
-            android:background="@drawable/bg_coupon_chip"
-            android:paddingHorizontal="14dp"
-            android:paddingVertical="8dp"
-            android:layout_marginTop="12dp"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp"
+            android:paddingTop="14dp"
+            android:paddingBottom="14dp">
 
-        <!-- TIMER -->
-        <TextView
-            android:id="@+id/tvTimer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Time Left: 2h 30m 10s"
-            android:textSize="13sp"
-            android:textColor="#F97316"
-            android:layout_marginTop="14dp"/>
+            <!-- Coupon chip — tap to copy -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="10dp"
+                app:cardCornerRadius="18dp"
+                app:cardBackgroundColor="#080C18"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="#1E2A3E">
 
-        <!-- EXPIRY -->
-        <TextView
-            android:id="@+id/tvExpiryExact"
-            android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp">
+
+                    <ImageView
+                        android:layout_width="13dp"
+                        android:layout_height="13dp"
+                        android:layout_marginEnd="6dp"
+                        android:src="@drawable/ic_offer"
+                        android:tint="#3D4E68"/>
+
+                    <TextView
+                        android:id="@+id/tvCoupon"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="SAVE50"
+                        android:textColor="#8899B4"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.06"
+                        android:maxLines="1"
+                        android:ellipsize="end"/>
+
+                    <!-- Copy icon -->
+                    <ImageView
+                        android:layout_width="13dp"
+                        android:layout_height="13dp"
+                        android:layout_marginStart="6dp"
+                        android:src="@android:drawable/ic_menu_edit"
+                        android:tint="#3D4E68"/>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Countdown timer -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="11dp"
+                    android:layout_height="11dp"
+                    android:layout_marginEnd="5dp"
+                    android:src="@drawable/ic_calender"
+                    android:tint="#D4A853"/>
+
+                <TextView
+                    android:id="@+id/tvTimer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2h 30m 10s"
+                    android:textColor="#D4A853"
+                    android:textSize="11sp"
+                    android:textStyle="bold"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- ══════════════════════════════════════
+             EXPIRY FOOTER
+        ══════════════════════════════════════ -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Expires on: 18/02/2026 10:18:22"
-            android:textSize="12sp"
-            android:textColor="#6B7280"
-            android:layout_marginTop="4dp"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp"
+            android:paddingBottom="16dp">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="12dp"
+                android:background="#1E2A3E"
+                android:visibility="gone"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp"
+            android:paddingBottom="14dp"
+            android:layout_marginTop="-10dp">
+
+            <TextView
+                android:id="@+id/tvExpiryExact"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Expires 18/02/2026"
+                android:textColor="#3D4E68"
+                android:textSize="11sp"/>
+
+            <!-- Tap to open link label -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="View offer →"
+                android:textColor="#D4A853"
+                android:textSize="11sp"
+                android:textStyle="bold"/>
+
+        </LinearLayout>
 
     </LinearLayout>
 
