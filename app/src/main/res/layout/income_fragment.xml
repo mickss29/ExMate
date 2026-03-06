@@ -7,247 +7,613 @@
     android:fillViewport="true"
     android:clipToPadding="false"
     android:overScrollMode="never"
-    android:background="#F2F0EF">
+    android:background="#0B1120">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="18dp">
+        android:orientation="vertical">
 
-        <!-- ================= HERO CARD ================= -->
-        <com.google.android.material.card.MaterialCardView
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!--   HERO SECTION — Full dark gradient + big amount    -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardBackgroundColor="#0E1A2B"
-            app:cardCornerRadius="30dp"
-            app:cardElevation="12dp">
+            android:orientation="vertical"
+            android:background="@drawable/income_hero_gradient"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingTop="32dp"
+            android:paddingBottom="48dp">
 
+            <!-- TOP BAR -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="22dp">
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-                <!-- TOP ROW (TITLE + MIC) -->
+                <!-- Live Dot + Label -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <View
+                        android:layout_width="8dp"
+                        android:layout_height="8dp"
+                        android:background="@drawable/dot_green_glow"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="ADD INCOME"
+                        android:textColor="#34D399"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.12"/>
+                </LinearLayout>
+
+                <!-- MIC FAB -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnVoiceIncome"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    app:cardCornerRadius="24dp"
+                    app:cardBackgroundColor="#0D2818"
+                    app:cardElevation="12dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="#1A4A30"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_gravity="center"
+                            android:src="@android:drawable/ic_btn_speak_now"
+                            app:tint="#34D399"/>
+                    </FrameLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+
+            <!-- SUBTITLE -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp"
+                android:text="How much did you receive?"
+                android:textColor="#4B6E58"
+                android:textSize="13sp"/>
+
+            <!-- CURRENCY + BIG AMOUNT INPUT -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="₹"
+                    android:textColor="#34D399"
+                    android:textSize="36sp"
+                    android:textStyle="bold"
+                    android:layout_marginEnd="4dp"
+                    android:layout_marginBottom="8dp"/>
+
+                <EditText
+                    android:id="@+id/etIncomeAmount"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="0.00"
+                    android:gravity="start|center_vertical"
+                    android:inputType="numberDecimal"
+                    android:textColor="#FFFFFF"
+                    android:textColorHint="#1A3D2B"
+                    android:textSize="52sp"
+                    android:textStyle="bold"
+                    android:background="@null"
+                    android:singleLine="true"
+                    android:padding="0dp"/>
+            </LinearLayout>
+
+            <!-- GREEN DIVIDER LINE -->
+            <View
+                android:layout_width="56dp"
+                android:layout_height="3dp"
+                android:layout_marginTop="2dp"
+                android:background="@drawable/income_accent_line"/>
+
+            <!-- VOICE DETECTED LABEL -->
+            <TextView
+                android:id="@+id/tvVoiceDetectedIncome"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text=""
+                android:textColor="#34D399"
+                android:textSize="11sp"
+                android:visibility="gone"/>
+
+            <!-- ── QUICK CHIPS ── -->
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/chipIncome50"
+                        android:layout_width="wrap_content"
+                        android:layout_height="34dp"
+                        android:text="+₹50"
+                        android:gravity="center"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:textColor="#34D399"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:background="@drawable/chip_income_bg"
+                        android:clickable="true"
+                        android:focusable="true"/>
+
+                    <TextView
+                        android:id="@+id/chipIncome100"
+                        android:layout_width="wrap_content"
+                        android:layout_height="34dp"
+                        android:layout_marginStart="8dp"
+                        android:text="+₹100"
+                        android:gravity="center"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:textColor="#34D399"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:background="@drawable/chip_income_bg"
+                        android:clickable="true"
+                        android:focusable="true"/>
+
+                    <TextView
+                        android:id="@+id/chipIncome500"
+                        android:layout_width="wrap_content"
+                        android:layout_height="34dp"
+                        android:layout_marginStart="8dp"
+                        android:text="+₹500"
+                        android:gravity="center"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:textColor="#34D399"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:background="@drawable/chip_income_bg"
+                        android:clickable="true"
+                        android:focusable="true"/>
+
+                    <TextView
+                        android:id="@+id/chipIncome1000"
+                        android:layout_width="wrap_content"
+                        android:layout_height="34dp"
+                        android:layout_marginStart="8dp"
+                        android:text="+₹1K"
+                        android:gravity="center"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:textColor="#34D399"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:background="@drawable/chip_income_bg"
+                        android:clickable="true"
+                        android:focusable="true"/>
+
+                    <TextView
+                        android:id="@+id/chipIncome5000"
+                        android:layout_width="wrap_content"
+                        android:layout_height="34dp"
+                        android:layout_marginStart="8dp"
+                        android:text="+₹5K"
+                        android:gravity="center"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:textColor="#34D399"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:background="@drawable/chip_income_bg"
+                        android:clickable="true"
+                        android:focusable="true"/>
+
+                </LinearLayout>
+            </HorizontalScrollView>
+
+        </LinearLayout>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!--   DETAILS PANEL — Elevated bottom sheet style       -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bottom_sheet_rounded"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingTop="32dp"
+            android:paddingBottom="36dp"
+            android:layout_marginTop="-24dp">
+
+            <!-- Drag Handle -->
+            <View
+                android:layout_width="40dp"
+                android:layout_height="4dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="24dp"
+                android:background="@drawable/drag_handle_shape"/>
+
+            <!-- ─── SOURCE ─── -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="6dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Source"
+                    android:textColor="#94A3B8"
+                    android:textSize="12sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Required"
+                    android:textColor="#1E3A28"
+                    android:textSize="10sp"/>
+            </LinearLayout>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                app:cardBackgroundColor="#111827"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#1E293B"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="8dp">
+
+                    <TextView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:text="💼"
+                        android:gravity="center"
+                        android:textSize="16sp"/>
+
+                    <Spinner
+                        android:id="@+id/spIncomeSource"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:paddingStart="8dp"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ─── PAYMENT MODE ─── -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="6dp"
+                android:text="Payment Mode"
+                android:textColor="#94A3B8"
+                android:textSize="12sp"
+                android:textStyle="bold"/>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                app:cardBackgroundColor="#111827"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#1E293B"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="8dp">
+
+                    <TextView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:text="💳"
+                        android:gravity="center"
+                        android:textSize="16sp"/>
+
+                    <Spinner
+                        android:id="@+id/spPaymentMode"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:paddingStart="8dp"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ─── DATE ─── -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="6dp"
+                android:text="Date"
+                android:textColor="#94A3B8"
+                android:textSize="12sp"
+                android:textStyle="bold"/>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                app:cardBackgroundColor="#111827"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#1E293B"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="16dp">
+
+                    <TextView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:text="📅"
+                        android:gravity="center"
+                        android:textSize="16sp"/>
+
+                    <EditText
+                        android:id="@+id/etIncomeDate"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginStart="8dp"
+                        android:hint="Select date"
+                        android:focusable="false"
+                        android:clickable="true"
+                        android:background="@null"
+                        android:textColor="#E2E8F0"
+                        android:textColorHint="#374151"
+                        android:textSize="14sp"
+                        android:textStyle="bold"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="›"
+                        android:textColor="#374151"
+                        android:textSize="24sp"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ─── NOTE ─── -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="6dp"
+                android:text="Note"
+                android:textColor="#94A3B8"
+                android:textSize="12sp"
+                android:textStyle="bold"/>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="#111827"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#1E293B"
+                app:strokeWidth="1dp">
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:gravity="top"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="12dp">
 
-                    <LinearLayout
+                    <TextView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:text="✏️"
+                        android:gravity="center"
+                        android:textSize="16sp"/>
+
+                    <EditText
+                        android:id="@+id/etIncomeNote"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Add Income"
-                            android:textColor="#E2E8F0"
-                            android:textSize="14sp"
-                            android:textStyle="bold"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="Tap mic to add by voice"
-                            android:textColor="#94A3B8"
-                            android:textSize="11sp"/>
-                    </LinearLayout>
-
-                    <!-- 🎙️ MIC BUTTON (Premium placement) -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/btnVoiceIncome"
-                        android:layout_width="46dp"
-                        android:layout_height="46dp"
-                        app:cardCornerRadius="23dp"
-                        app:cardBackgroundColor="#1F2A44"
-                        app:cardElevation="10dp"
-                        app:strokeWidth="1dp"
-                        app:strokeColor="#223B5C"
-                        android:clickable="true"
-                        android:focusable="true">
-
-                        <ImageView
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:padding="12dp"
-                            android:src="@android:drawable/ic_btn_speak_now"
-                            android:tint="#E2E8F0"/>
-                    </com.google.android.material.card.MaterialCardView>
-
+                        android:layout_marginStart="8dp"
+                        android:hint="Add a note (optional)"
+                        android:background="@null"
+                        android:textColor="#E2E8F0"
+                        android:textColorHint="#374151"
+                        android:textSize="14sp"
+                        android:minLines="2"
+                        android:maxLines="4"
+                        android:gravity="top"/>
                 </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-                <!-- AMOUNT -->
-                <EditText
-                    android:id="@+id/etIncomeAmount"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="18dp"
-                    android:hint="₹ 0.00"
-                    android:gravity="center"
-                    android:inputType="numberDecimal"
-                    android:textColor="#F7F9FC"
-                    android:textColorHint="#64748B"
-                    android:textSize="34sp"
-                    android:textStyle="bold"
-                    android:backgroundTint="#0EA5E9"
-                    android:padding="18dp"/>
-
-                <!-- 🎙️ Detected text -->
-                <TextView
-                    android:id="@+id/tvVoiceDetectedIncome"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text=""
-                    android:textColor="#94A3B8"
-                    android:textSize="12sp"
-                    android:gravity="center"
-                    android:visibility="gone"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:text="Enter your income amount"
-                    android:textColor="#94A3B8"
-                    android:textSize="12sp"
-                    android:layout_gravity="center_horizontal"/>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- ================= DETAILS CARD ================= -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            app:cardBackgroundColor="#FFFFFF"
-            app:cardCornerRadius="28dp"
-            app:cardElevation="6dp"
-            app:strokeColor="#E5E7EB"
-            app:strokeWidth="1dp">
-
-            <LinearLayout
+            <!-- ─── RECURRING TOGGLE ─── -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="20dp">
+                android:layout_marginTop="16dp"
+                app:cardBackgroundColor="#111827"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#1E293B"
+                app:strokeWidth="1dp">
 
-                <!-- SOURCE -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Source"
-                    android:textColor="#64748B"
-                    android:textSize="12sp"
-                    android:textStyle="bold"/>
-
-                <Spinner
-                    android:id="@+id/spIncomeSource"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"/>
+                    android:orientation="vertical">
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginTop="16dp"
-                    android:background="#EEF2F7"/>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="60dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp">
 
-                <!-- PAYMENT -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:text="Payment Mode"
-                    android:textColor="#64748B"
-                    android:textSize="12sp"
-                    android:textStyle="bold"/>
+                        <TextView
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:text="🔄"
+                            android:gravity="center"
+                            android:textSize="16sp"/>
 
-                <Spinner
-                    android:id="@+id/spPaymentMode"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"/>
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="10dp"
+                            android:orientation="vertical">
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginTop="16dp"
-                    android:background="#EEF2F7"/>
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Recurring"
+                                android:textColor="#E2E8F0"
+                                android:textSize="14sp"
+                                android:textStyle="bold"/>
 
-                <!-- DATE -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:text="Date"
-                    android:textColor="#64748B"
-                    android:textSize="12sp"
-                    android:textStyle="bold"/>
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Auto-repeat this income"
+                                android:textColor="#4B6280"
+                                android:textSize="11sp"/>
+                        </LinearLayout>
 
-                <EditText
-                    android:id="@+id/etIncomeDate"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:hint="Select date"
-                    android:focusable="false"
-                    android:clickable="true"
-                    android:textColor="#0E1A2B"
-                    android:textColorHint="#94A3B8"/>
+                        <Switch
+                            android:id="@+id/switchRecurringIncome"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checked="false"/>
+                    </LinearLayout>
 
-                <!-- NOTE -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:text="Note (optional)"
-                    android:textColor="#94A3B8"
-                    android:textSize="12sp"
-                    android:textStyle="bold"/>
+                    <!-- Repeat type dropdown -->
+                    <LinearLayout
+                        android:id="@+id/layoutRecurringTypeIncome"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingStart="56dp"
+                        android:paddingEnd="14dp"
+                        android:paddingBottom="8dp"
+                        android:visibility="gone">
 
-                <EditText
-                    android:id="@+id/etIncomeNote"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:hint="Message, remarks, etc."
-                    android:textColor="#0E1A2B"
-                    android:textColorHint="#94A3B8"/>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Repeats"
+                            android:textColor="#4B6280"
+                            android:textSize="12sp"/>
 
-        <!-- ================= SAVE ================= -->
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="28dp">
+                        <Spinner
+                            android:id="@+id/spRecurringTypeIncome"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:layout_marginStart="12dp"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-            <Button
-                android:id="@+id/btnSaveIncome"
+            <!-- ─── SAVE BUTTON ─── -->
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:text="Save Income"
-                android:textStyle="bold"
-                android:textColor="#FFFFFF"
-                android:background="@drawable/btn_press_anim"/>
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp">
 
-            <ProgressBar
-                android:id="@+id/progressSaveIncome"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:layout_gravity="center"
-                android:visibility="gone"/>
-        </FrameLayout>
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="20dp"
+                    app:cardBackgroundColor="#059669">
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="18dp"/>
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <Button
+                            android:id="@+id/btnSaveIncome"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:text="Save Income  ✓"
+                            android:textStyle="bold"
+                            android:textColor="#FFFFFF"
+                            android:textSize="15sp"
+                            android:letterSpacing="0.04"
+                            android:background="@null"/>
+
+                        <ProgressBar
+                            android:id="@+id/progressSaveIncome"
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:layout_gravity="center"
+                            android:indeterminateTint="#FFFFFF"
+                            android:visibility="gone"/>
+                    </FrameLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </FrameLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="20dp"/>
+
+        </LinearLayout>
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

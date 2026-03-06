@@ -1,29 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- ✅ FIXED BUG #4: Wrapped MaterialToolbar in AppBarLayout
+     Previously: Toolbar was a direct child of CoordinatorLayout
+     → app:layout_scrollFlags="scroll|enterAlways" was SILENTLY IGNORED
+     Now: Toolbar inside AppBarLayout → scroll behavior works correctly -->
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#0B101A">
-
-    <!-- Top Toolbar -->
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbarAdd"
+    <!-- ✅ FIXED: AppBarLayout wrapping Toolbar (required for CoordinatorLayout scroll) -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?attr/colorPrimary"
-        android:navigationIcon="@drawable/ic_back"
-        android:title="Add Transaction"
-        android:titleTextColor="@android:color/white"
-        app:layout_scrollFlags="scroll|enterAlways" />
-
-    <!-- Tab + Content -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:layout_marginTop="?attr/actionBarSize">
-
+        app:elevation="4dp">
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbarAdd"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/colorPrimary"
+            android:navigationIcon="@drawable/ic_back"
+            android:title="Add Transaction"
+            android:titleTextColor="@android:color/white"
+            app:layout_scrollFlags="scroll|enterAlways" />
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayout"
             android:layout_width="match_parent"
@@ -32,14 +33,13 @@
             app:tabIndicatorColor="@color/premiumButtonColor"
             app:tabSelectedTextColor="@android:color/white"
             app:tabTextColor="#A1A1AA"
-            app:tabIndicatorHeight="3dp" />
-
-        <androidx.viewpager2.widget.ViewPager2
-            android:id="@+id/viewPager"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-
-    </LinearLayout>
-
+            app:tabIndicatorHeight="3dp"
+            app:layout_scrollFlags="noScroll" />
+    </com.google.android.material.appbar.AppBarLayout>
+    <!-- ViewPager2 — content area -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
