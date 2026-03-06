@@ -1,166 +1,532 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0A0F1C"
-    android:padding="18dp">
+    android:background="#0B1120"
+    android:overScrollMode="never"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- ================= PROFILE HEADER ================= -->
+        <!-- ═══════════════════════════════════════════════ -->
+        <!--           HERO — Gradient + Avatar              -->
+        <!-- ═══════════════════════════════════════════════ -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:gravity="center_horizontal"
-            android:padding="12dp">
+            android:background="@drawable/profile_hero_gradient"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingTop="36dp"
+            android:paddingBottom="52dp"
+            android:gravity="center_horizontal">
 
+            <!-- Screen label -->
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="My Profile"
-                android:textColor="#FFFFFF"
+                android:textColor="#64748B"
+                android:textSize="12sp"
                 android:textStyle="bold"
-                android:textSize="20sp" />
+                android:letterSpacing="0.12"
+                android:gravity="center"/>
 
-            <!-- ===== Premium Avatar with Edit Overlay ===== -->
+            <!-- Avatar frame -->
             <FrameLayout
-                android:layout_width="96dp"
-                android:layout_height="96dp"
-                android:layout_marginTop="16dp">
+                android:layout_width="92dp"
+                android:layout_height="92dp"
+                android:layout_marginTop="22dp">
 
-                <!-- Avatar circle -->
+                <!-- Glow ring -->
+                <View
+                    android:layout_width="92dp"
+                    android:layout_height="92dp"
+                    android:background="@drawable/avatar_glow_ring"/>
+
+                <!-- Avatar card -->
                 <com.google.android.material.card.MaterialCardView
-                    android:layout_width="96dp"
-                    android:layout_height="96dp"
-                    app:cardCornerRadius="48dp"
-                    app:cardElevation="12dp"
-                    app:strokeWidth="1dp"
-                    app:strokeColor="#243B67"
-                    app:cardBackgroundColor="#0A1022">
+                    android:id="@+id/cardAvatar"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:layout_gravity="center"
+                    app:cardCornerRadius="40dp"
+                    app:cardElevation="16dp"
+                    app:strokeWidth="0dp"
+                    app:cardBackgroundColor="#1E3A5F">
 
+                    <!-- Initials (default) -->
+                    <TextView
+                        android:id="@+id/tvAvatarInitials"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text="U"
+                        android:textColor="#FFFFFF"
+                        android:textSize="28sp"
+                        android:textStyle="bold"/>
+
+                    <!-- Photo (loaded over initials) -->
                     <ImageView
                         android:id="@+id/imgAvatar"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:src="@drawable/ic_user"
-                        android:scaleType="centerCrop" />
+                        android:scaleType="centerCrop"
+                        android:visibility="gone"/>
+
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Edit button overlay -->
+                <!-- Edit overlay button -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/btnEditAvatar"
-                    android:layout_width="34dp"
-                    android:layout_height="34dp"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
                     android:layout_gravity="bottom|end"
-                    android:layout_marginEnd="2dp"
-                    android:layout_marginBottom="2dp"
-                    app:cardCornerRadius="13dp"
-                    app:cardElevation="14dp"
-                    app:cardBackgroundColor="#2F4DFF"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="8dp"
+                    app:cardBackgroundColor="#3B82F6"
                     android:clickable="true"
                     android:focusable="true">
 
                     <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:padding="8dp"
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:layout_gravity="center"
                         android:src="@drawable/ic_edit"
-                        android:tint="@android:color/white" />
+                        android:tint="#FFFFFF"/>
                 </com.google.android.material.card.MaterialCardView>
 
             </FrameLayout>
 
+            <!-- Name -->
             <TextView
                 android:id="@+id/tvUserName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
-                android:text="User"
+                android:layout_marginTop="16dp"
+                android:text="Loading…"
                 android:textColor="#FFFFFF"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:textSize="20sp"
+                android:textStyle="bold"/>
 
+            <!-- Email -->
             <TextView
                 android:id="@+id/tvUserEmail"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="email@example.com"
-                android:textColor="#9CA3AF"
-                android:textSize="14sp" />
+                android:text="—"
+                android:textColor="#4B6280"
+                android:textSize="13sp"/>
 
+            <!-- Member badge -->
             <TextView
-                android:id="@+id/tvUserPhone"
+                android:id="@+id/tvMemberSince"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text=""
-                android:textColor="#9CA3AF"
-                android:textSize="14sp" />
+                android:layout_marginTop="10dp"
+                android:text="Member"
+                android:textColor="#3B82F6"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.1"
+                android:background="@drawable/badge_dark"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"/>
+
         </LinearLayout>
 
-        <!-- ================= SETTINGS ================= -->
-
-        <include
-            android:id="@+id/itemProfileInfo"
-            layout="@layout/row_profile_item"
-            android:background="@drawable/bg_row_card" />
-
-        <!-- 🔒 APP LOCK -->
-        <include
-            android:id="@+id/itemAppLock"
-            layout="@layout/row_profile_item_switch"
-            android:background="@drawable/bg_row_card" />
-
-        <include
-            android:id="@+id/itemSubscription"
-            layout="@layout/row_profile_item"
-            android:background="@drawable/bg_row_card" />
-        <include
-            android:id="@+id/itemAnalysis"
-            layout="@layout/row_profile_item"
-            android:background="@drawable/bg_row_card" />
-        <include
-            android:id="@+id/itemAbout"
-            layout="@layout/row_profile_item"
-            android:background="@drawable/bg_row_card" />
-
-        <include
-            android:id="@+id/itemTerms"
-            layout="@layout/row_profile_item"
-            android:background="@drawable/bg_row_card" />
-
-        <include
-            android:id="@+id/itemPrivacy"
-            layout="@layout/row_profile_item"
-            android:background="@drawable/bg_row_card" />
-
-        <!-- ================= LOGOUT ================= -->
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnLogout"
+        <!-- ═══════════════════════════════════════════════ -->
+        <!--        BOTTOM SHEET — Stats + Menu              -->
+        <!-- ═══════════════════════════════════════════════ -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_marginTop="28dp"
-            android:text="Logout"
-            android:textStyle="bold"
-            android:textColor="#FFFFFF"
-            android:backgroundTint="#EF4444"
-            android:stateListAnimator="@null"
-            app:cornerRadius="18dp" />
-
-        <TextView
-            android:id="@+id/tvFeedbackStatus"
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:textColor="#FFFFFF"
-            android:textSize="13sp" />
+            android:orientation="vertical"
+            android:background="@drawable/bottom_sheet_rounded"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="28dp"
+            android:paddingBottom="40dp"
+            android:layout_marginTop="-24dp">
 
+            <!-- Drag handle -->
+            <View
+                android:layout_width="40dp"
+                android:layout_height="4dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="24dp"
+                android:background="@drawable/drag_handle_shape"/>
+
+            <!-- ── STATS ROW ── -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="26dp"
+                app:cardBackgroundColor="#111827"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#1E293B"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="18dp">
+
+                    <!-- Income -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="INCOME"
+                            android:textColor="#374151"
+                            android:textSize="9sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.12"/>
+
+                        <TextView
+                            android:id="@+id/tvStatIncome"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="5dp"
+                            android:text="₹—"
+                            android:textColor="#34D399"
+                            android:textSize="14sp"
+                            android:textStyle="bold"/>
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="32dp"
+                        android:layout_gravity="center_vertical"
+                        android:background="#1E293B"/>
+
+                    <!-- Expense -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="EXPENSE"
+                            android:textColor="#374151"
+                            android:textSize="9sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.12"/>
+
+                        <TextView
+                            android:id="@+id/tvStatExpense"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="5dp"
+                            android:text="₹—"
+                            android:textColor="#F87171"
+                            android:textSize="14sp"
+                            android:textStyle="bold"/>
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="32dp"
+                        android:layout_gravity="center_vertical"
+                        android:background="#1E293B"/>
+
+                    <!-- Balance -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="BALANCE"
+                            android:textColor="#374151"
+                            android:textSize="9sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.12"/>
+
+                        <TextView
+                            android:id="@+id/tvStatBalance"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="5dp"
+                            android:text="₹—"
+                            android:textColor="#FFFFFF"
+                            android:textSize="14sp"
+                            android:textStyle="bold"/>
+                    </LinearLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ── SECTION: Account ── -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ACCOUNT"
+                android:textColor="#2D3748"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.15"
+                android:layout_marginBottom="10dp"/>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="#111827"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#1E293B"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <!-- Edit Profile -->
+                    <LinearLayout
+                        android:id="@+id/itemProfileInfo"
+                        style="@style/ProfileRow">
+
+                        <TextView style="@style/ProfileRowEmoji" android:text="👤"/>
+                        <LinearLayout style="@style/ProfileRowTextGroup">
+                            <TextView style="@style/ProfileRowTitle" android:text="Edit Profile"/>
+                            <TextView style="@style/ProfileRowSub" android:text="Name, phone number"/>
+                        </LinearLayout>
+                        <TextView style="@style/ProfileRowChevron"/>
+                    </LinearLayout>
+
+                    <View style="@style/ProfileDivider"/>
+
+                    <!-- App Lock -->
+                    <LinearLayout
+                        android:id="@+id/itemAppLock"
+                        style="@style/ProfileRow">
+
+                        <TextView style="@style/ProfileRowEmoji" android:text="🔒"/>
+                        <LinearLayout style="@style/ProfileRowTextGroup">
+                            <TextView style="@style/ProfileRowTitle" android:text="App Lock"/>
+                            <TextView
+                                android:id="@+id/tvAppLockStatus"
+                                style="@style/ProfileRowSub"
+                                android:text="Disabled"/>
+                        </LinearLayout>
+                        <TextView style="@style/ProfileRowChevron"/>
+                    </LinearLayout>
+
+                    <View style="@style/ProfileDivider"/>
+
+                    <!-- Subscription -->
+                    <LinearLayout
+                        android:id="@+id/itemSubscription"
+                        style="@style/ProfileRow">
+
+                        <TextView style="@style/ProfileRowEmoji" android:text="⭐"/>
+                        <LinearLayout style="@style/ProfileRowTextGroup">
+                            <TextView style="@style/ProfileRowTitle" android:text="Subscription"/>
+                            <TextView style="@style/ProfileRowSub" android:textColor="#FBBF24"
+                                android:text="Upgrade to Pro"/>
+                        </LinearLayout>
+                        <TextView style="@style/ProfileRowChevron"/>
+                    </LinearLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ── SECTION: Tools ── -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="TOOLS"
+                android:textColor="#2D3748"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.15"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="10dp"/>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="#111827"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#1E293B"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <!-- Analysis -->
+                    <LinearLayout
+                        android:id="@+id/itemAnalysis"
+                        style="@style/ProfileRow">
+
+                        <TextView style="@style/ProfileRowEmoji" android:text="📊"/>
+                        <LinearLayout style="@style/ProfileRowTextGroup">
+                            <TextView style="@style/ProfileRowTitle" android:text="Transaction Analysis"/>
+                            <TextView style="@style/ProfileRowSub" android:text="Charts &amp; insights"/>
+                        </LinearLayout>
+                        <TextView style="@style/ProfileRowChevron"/>
+                    </LinearLayout>
+
+                    <View style="@style/ProfileDivider"/>
+
+                    <!-- Feedback -->
+                    <LinearLayout
+                        android:id="@+id/itemFeedback"
+                        style="@style/ProfileRow">
+
+                        <TextView style="@style/ProfileRowEmoji" android:text="💬"/>
+                        <LinearLayout style="@style/ProfileRowTextGroup">
+                            <TextView style="@style/ProfileRowTitle" android:text="Send Feedback"/>
+                            <TextView
+                                android:id="@+id/tvFeedbackStatus"
+                                style="@style/ProfileRowSub"
+                                android:text="Report a bug or suggestion"/>
+                        </LinearLayout>
+                        <TextView style="@style/ProfileRowChevron"/>
+                    </LinearLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ── SECTION: Legal ── -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="LEGAL"
+                android:textColor="#2D3748"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.15"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="10dp"/>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="#111827"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#1E293B"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/itemAbout"
+                        style="@style/ProfileRow">
+                        <TextView style="@style/ProfileRowEmoji" android:text="ℹ️"/>
+                        <LinearLayout style="@style/ProfileRowTextGroup">
+                            <TextView style="@style/ProfileRowTitle" android:text="About ExMate"/>
+                        </LinearLayout>
+                        <TextView style="@style/ProfileRowChevron"/>
+                    </LinearLayout>
+
+                    <View style="@style/ProfileDivider"/>
+
+                    <LinearLayout
+                        android:id="@+id/itemTerms"
+                        style="@style/ProfileRow">
+                        <TextView style="@style/ProfileRowEmoji" android:text="📄"/>
+                        <LinearLayout style="@style/ProfileRowTextGroup">
+                            <TextView style="@style/ProfileRowTitle" android:text="Terms &amp; Conditions"/>
+                        </LinearLayout>
+                        <TextView style="@style/ProfileRowChevron"/>
+                    </LinearLayout>
+
+                    <View style="@style/ProfileDivider"/>
+
+                    <LinearLayout
+                        android:id="@+id/itemPrivacy"
+                        style="@style/ProfileRow">
+                        <TextView style="@style/ProfileRowEmoji" android:text="🔏"/>
+                        <LinearLayout style="@style/ProfileRowTextGroup">
+                            <TextView style="@style/ProfileRowTitle" android:text="Privacy Policy"/>
+                        </LinearLayout>
+                        <TextView style="@style/ProfileRowChevron"/>
+                    </LinearLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ── LOGOUT ── -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginTop="24dp"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#1A0707"
+                app:strokeColor="#4A1A1A"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:id="@+id/btnLogout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🚪"
+                        android:textSize="18sp"
+                        android:layout_marginEnd="10dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Log Out"
+                        android:textColor="#F87171"
+                        android:textSize="15sp"
+                        android:textStyle="bold"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Version footer -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="ExMate v1.0 · Made with ❤️"
+                android:textColor="#1E293B"
+                android:textSize="11sp"
+                android:gravity="center"/>
+
+        </LinearLayout>
     </LinearLayout>
-
-</ScrollView>
+</androidx.core.widget.NestedScrollView>
