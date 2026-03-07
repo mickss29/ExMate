@@ -1,62 +1,326 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="12dp"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#060C1E">
 
-    <TextView
-        android:id="@+id/tvUserName"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+    <!-- ── AMBIENT GLOW ──────────────────────────────────────── -->
+    <View
+        android:layout_width="260dp"
+        android:layout_height="260dp"
+        android:alpha="0.13"
+        android:background="@drawable/blob_glow_top"
+        android:translationX="-50dp"
+        android:translationY="-50dp" />
 
-    <TextView
-        android:id="@+id/tvUserEmail"
-        android:textSize="14sp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
-    <TextView
-        android:id="@+id/tvSummary"
-        android:textSize="15sp"
-        android:textStyle="bold"
-        android:padding="8dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
-    <TextView
-        android:text="Income"
-        android:textStyle="bold"
-        android:textColor="#1B8E3E"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerIncome"
+    <!-- ═══════════════════════════════════════════════════════
+         HEADER — User info + summary card
+    ═══════════════════════════════════════════════════════ -->
+    <LinearLayout
+        android:id="@+id/headerBlock"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"/>
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/admin_header_bg"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="46dp"
+        android:paddingBottom="20dp">
 
-    <TextView
-        android:text="Expense"
-        android:textStyle="bold"
-        android:textColor="#B00020"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        <!-- Back + Title -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerExpense"
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/btnBack"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                app:cardCornerRadius="10dp"
+                app:cardBackgroundColor="#0D1530"
+                app:cardElevation="0dp"
+                app:strokeColor="#1A2C52"
+                app:strokeWidth="1dp"
+                android:clickable="true"
+                android:focusable="true">
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="9dp"
+                    android:src="@drawable/ic_back"
+                    app:tint="#5B8BFF" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="14dp"
+                android:text="Finance Report"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <!-- Export PDF -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/fabExportPdf"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                app:cardCornerRadius="10dp"
+                app:cardBackgroundColor="#0D1F4A"
+                app:cardElevation="0dp"
+                app:strokeColor="#1A3BCC"
+                app:strokeWidth="1dp"
+                android:clickable="true"
+                android:focusable="true">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:orientation="horizontal">
+                    <ImageView
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:src="@drawable/ic_export"
+                        app:tint="#5B8BFF"
+                        android:layout_marginEnd="6dp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Export PDF"
+                        android:textColor="#5B8BFF"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+        <!-- User info card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="#0A1228"
+            app:strokeColor="#131F3A"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="16dp">
+
+                <!-- Avatar -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    app:cardCornerRadius="14dp"
+                    app:cardBackgroundColor="#0D1F4A"
+                    app:cardElevation="0dp"
+                    app:strokeColor="#1A3BCC"
+                    app:strokeWidth="1dp">
+                    <TextView
+                        android:id="@+id/tvUserInitial"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text="A"
+                        android:textColor="#5B8BFF"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Name + Email -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="14dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tvUserName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="User Name"
+                        android:textColor="#FFFFFF"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvUserEmail"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="user@email.com"
+                        android:textColor="#2E4470"
+                        android:textSize="12sp"
+                        android:layout_marginTop="3dp" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Summary pill -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="#040C1A"
+            app:strokeColor="#0D1A36"
+            app:strokeWidth="1dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📋"
+                    android:textSize="14sp"
+                    android:layout_marginEnd="8dp" />
+                <TextView
+                    android:id="@+id/tvSummary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Loading summary..."
+                    android:textColor="#5B8BFF"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+
+    <!-- ═══════════════════════════════════════════════════════
+         BODY — Income + Expense lists
+    ═══════════════════════════════════════════════════════ -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"/>
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_marginTop="290dp">
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabExportPdf"
-        android:src="@drawable/ic_export"
-        android:layout_gravity="end"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        <!-- ── INCOME SECTION ──────────────────────────────── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="18dp"
+            android:paddingBottom="10dp">
 
-</LinearLayout>
+            <View
+                android:layout_width="4dp"
+                android:layout_height="16dp"
+                android:background="@drawable/admin_section_accent_green"
+                android:layout_marginEnd="10dp" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Income"
+                android:textColor="#22CC66"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvTotalIncome"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="₹0.00"
+                android:textColor="#22CC66"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerIncome"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:paddingBottom="6dp"
+            android:clipToPadding="false"
+            android:scrollbars="none"
+            android:overScrollMode="never" />
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#0D1A36"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp" />
+
+        <!-- ── EXPENSE SECTION ─────────────────────────────── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="14dp"
+            android:paddingBottom="10dp">
+
+            <View
+                android:layout_width="4dp"
+                android:layout_height="16dp"
+                android:background="@drawable/admin_section_accent_red"
+                android:layout_marginEnd="10dp" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Expenses"
+                android:textColor="#FF5C6A"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvTotalExpense"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="₹0.00"
+                android:textColor="#FF5C6A"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerExpense"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:paddingBottom="20dp"
+            android:clipToPadding="false"
+            android:scrollbars="none"
+            android:overScrollMode="never" />
+
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

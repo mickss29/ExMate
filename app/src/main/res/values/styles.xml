@@ -1,7 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- ================= CHIPS ================= -->
+    <!-- ================================================================
+         EXMATE — MASTER STYLES
+         Organized, deduplicated, premium-polished
+    ================================================================ -->
+
+    <!-- ── PREMIUM INPUT FIELDS ──────────────────────────────────────── -->
+
+    <!--
+        PremiumInputLayout
+        • Floating label on focus
+        • Dark navy fill  (#0A1228)
+        • Blue stroke on focus, dim stroke at rest
+        • Rounded 16dp all corners
+    -->
+    <style name="PremiumInputLayout" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
+        <item name="boxBackgroundMode">filled</item>
+        <item name="boxBackgroundColor">#0A1228</item>
+        <item name="boxStrokeColor">@color/premium_input_stroke_states</item>
+        <item name="boxStrokeColor">@color/premium_input_stroke_states</item>
+        <item name="boxStrokeWidth">1dp</item>
+        <item name="boxStrokeWidthFocused">1.5dp</item>
+        <item name="boxCornerRadiusTopStart">16dp</item>
+        <item name="boxCornerRadiusTopEnd">16dp</item>
+        <item name="boxCornerRadiusBottomStart">16dp</item>
+        <item name="boxCornerRadiusBottomEnd">16dp</item>
+        <item name="hintEnabled">true</item>
+        <item name="hintTextColor">@color/premium_hint_states</item>
+        <item name="hintTextAppearance">@style/PremiumHintText</item>
+        <item name="errorTextColor">#FF5C6A</item>
+        <item name="errorIconDrawable">@null</item>
+    </style>
+
+    <style name="PremiumHintText" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">#4A6898</item>
+    </style>
+
+    <style name="PremiumInputEditText">
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textColorHint">#2E4470</item>
+        <item name="android:textSize">14.5sp</item>
+        <item name="android:paddingStart">6dp</item>
+        <item name="android:paddingEnd">10dp</item>
+    </style>
+
+    <!-- ── CHIPS ─────────────────────────────────────────────────────── -->
 
     <style name="ChipExMate.Base" parent="Widget.MaterialComponents.Chip.Choice">
         <item name="android:textColor">#E0E0E0</item>
@@ -29,7 +74,7 @@
         <item name="chipStrokeColor">@color/chip_expense_border</item>
     </style>
 
-    <!-- ================= PIN DOT ================= -->
+    <!-- ── PIN LOCK ───────────────────────────────────────────────────── -->
 
     <style name="PinDot">
         <item name="android:layout_width">14dp</item>
@@ -38,7 +83,7 @@
         <item name="android:background">@drawable/bg_pin_dot_empty</item>
     </style>
 
-    <!-- ================= SHAPES ================= -->
+    <!-- ── SHAPES ─────────────────────────────────────────────────────── -->
 
     <style name="TopPanelRoundedBottomOnly">
         <item name="cornerFamily">rounded</item>
@@ -48,7 +93,7 @@
         <item name="cornerSizeBottomRight">30dp</item>
     </style>
 
-    <!-- ================= KEYPAD ================= -->
+    <!-- ── KEYPAD ─────────────────────────────────────────────────────── -->
 
     <style name="KeypadKey">
         <item name="android:layout_width">64dp</item>
@@ -60,36 +105,66 @@
         <item name="android:background">@drawable/bg_keypad_key</item>
     </style>
 
-    <!-- ================= BUTTONS (SAFE CUSTOM) ================= -->
+    <!-- ── BUTTONS ────────────────────────────────────────────────────── -->
 
-    <style name="ExMateButton" parent="Widget.AppCompat.Button">
-        <item name="android:background">@drawable/button_bg</item>
+    <!-- Primary filled — use on dark screens -->
+    <style name="ExMateButton" parent="Widget.MaterialComponents.Button">
+        <item name="android:background">@drawable/btn_premium_gradient</item>
+        <item name="android:backgroundTint">@android:color/transparent</item>
         <item name="android:textColor">@android:color/white</item>
-        <item name="android:padding">12dp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:paddingTop">14dp</item>
+        <item name="android:paddingBottom">14dp</item>
+        <item name="android:stateListAnimator">@null</item>
+        <item name="cornerRadius">18dp</item>
     </style>
 
-    <style name="ExMateOutlinedButton" parent="Widget.AppCompat.Button">
+    <!-- Outlined / secondary -->
+    <style name="ExMateOutlinedButton" parent="Widget.MaterialComponents.Button.OutlinedButton">
         <item name="android:background">@drawable/button_outline_bg</item>
-        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="android:textColor">@color/ex_blue_accent</item>
+        <item name="android:textStyle">bold</item>
         <item name="android:padding">12dp</item>
+        <item name="strokeColor">@color/ex_blue_subtle</item>
+        <item name="cornerRadius">14dp</item>
     </style>
 
-    <!-- ================= BOTTOM NAV INDICATOR ================= -->
+    <!-- ── BOTTOM NAVIGATION ──────────────────────────────────────────── -->
 
-    <style name="ExMateBottomNavIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
-        <item name="android:layout_height">38dp</item>
-        <item name="android:layout_width">74dp</item>
-        <item name="android:background">@drawable/bg_bottom_nav_indicator</item>
-
+    <!-- ── BOTTOM NAVIGATION ──────────────────────────────────────────── -->
+    <!--
+        NOTE: itemActiveIndicatorStyle requires Material3 theme.
+        Since we use Theme.MaterialComponents (MDC), we use
+        itemBackground drawable instead — no style needed here.
+        ExMateBottomNavIndicator kept for future Material3 migration.
+    -->
+    <style name="ExMateBottomNavIndicator">
+        <item name="android:layout_height">34dp</item>
+        <item name="android:layout_width">60dp</item>
     </style>
 
+    <!-- Base — not used directly -->
     <style name="BottomNavText" parent="TextAppearance.AppCompat.Caption">
         <item name="android:textSize">10sp</item>
         <item name="android:textStyle">bold</item>
     </style>
-    <!-- Add these styles inside your existing <resources> tag in res/values/styles.xml -->
 
-    <!-- Profile Row container -->
+    <!-- Active tab label — bright white, slightly larger -->
+    <style name="BottomNavText.Active" parent="BottomNavText">
+        <item name="android:textSize">10.5sp</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:letterSpacing">0.02</item>
+    </style>
+
+    <!-- Inactive tab label — dim blue-grey -->
+    <style name="BottomNavText.Inactive" parent="BottomNavText">
+        <item name="android:textSize">10sp</item>
+        <item name="android:textColor">#2E4470</item>
+    </style>
+
+    <!-- ── PROFILE / SETTINGS ROWS ───────────────────────────────────── -->
+
     <style name="ProfileRow">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">62dp</item>
@@ -102,7 +177,6 @@
         <item name="android:background">@drawable/ripple_dark</item>
     </style>
 
-    <!-- Emoji icon in row -->
     <style name="ProfileRowEmoji">
         <item name="android:layout_width">36dp</item>
         <item name="android:layout_height">36dp</item>
@@ -110,7 +184,6 @@
         <item name="android:textSize">18sp</item>
     </style>
 
-    <!-- Text group (title + subtitle) -->
     <style name="ProfileRowTextGroup">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
@@ -119,7 +192,6 @@
         <item name="android:orientation">vertical</item>
     </style>
 
-    <!-- Row title -->
     <style name="ProfileRowTitle">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
@@ -128,7 +200,6 @@
         <item name="android:textStyle">bold</item>
     </style>
 
-    <!-- Row subtitle -->
     <style name="ProfileRowSub">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
@@ -136,7 +207,6 @@
         <item name="android:textSize">11sp</item>
     </style>
 
-    <!-- Chevron › -->
     <style name="ProfileRowChevron">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
@@ -145,12 +215,117 @@
         <item name="android:textSize">22sp</item>
     </style>
 
-    <!-- Divider between rows -->
     <style name="ProfileDivider">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">1dp</item>
         <item name="android:layout_marginStart">64dp</item>
         <item name="android:background">#0F172A</item>
+    </style>
+
+    <!-- ── ADMIN DASHBOARD ROWS ──────────────────────────────────── -->
+
+    <style name="AdminRow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">66dp</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:paddingStart">18dp</item>
+        <item name="android:paddingEnd">18dp</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:background">@drawable/ripple_dark</item>
+    </style>
+
+    <style name="AdminIconPill">
+        <item name="android:layout_width">40dp</item>
+        <item name="android:layout_height">40dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:orientation">vertical</item>
+    </style>
+
+    <style name="AdminRowText">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_marginStart">14dp</item>
+        <item name="android:orientation">vertical</item>
+    </style>
+
+    <style name="AdminRowTitle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">#E2E8F0</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="AdminRowSub">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">#2E4470</item>
+        <item name="android:textSize">11.5sp</item>
+        <item name="android:layout_marginTop">2dp</item>
+    </style>
+
+    <style name="AdminRowArrow">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:text">›</item>
+        <item name="android:textSize">24sp</item>
+    </style>
+
+    <!-- ── PREMIUM CARD ───────────────────────────────────────────────── -->
+
+    <!--
+        Reusable card style — apply via style="@style/PremiumCard"
+        on any MaterialCardView in the app
+    -->
+    <style name="PremiumCard" parent="Widget.MaterialComponents.CardView">
+        <item name="cardBackgroundColor">@color/bg_card</item>
+        <item name="cardCornerRadius">20dp</item>
+        <item name="cardElevation">12dp</item>
+        <item name="strokeColor">@color/ex_stroke_card</item>
+        <item name="strokeWidth">1dp</item>
+    </style>
+
+    <!-- Larger hero card (dashboard balance card etc.) -->
+    <style name="PremiumCard.Hero">
+        <item name="cardCornerRadius">28dp</item>
+        <item name="cardElevation">24dp</item>
+    </style>
+
+    <!-- ── TEXT APPEARANCES ───────────────────────────────────────────── -->
+    <!--
+        NOTE: Android dot-notation (TextScreen.Title) requires a base
+        "TextScreen" parent style to exist — defined here as empty bases.
+    -->
+
+    <!-- Base parents (required by Android for dot-notation children) -->
+    <style name="TextScreen" />
+    <style name="TextLabel" />
+
+    <style name="TextScreen.Title">
+        <item name="android:textSize">22sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/ex_text_primary</item>
+        <item name="android:letterSpacing">0.01</item>
+    </style>
+
+    <style name="TextScreen.Subtitle">
+        <item name="android:textSize">13sp</item>
+        <item name="android:textColor">@color/ex_text_secondary</item>
+    </style>
+
+    <style name="TextLabel.Amount">
+        <item name="android:textSize">28sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/ex_text_primary</item>
+        <item name="android:letterSpacing">-0.01</item>
+    </style>
+
+    <style name="TextLabel.Muted">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/ex_text_dim</item>
     </style>
 
 </resources>

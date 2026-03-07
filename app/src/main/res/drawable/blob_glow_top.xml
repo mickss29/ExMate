@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- blob_glow_top.xml
+     Soft indigo/blue radial glow for top-left atmosphere -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <gradient
+        android:type="radial"
+        android:gradientRadius="160dp"
+        android:startColor="#3355FF"
+        android:centerColor="#1A2FBB"
+        android:endColor="#00000000" />
+</shape>

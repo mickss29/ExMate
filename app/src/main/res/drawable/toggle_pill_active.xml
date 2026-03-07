@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- res/drawable/bg_bottom_nav_indicator.xml
-     The pill shown behind the active nav item -->
+<!-- toggle_pill_active.xml
+     The sliding active indicator pill — blue gradient -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <gradient
         android:type="linear"
         android:angle="135"
         android:startColor="#1A3BCC"
-        android:endColor="#2B55FF" />
-    <corners android:radius="14dp" />
+        android:endColor="#2D55FF" />
+    <corners android:radius="11dp" />
 </shape>

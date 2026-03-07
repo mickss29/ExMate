@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- card_top_shimmer.xml
+     Subtle top-edge highlight line on the auth card — gives glass edge feel -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:type="linear"
+        android:angle="0"
+        android:startColor="#00142040"
+        android:centerColor="#40FFFFFF"
+        android:endColor="#00142040" />
+</shape>

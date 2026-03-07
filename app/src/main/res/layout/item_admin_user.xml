@@ -1,12 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView
+<com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="12dp"
-    app:cardCornerRadius="16dp"
-    app:cardElevation="6dp">
+    android:layout_marginBottom="10dp"
+    app:cardCornerRadius="18dp"
+    app:cardElevation="8dp"
+    app:cardBackgroundColor="#080F24"
+    app:strokeColor="#0D1A36"
+    app:strokeWidth="1dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="@drawable/ripple_dark">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -14,29 +20,216 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <TextView
-            android:id="@+id/tvAdminUserName"
-            android:layout_width="wrap_content"
+        <!-- Top row: Avatar + Name/Email + Status badge -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="User Name"
-            android:textStyle="bold"
-            android:textSize="16sp"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-        <TextView
-            android:id="@+id/tvAdminUserEmail"
-            android:layout_width="wrap_content"
+            <!-- Avatar circle -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="46dp"
+                android:layout_height="46dp"
+                app:cardCornerRadius="14dp"
+                app:cardBackgroundColor="#0D1F4A"
+                app:cardElevation="0dp"
+                app:strokeColor="#1A3BCC"
+                app:strokeWidth="1dp">
+                <TextView
+                    android:id="@+id/tvUserInitial"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="A"
+                    android:textColor="#5B8BFF"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Name + Email -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvUserName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="User Name"
+                    android:textColor="#E2E8F0"
+                    android:textSize="14.5sp"
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+                <TextView
+                    android:id="@+id/tvUserEmail"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="user@email.com"
+                    android:textColor="#2E4470"
+                    android:textSize="12sp"
+                    android:layout_marginTop="2dp"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+            </LinearLayout>
+
+            <!-- Status badge -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/badgeStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="26dp"
+                app:cardCornerRadius="8dp"
+                app:cardBackgroundColor="#051A10"
+                app:cardElevation="0dp"
+                app:strokeColor="#0B3D2E"
+                app:strokeWidth="1dp">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:orientation="horizontal">
+                    <View
+                        android:layout_width="5dp"
+                        android:layout_height="5dp"
+                        android:background="@drawable/dot_green_pulse"
+                        android:layout_marginEnd="5dp" />
+                    <TextView
+                        android:id="@+id/tvUserStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Active"
+                        android:textColor="#22CC66"
+                        android:textSize="10.5sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#0D1A36"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Bottom row: Phone + Join date + Action buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="user@email.com"
-            android:textSize="14sp"
-            android:textColor="#666"
-            android:layout_marginTop="4dp"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-        <Button
-            android:id="@+id/btnBlockUser"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:text="Block"
-            android:layout_marginTop="10dp"/>
+            <!-- Phone -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="PHONE"
+                    android:textColor="#1A2C52"
+                    android:textSize="9.5sp"
+                    android:letterSpacing="0.08" />
+
+                <TextView
+                    android:id="@+id/tvUserPhone"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="+91 XXXXXXXXXX"
+                    android:textColor="#5B8BFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
+            <!-- Joined -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="JOINED"
+                    android:textColor="#1A2C52"
+                    android:textSize="9.5sp"
+                    android:letterSpacing="0.08" />
+
+                <TextView
+                    android:id="@+id/tvUserJoined"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Jan 2025"
+                    android:textColor="#E2E8F0"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
+            <!-- Action buttons -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <!-- View button -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnViewUser"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginEnd="8dp"
+                    app:cardCornerRadius="9dp"
+                    app:cardBackgroundColor="#0D1F4A"
+                    app:cardElevation="0dp"
+                    app:strokeColor="#1A3BCC"
+                    app:strokeWidth="1dp"
+                    android:clickable="true"
+                    android:focusable="true">
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="7dp"
+                        android:src="@drawable/ic_view"
+                        app:tint="#5B8BFF" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Delete button -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnDeleteUser"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    app:cardCornerRadius="9dp"
+                    app:cardBackgroundColor="#120820"
+                    app:cardElevation="0dp"
+                    app:strokeColor="#4A0D1B"
+                    app:strokeWidth="1dp"
+                    android:clickable="true"
+                    android:focusable="true">
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="7dp"
+                        android:src="@drawable/ic_delete"
+                        app:tint="#FF5C6A" />
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+        </LinearLayout>
+
     </LinearLayout>
 
-</androidx.cardview.widget.CardView>
+</com.google.android.material.card.MaterialCardView>

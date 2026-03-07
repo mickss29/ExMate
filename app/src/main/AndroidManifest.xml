@@ -2,28 +2,27 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.exmate">
 
-    <!-- ================= REQUIRED PERMISSIONS ================= -->
-
+    <!-- ================= PERMISSIONS ================= -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-
-    <!-- Voice -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-
-    <!-- Storage (Only below Android 10) -->
-    <uses-permission
-        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="28" />
-
-    <!-- Location -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.RECEIVE_SMS"/>
-    <uses-permission android:name="android.permission.READ_SMS"/>
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.READ_SMS" />
 
-    <!-- ========================================================= -->
+    <!-- ✅ CORRECT PLACE — directly inside <manifest>, NOT inside <application> -->
+    <supports-screens
+        android:smallScreens="true"
+        android:normalScreens="true"
+        android:largeScreens="true"
+        android:xlargeScreens="true"
+        android:resizeable="true" />
+
+    <!-- ================================================ -->
 
     <application
         android:allowBackup="true"
@@ -33,19 +32,22 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ExMate"
         android:enableOnBackInvokedCallback="true">
+
+        <!-- SMS Receiver -->
         <receiver
             android:name=".SmsReceiver"
             android:exported="true">
             <intent-filter android:priority="999">
-                <action android:name="android.provider.Telephony.SMS_RECEIVED"/>
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
             </intent-filter>
         </receiver>
 
+        <!-- Maps API Key -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="YOUR_API_KEY_HERE" />
 
-        <!-- 🚀 SPLASH SCREEN -->
+        <!-- ── SPLASH ──────────────────────────────────── -->
         <activity
             android:name=".SplashActivity"
             android:exported="true">
@@ -55,60 +57,57 @@
             </intent-filter>
         </activity>
 
-        <!-- 🔐 AUTH -->
+        <!-- ── AUTH ───────────────────────────────────── -->
         <activity
             android:name=".AuthActivity"
             android:exported="false"
+            android:theme="@style/Theme.ExMate.Auth"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- 👤 USER -->
-        <activity android:name=".UserDashboardActivity" android:exported="false" />
-        <activity android:name=".UserReportsActivity" android:exported="false" />
-        <activity android:name=".UserDetailsActivity" android:exported="false" />
-        <activity android:name=".UserProfile" android:exported="false" />
-        <activity android:name=".EditProfileActivity" android:exported="false" />
-        <activity android:name=".StatisticsActivity" android:exported="false" />
+        <!-- ── USER ───────────────────────────────────── -->
+        <activity android:name=".UserDashboardActivity"  android:exported="false" />
+        <activity android:name=".UserReportsActivity"    android:exported="false" />
+        <activity android:name=".UserDetailsActivity"    android:exported="false" />
+        <activity android:name=".UserProfile"            android:exported="false" />
+        <activity android:name=".EditProfileActivity"    android:exported="false" />
+        <activity android:name=".StatisticsActivity"     android:exported="false" />
         <activity android:name=".AddTransactionActivity" android:exported="false" />
 
-        <!-- 👨‍💼 ADMIN -->
-        <activity android:name=".AdminDashboardActivity" android:exported="false" />
-        <activity android:name=".ManageUsersActivity" android:exported="false" />
-        <activity android:name=".ManageExpensesActivity" android:exported="false" />
-        <activity android:name=".ManageCategoriesActivity" android:exported="false" />
-        <activity android:name=".ReportsActivity" android:exported="false" />
-        <activity android:name=".AdminUserFinanceReportActivity" android:exported="false" />
-        <activity android:name=".AdminUserSelectActivity" android:exported="false" />
-        <activity android:name=".AdminUserFullFinanceReportActivity" android:exported="false" />
-        <activity android:name=".AdminFeedbackDetailActivity" android:exported="false" />
-        <activity android:name=".AdminFeedbackActivity" android:exported="false" />
-        <activity android:name=".AdminUserFinanceActivity" android:exported="false" />
-        <activity android:name=".AddOfferActivity" android:exported="false" />
+        <!-- ── ADMIN ──────────────────────────────────── -->
+        <activity android:name=".AdminDashboardActivity"              android:exported="false" />
+        <activity android:name=".ManageUsersActivity"                 android:exported="false" />
+        <activity android:name=".ManageExpensesActivity"              android:exported="false" />
+        <activity android:name=".ManageCategoriesActivity"            android:exported="false" />
+        <activity android:name=".ReportsActivity"                     android:exported="false" />
+        <activity android:name=".AdminUserFinanceReportActivity"      android:exported="false" />
+        <activity android:name=".AdminUserSelectActivity"             android:exported="false" />
+        <activity android:name=".AdminUserFullFinanceReportActivity"  android:exported="false" />
+        <activity android:name=".AdminFeedbackDetailActivity"         android:exported="false" />
+        <activity android:name=".AdminFeedbackActivity"               android:exported="false" />
+        <activity android:name=".AdminUserFinanceActivity"            android:exported="false" />
+        <activity android:name=".AddOfferActivity"                    android:exported="false" />
+        <activity android:name="AdminManageOffersActivity"            android:exported="false" />
 
-        <!-- 🔐 App Lock -->
-        <activity android:name=".AppLockActivity" android:exported="false" />
-        <activity android:name=".AppLockManager" android:exported="false" />
-        <activity android:name=".SetPinActivity" android:exported="false" />
+        <!-- ── APP LOCK ───────────────────────────────── -->
+        <activity android:name=".AppLockActivity"  android:exported="false" />
+        <activity android:name=".AppLockManager"   android:exported="false" />
+        <activity android:name=".SetPinActivity"   android:exported="false" />
 
-        <!-- 📂 Others -->
-        <activity android:name=".AddCategoryActivity" android:exported="false" />
-        <activity android:name=".SetBudgetActivity" android:exported="false" />
-        <activity android:name=".NotificationHelper" android:exported="false" />
+        <!-- ── MISC ───────────────────────────────────── -->
+        <activity android:name=".AddCategoryActivity"  android:exported="false" />
+        <activity android:name=".SetBudgetActivity"    android:exported="false" />
+        <activity android:name=".NotificationHelper"   android:exported="false" />
 
-        <!-- Profile Pages -->
-        <activity android:name=".TermsActivity" android:exported="false" />
-        <activity android:name=".PrivacyActivity" android:exported="false" />
-        <activity android:name=".SubscriptionActivity" android:exported="false" />
-        <activity android:name=".AboutActivity" android:exported="false" />
-        <activity
-            android:name=".DiscoverActivity"
-            android:exported="false" />
-        <activity android:name=".DiscoverOfferActivity" android:exported="false"></activity>
-        <activity android:name=".DiscoverOfferDetailActivity" android:exported="false"></activity>
-        <activity android:name="AdminManageOffersActivity" android:exported="false"></activity>
+        <!-- ── PROFILE PAGES ─────────────────────────── -->
+        <activity android:name=".TermsActivity"              android:exported="false" />
+        <activity android:name=".PrivacyActivity"            android:exported="false" />
+        <activity android:name=".SubscriptionActivity"       android:exported="false" />
+        <activity android:name=".AboutActivity"              android:exported="false" />
+        <activity android:name=".DiscoverActivity"           android:exported="false" />
+        <activity android:name=".DiscoverOfferActivity"      android:exported="false" />
+        <activity android:name=".DiscoverOfferDetailActivity" android:exported="false" />
 
-
-
-        <!-- 📂 FILE PROVIDER -->
+        <!-- ── FILE PROVIDER ─────────────────────────── -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
@@ -119,11 +118,10 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <!-- 🔔 RECEIVERS -->
-        <receiver android:name=".DailyReminderReceiver" android:exported="false" />
-        <receiver android:name=".DailySummaryReceiver" android:exported="false" />
+        <!-- ── BROADCAST RECEIVERS ───────────────────── -->
+        <receiver android:name=".DailyReminderReceiver"   android:exported="false" />
+        <receiver android:name=".DailySummaryReceiver"    android:exported="false" />
         <receiver android:name=".MorningGreetingReceiver" android:exported="false" />
-
 
     </application>
 

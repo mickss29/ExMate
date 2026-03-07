@@ -1,27 +1,223 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#0E1A2B">
+    android:background="#060C1E">
 
-    <!-- Toolbar -->
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbarFeedback"
+    <!-- ── AMBIENT GLOW ──────────────────────────────────────── -->
+    <View
+        android:layout_width="260dp"
+        android:layout_height="260dp"
+        android:alpha="0.10"
+        android:background="@drawable/blob_glow_top"
+        android:translationX="100dp"
+        android:translationY="-60dp" />
+
+    <!-- ═══════════════════════════════════════════════════════
+         HEADER
+    ═══════════════════════════════════════════════════════ -->
+    <LinearLayout
+        android:id="@+id/headerPanel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/premiumToolbarColor"
-        android:title="User Feedback"
-        android:titleTextColor="@android:color/white"
-        android:padding="16dp" />
+        android:orientation="vertical"
+        android:background="@drawable/admin_header_bg"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="46dp"
+        android:paddingBottom="18dp">
 
-    <!-- Feedback List -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <!-- Back -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/btnBack"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                app:cardCornerRadius="10dp"
+                app:cardBackgroundColor="#0D1530"
+                app:cardElevation="0dp"
+                app:strokeColor="#1A2C52"
+                app:strokeWidth="1dp"
+                android:clickable="true"
+                android:focusable="true">
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="9dp"
+                    android:src="@drawable/ic_back"
+                    app:tint="#5B8BFF" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Title + subtitle -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="14dp"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="User Feedback"
+                    android:textColor="#FFFFFF"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/tvFeedbackCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Loading..."
+                    android:textColor="#2E4470"
+                    android:textSize="12sp"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
+            <!-- Unread badge -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/badgeUnread"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                app:cardCornerRadius="8dp"
+                app:cardBackgroundColor="#1A0E00"
+                app:cardElevation="0dp"
+                app:strokeColor="#D97706"
+                app:strokeWidth="1dp"
+                android:visibility="gone">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp">
+                    <TextView
+                        android:id="@+id/tvUnreadCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="3 New"
+                        android:textColor="#D97706"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+        <!-- Filter tabs: All / Unread / Replied -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="16dp"
+            android:weightSum="3">
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/tabAll"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="5dp"
+                app:cardCornerRadius="10dp"
+                app:cardBackgroundColor="#0D1F4A"
+                app:cardElevation="0dp"
+                app:strokeColor="#1A3BCC"
+                app:strokeWidth="1dp"
+                android:clickable="true"
+                android:focusable="true">
+                <LinearLayout android:layout_width="match_parent"
+                    android:layout_height="match_parent" android:gravity="center">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="All" android:textColor="#5B8BFF"
+                        android:textSize="12sp" android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/tabUnread"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="5dp"
+                app:cardCornerRadius="10dp"
+                app:cardBackgroundColor="#0A1228"
+                app:cardElevation="0dp"
+                app:strokeColor="#131F3A"
+                app:strokeWidth="1dp"
+                android:clickable="true"
+                android:focusable="true">
+                <LinearLayout android:layout_width="match_parent"
+                    android:layout_height="match_parent" android:gravity="center">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Unread" android:textColor="#3D5A80"
+                        android:textSize="12sp" android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/tabReplied"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                app:cardCornerRadius="10dp"
+                app:cardBackgroundColor="#0A1228"
+                app:cardElevation="0dp"
+                app:strokeColor="#131F3A"
+                app:strokeWidth="1dp"
+                android:clickable="true"
+                android:focusable="true">
+                <LinearLayout android:layout_width="match_parent"
+                    android:layout_height="match_parent" android:gravity="center">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Replied" android:textColor="#3D5A80"
+                        android:textSize="12sp" android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- ═══════════════════════════════════════════════════════
+         FEEDBACK LIST
+    ═══════════════════════════════════════════════════════ -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvFeedback"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="12dp"
-        android:clipToPadding="false" />
+        android:layout_marginTop="164dp"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:paddingTop="14dp"
+        android:paddingBottom="24dp"
+        android:clipToPadding="false"
+        android:scrollbars="none"
+        android:overScrollMode="never" />
 
-</LinearLayout>
+    <!-- Empty state -->
+    <LinearLayout
+        android:id="@+id/emptyState"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="164dp"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="💬" android:textSize="44sp" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="No feedback yet"
+            android:textColor="#E2E8F0" android:textSize="16sp" android:textStyle="bold"
+            android:layout_marginTop="12dp" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="User messages will appear here"
+            android:textColor="#2E4470" android:textSize="13sp"
+            android:layout_marginTop="6dp" />
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

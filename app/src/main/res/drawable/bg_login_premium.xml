@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- bg_login_premium.xml
+     Deep space gradient — top dark navy to near-black blue -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:type="linear"
+        android:angle="160"
+        android:startColor="#060C1E"
+        android:centerColor="#080F24"
+        android:endColor="#04091A" />
+</shape>

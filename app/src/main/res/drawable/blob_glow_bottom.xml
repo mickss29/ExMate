@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- blob_glow_bottom.xml
+     Soft violet/purple radial glow for bottom-right atmosphere -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <gradient
+        android:type="radial"
+        android:gradientRadius="140dp"
+        android:startColor="#5533CC"
+        android:centerColor="#2D1A88"
+        android:endColor="#00000000" />
+</shape>

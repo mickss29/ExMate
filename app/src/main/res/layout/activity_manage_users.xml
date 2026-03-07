@@ -4,128 +4,364 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_glass_blue">
+    android:background="#060C1E">
 
-    <!-- CONTENT -->
+    <!-- ── AMBIENT GLOW ─────────────────────────────────────────── -->
+    <View
+        android:layout_width="280dp"
+        android:layout_height="280dp"
+        android:alpha="0.12"
+        android:background="@drawable/blob_glow_top"
+        android:translationX="-40dp"
+        android:translationY="-40dp" />
+
+    <!-- ═══════════════════════════════════════════════════════════
+         HEADER
+    ═══════════════════════════════════════════════════════════ -->
     <LinearLayout
+        android:id="@+id/headerPanel"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/admin_header_bg"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="46dp"
+        android:paddingBottom="18dp">
 
-        <!-- ================= TOOLBAR ================= -->
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/usersToolbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:title="Manage Users"
-            android:titleTextColor="#1E2A38"
-            android:background="@drawable/bg_glass_toolbaar"
-            android:padding="16dp"/>
-
-        <!-- ================= FILTER + SEARCH CARD ================= -->
+        <!-- Back + Title row -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_margin="12dp"
-            android:padding="14dp"
-            android:background="@drawable/glass_card_blue">
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-            <!-- Search -->
-            <EditText
-                android:id="@+id/etSearchUser"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:hint="Search name, email, phone"
-                android:padding="12dp"
-                android:background="@drawable/bg_search"
-                android:inputType="text"
-                android:drawableStart="@drawable/ic_search"
-                android:drawablePadding="8dp"
-                android:textColor="#1E2A38"
-                android:textSize="14sp"
-                app:hintTextColor="#7A8CA3"/>
+            <!-- Back button -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/btnBack"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                app:cardCornerRadius="10dp"
+                app:cardBackgroundColor="#0D1530"
+                app:cardElevation="0dp"
+                app:strokeColor="#1A2C52"
+                app:strokeWidth="1dp"
+                android:clickable="true"
+                android:focusable="true">
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="9dp"
+                    android:src="@drawable/ic_back"
+                    app:tint="#5B8BFF" />
+            </com.google.android.material.card.MaterialCardView>
 
-            <!-- FILTER BUTTONS -->
+            <!-- Title -->
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="10dp"
-                android:gravity="center">
+                android:layout_weight="1"
+                android:layout_marginStart="14dp"
+                android:orientation="vertical">
 
-                <Button
-                    android:id="@+id/btnWeek"
-                    android:layout_width="0dp"
-                    android:layout_height="42dp"
-                    android:layout_weight="1"
-                    android:text="Weekly"
-                    android:textColor="#1E2A38"
-                    android:background="@drawable/glass_filter_button"
-                    android:layout_marginEnd="4dp"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Manage Users"
+                    android:textColor="#FFFFFF"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
 
-                <Button
-                    android:id="@+id/btnMonth"
-                    android:layout_width="0dp"
-                    android:layout_height="42dp"
-                    android:layout_weight="1"
-                    android:text="Monthly"
-                    android:textColor="#1E2A38"
-                    android:background="@drawable/glass_filter_button"
-                    android:layout_marginStart="2dp"
-                    android:layout_marginEnd="2dp"/>
-
-                <Button
-                    android:id="@+id/btnDate"
-                    android:layout_width="0dp"
-                    android:layout_height="42dp"
-                    android:layout_weight="1"
-                    android:text="Custom"
-                    android:textColor="#1E2A38"
-                    android:background="@drawable/glass_filter_button"
-                    android:layout_marginStart="4dp"/>
+                <TextView
+                    android:id="@+id/tvUserCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Loading..."
+                    android:textColor="#2E4470"
+                    android:textSize="12sp"
+                    android:layout_marginTop="2dp" />
             </LinearLayout>
 
-            <!-- CLEAR FILTER -->
-            <Button
-                android:id="@+id/btnClearFilter"
-                android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:text="Clear All Filters"
-                android:layout_marginTop="10dp"
-                android:textColor="#FFFFFF"
-                android:background="@drawable/glass_red_soft"/>
+            <!-- Export button -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/fabExport"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                app:cardCornerRadius="10dp"
+                app:cardBackgroundColor="#0D1F4A"
+                app:cardElevation="0dp"
+                app:strokeColor="#1A3BCC"
+                app:strokeWidth="1dp"
+                android:clickable="true"
+                android:focusable="true">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:orientation="horizontal">
+                    <ImageView
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:src="@drawable/ic_export"
+                        app:tint="#5B8BFF"
+                        android:layout_marginEnd="6dp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Export"
+                        android:textColor="#5B8BFF"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
 
-        <!-- ================= USERS LIST ================= -->
-        <LinearLayout
+        <!-- ── SEARCH BAR ──────────────────────────────────────── -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:layout_marginHorizontal="12dp"
-            android:layout_marginBottom="12dp"
-            android:background="@drawable/glass_card_blue"
-            android:padding="8dp">
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerUsers"
+            android:layout_height="48dp"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="14dp"
+            app:cardBackgroundColor="#0A1228"
+            app:cardElevation="0dp"
+            app:strokeColor="#131F3A"
+            app:strokeWidth="1dp">
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:clipToPadding="false"/>
+                android:gravity="center_vertical"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:orientation="horizontal">
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_search"
+                    app:tint="#2E4470"
+                    android:layout_marginEnd="10dp" />
+                <EditText
+                    android:id="@+id/etSearchUser"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:hint="Search name, email or phone..."
+                    android:background="@android:color/transparent"
+                    android:inputType="text"
+                    android:textColor="#E2E8F0"
+                    android:textColorHint="#2E4470"
+                    android:textSize="13.5sp"
+                    android:imeOptions="actionSearch"
+                    android:singleLine="true" />
+                <ImageView
+                    android:id="@+id/btnClearSearch"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_logout"
+                    app:tint="#2E4470"
+                    android:visibility="gone" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ── FILTER CHIPS ────────────────────────────────────── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp"
+            android:weightSum="3">
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/btnWeek"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="5dp"
+                app:cardCornerRadius="10dp"
+                app:cardBackgroundColor="#0A1228"
+                app:cardElevation="0dp"
+                app:strokeColor="#131F3A"
+                app:strokeWidth="1dp"
+                android:clickable="true"
+                android:focusable="true">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Weekly"
+                        android:textColor="#3D5A80"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/btnMonth"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="5dp"
+                app:cardCornerRadius="10dp"
+                app:cardBackgroundColor="#0A1228"
+                app:cardElevation="0dp"
+                app:strokeColor="#131F3A"
+                app:strokeWidth="1dp"
+                android:clickable="true"
+                android:focusable="true">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Monthly"
+                        android:textColor="#3D5A80"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/btnDate"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                app:cardCornerRadius="10dp"
+                app:cardBackgroundColor="#0A1228"
+                app:cardElevation="0dp"
+                app:strokeColor="#131F3A"
+                app:strokeWidth="1dp"
+                android:clickable="true"
+                android:focusable="true">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Custom 🗓"
+                        android:textColor="#3D5A80"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
         </LinearLayout>
 
     </LinearLayout>
 
-    <!-- ================= EXPORT FAB ================= -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabExport"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="20dp"
-        android:src="@drawable/ic_export"
-        android:tint="@android:color/white"
-        app:backgroundTint="#3D6DF2"
-        android:layout_gravity="bottom|end"/>
+    <!-- ═══════════════════════════════════════════════════════════
+         BODY — RecyclerView + Clear Filter
+    ═══════════════════════════════════════════════════════════ -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_marginTop="230dp">
+
+        <!-- Active filter indicator (shown only when filter is active) -->
+        <LinearLayout
+            android:id="@+id/activeFilterBar"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp"
+            android:background="#08162B"
+            android:visibility="gone">
+
+            <View
+                android:layout_width="6dp"
+                android:layout_height="6dp"
+                android:background="@drawable/dot_green_pulse"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:id="@+id/tvActiveFilter"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Showing: This Week"
+                android:textColor="#5B8BFF"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/btnClearFilter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="✕ Clear"
+                android:textColor="#FF5C6A"
+                android:textSize="11.5sp"
+                android:textStyle="bold"
+                android:padding="6dp"
+                android:clickable="true"
+                android:focusable="true" />
+        </LinearLayout>
+
+        <!-- Divider line -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#0D1A36"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp" />
+
+        <!-- RecyclerView -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerUsers"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="20dp"
+            android:clipToPadding="false"
+            android:scrollbars="none"
+            android:overScrollMode="never" />
+
+        <!-- Empty state -->
+        <LinearLayout
+            android:id="@+id/emptyState"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🔍"
+                android:textSize="40sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="No users found"
+                android:textColor="#E2E8F0"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginTop="12dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Try adjusting your search or filters"
+                android:textColor="#2E4470"
+                android:textSize="13sp"
+                android:layout_marginTop="6dp" />
+        </LinearLayout>
+
+    </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

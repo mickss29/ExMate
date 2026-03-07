@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/color/premium_hint_states.xml -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true" android:color="#5B8BFF" />
+    <item android:color="#3D5A80" />
+</selector>

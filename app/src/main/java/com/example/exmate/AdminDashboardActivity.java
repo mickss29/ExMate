@@ -3,17 +3,14 @@ package com.example.exmate;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.cardview.widget.CardView;
 
+import com.google.android.material.card.MaterialCardView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -23,33 +20,26 @@ import com.google.firebase.database.ValueEventListener;
 
 public class AdminDashboardActivity extends AppCompatActivity {
 
-    private CardView cardUsers, cardCategories, cardReports, cardFeedback, cardOffers;
-    private CardView cardTotalUsers, cardTotalExpenses, cardTotalTransactions;
+    // ── Stats cards (MaterialCardView in XML) ──────────────────────────────
+    private MaterialCardView cardTotalUsers, cardTotalExpenses, cardTotalTransactions;
     private TextView tvTotalUsers, tvTotalExpenses, tvTotalTransactions;
-    private Toolbar adminToolbar;
 
+    // ── Management rows (LinearLayout with IDs in XML) ─────────────────────
+    private View cardUsers, cardCategories, cardReports, cardFeedback, cardOffers;
+
+    // ── Quick action chips (MaterialCardView in XML) ───────────────────────
+    private MaterialCardView chipAddUser, chipExportReport, chipAddOffer, chipViewFeedback;
+
+    // ── Header ─────────────────────────────────────────────────────────────
+    private MaterialCardView btnSignOut;
+
+    // ── Firebase ───────────────────────────────────────────────────────────
     private DatabaseReference usersRef;
     private static final String TAG = "AdminDashboard";
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        AppLockManager.markBackgroundTime(this);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        if (AppLockManager.isEnabled(this)
-                && AppLockManager.shouldAutoLock(this)) {
-
-            AppLockManager.setUnlocked(this, false);
-            startActivity(new Intent(this, AppLockActivity.class));
-        }
-
-        loadDashboardData();
-    }
+    // ══════════════════════════════════════════════════════════════════════
+    // Lifecycle
+    // ══════════════════════════════════════════════════════════════════════
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,23 +48,67 @@ public class AdminDashboardActivity extends AppCompatActivity {
 
         usersRef = FirebaseDatabase.getInstance().getReference("users");
 
-        adminToolbar = findViewById(R.id.adminToolbar);
-        setSupportActionBar(adminToolbar);
+        initViews();
+        setClickListeners();
+        loadDashboardData();
+    }
 
-        cardTotalUsers = findViewById(R.id.cardTotalUsers);
-        cardTotalExpenses = findViewById(R.id.cardTotalExpenses);
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (AppLockManager.isEnabled(this) && AppLockManager.shouldAutoLock(this)) {
+            AppLockManager.setUnlocked(this, false);
+            startActivity(new Intent(this, AppLockActivity.class));
+            return;
+        }
+
+        loadDashboardData();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        AppLockManager.markBackgroundTime(this);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // Init
+    // ══════════════════════════════════════════════════════════════════════
+
+    private void initViews() {
+        // Stats
+        cardTotalUsers        = findViewById(R.id.cardTotalUsers);
+        cardTotalExpenses     = findViewById(R.id.cardTotalExpenses);
         cardTotalTransactions = findViewById(R.id.cardTotalTransactions);
 
-        tvTotalUsers = findViewById(R.id.tvTotalUsers);
-        tvTotalExpenses = findViewById(R.id.tvTotalExpenses);
+        tvTotalUsers        = findViewById(R.id.tvTotalUsers);
+        tvTotalExpenses     = findViewById(R.id.tvTotalExpenses);
         tvTotalTransactions = findViewById(R.id.tvTotalTransactions);
 
-        cardUsers = findViewById(R.id.cardUsers);
+        // Management rows (LinearLayouts in XML)
+        cardUsers      = findViewById(R.id.cardUsers);
         cardCategories = findViewById(R.id.cardCategories);
-        cardReports = findViewById(R.id.cardReports);
-        cardFeedback = findViewById(R.id.cardFeedback);
-        cardOffers = findViewById(R.id.cardOffers);
+        cardReports    = findViewById(R.id.cardReports);
+        cardFeedback   = findViewById(R.id.cardFeedback);
+        cardOffers     = findViewById(R.id.cardOffers);
 
+        // Quick action chips
+        chipAddUser      = findViewById(R.id.chipAddUser);
+        chipExportReport = findViewById(R.id.chipExportReport);
+        chipAddOffer     = findViewById(R.id.chipAddOffer);
+        chipViewFeedback = findViewById(R.id.chipViewFeedback);
+
+        // Sign out button
+        btnSignOut = findViewById(R.id.btnSignOut);
+    }
+
+    private void setClickListeners() {
+
+        // ── Sign out ───────────────────────────────────────────────────────
+        btnSignOut.setOnClickListener(v -> showLogoutDialog());
+
+        // ── Stat cards ─────────────────────────────────────────────────────
         cardTotalUsers.setOnClickListener(v ->
                 startActivity(new Intent(this, ManageUsersActivity.class)));
 
@@ -84,6 +118,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
         cardTotalTransactions.setOnClickListener(v ->
                 startActivity(new Intent(this, ReportsActivity.class)));
 
+        // ── Management rows ────────────────────────────────────────────────
         cardUsers.setOnClickListener(v ->
                 startActivity(new Intent(this, ManageUsersActivity.class)));
 
@@ -96,40 +131,33 @@ public class AdminDashboardActivity extends AppCompatActivity {
         cardFeedback.setOnClickListener(v ->
                 startActivity(new Intent(this, AdminFeedbackActivity.class)));
 
-        if (cardOffers != null) {
-            cardOffers.setOnClickListener(v ->
-                    startActivity(new Intent(this, AdminManageOffersActivity.class)));
-        }
+        cardOffers.setOnClickListener(v ->
+                startActivity(new Intent(this, AdminManageOffersActivity.class)));
 
-        loadDashboardData();
+        // ── Quick action chips ─────────────────────────────────────────────
+        chipAddUser.setOnClickListener(v ->
+                startActivity(new Intent(this, ManageUsersActivity.class)));
+
+        chipExportReport.setOnClickListener(v ->
+                startActivity(new Intent(this, ReportsActivity.class)));
+
+        chipAddOffer.setOnClickListener(v ->
+                startActivity(new Intent(this, AdminManageOffersActivity.class)));
+
+        chipViewFeedback.setOnClickListener(v ->
+                startActivity(new Intent(this, AdminFeedbackActivity.class)));
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_admin_xml, menu);
-        return true;
-    }
+    // ══════════════════════════════════════════════════════════════════════
+    // Logout
+    // ══════════════════════════════════════════════════════════════════════
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
-        if (item.getItemId() == R.id.menu_logout) {
-            logoutAdmin();
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    private void logoutAdmin() {
-
+    private void showLogoutDialog() {
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("Logout")
                 .setMessage("Do you really want to logout?")
                 .setPositiveButton("Logout", (d, which) -> {
-
                     FirebaseAuth.getInstance().signOut();
-
                     Intent intent = new Intent(AdminDashboardActivity.this, AuthActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
@@ -139,13 +167,15 @@ public class AdminDashboardActivity extends AppCompatActivity {
                 .create();
 
         dialog.show();
-
         dialog.getButton(AlertDialog.BUTTON_POSITIVE)
                 .setTextColor(getResources().getColor(android.R.color.holo_red_dark));
-
         dialog.getButton(AlertDialog.BUTTON_NEGATIVE)
                 .setTextColor(getResources().getColor(android.R.color.darker_gray));
     }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // Firebase data loading
+    // ══════════════════════════════════════════════════════════════════════
 
     private void loadDashboardData() {
         loadTotalUsers();
@@ -162,12 +192,14 @@ public class AdminDashboardActivity extends AppCompatActivity {
                     Log.d(TAG, "Total users: " + userCount);
                 } catch (Exception e) {
                     tvTotalUsers.setText("0");
+                    Log.e(TAG, "loadTotalUsers error", e);
                 }
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 tvTotalUsers.setText("0");
+                Log.e(TAG, "loadTotalUsers cancelled: " + databaseError.getMessage());
             }
         });
     }
@@ -205,6 +237,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
                 } catch (Exception e) {
                     tvTotalExpenses.setText("₹0.00");
                     tvTotalTransactions.setText("0");
+                    Log.e(TAG, "loadFinancialData error", e);
                 }
             }
 
@@ -212,21 +245,27 @@ public class AdminDashboardActivity extends AppCompatActivity {
             public void onCancelled(DatabaseError databaseError) {
                 tvTotalExpenses.setText("₹0.00");
                 tvTotalTransactions.setText("0");
+                Log.e(TAG, "loadFinancialData cancelled: " + databaseError.getMessage());
             }
         });
     }
 
+    // ══════════════════════════════════════════════════════════════════════
+    // Helpers
+    // ══════════════════════════════════════════════════════════════════════
+
     private double convertToDouble(Object obj) {
         try {
-            if (obj instanceof Double) return (Double) obj;
-            if (obj instanceof Long) return ((Long) obj).doubleValue();
+            if (obj instanceof Double)  return (Double) obj;
+            if (obj instanceof Long)    return ((Long) obj).doubleValue();
             if (obj instanceof Integer) return ((Integer) obj).doubleValue();
-            if (obj instanceof String) return Double.parseDouble((String) obj);
+            if (obj instanceof String)  return Double.parseDouble((String) obj);
         } catch (Exception ignored) {}
         return 0.0;
     }
 
-    public void refreshDashboard(android.view.View view) {
+    /** Called from XML via android:onClick if needed */
+    public void refreshDashboard(View view) {
         loadDashboardData();
         Toast.makeText(this, "Dashboard refreshed", Toast.LENGTH_SHORT).show();
     }
